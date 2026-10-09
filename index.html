@@ -116,6 +116,44 @@
   body.inmenu .hud, body.inmenu #mini, body.inmenu .tb, body.inmenu #touchLayer{display:none !important}
   @media (max-height:520px){.pick{width:150px;padding:5px}.pick .tg{display:none}.card{padding:10px 16px}.card h1{font-size:40px}.card h2{font-size:24px;margin-bottom:4px}.card p{font-size:13px;margin:3px 0}.btn{font-size:20px;padding:8px 24px}}
   @media (max-width:700px),(max-height:450px){#board{display:none}#mini{width:100px;height:100px}}
+  .modeRow{display:flex;flex-wrap:wrap;gap:clamp(10px,2.5vmin,22px);justify-content:center;align-items:center;padding:0 8px}
+  .modeRow .playBtn{font-size:clamp(22px,5.2vmin,42px);padding:clamp(8px,1.8vmin,15px) clamp(22px,5vmin,46px)}
+  .playBtn.mp{background:linear-gradient(#4f86ff,#1d4ed8);box-shadow:0 8px 0 #12307f,0 14px 30px rgba(0,0,0,.35);text-shadow:0 3px 0 #12307f;animation:none}
+  .playBtn.mp:active{box-shadow:0 3px 0 #12307f}
+  .note{min-height:1.2em;margin:8px 0 0;font-weight:800;font-size:clamp(14px,2.6vw,18px);color:#12307f}
+  .note.warn{color:#c2410c}
+  .mpCard{max-width:min(520px,96vw)}
+  .orLine{margin:10px 0 0;font-weight:900;opacity:.6}
+  .joinRow{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .joinRow .btn{margin-top:8px}
+  #joinCode{-webkit-user-select:text;user-select:text;font:inherit;font-weight:900;font-size:28px;width:5.2em;text-align:center;letter-spacing:6px;direction:ltr;padding:6px 8px;margin-top:8px;border:4px solid #1d4ed8;border-radius:16px;color:#12307f;background:#fff;outline:none}
+  .btn.sm{font-size:clamp(14px,3vw,18px);padding:6px 14px;margin:4px 3px 0;box-shadow:0 3px 0 #12307f}
+  .btn:disabled{filter:grayscale(.7);opacity:.6;cursor:default}
+  .lobbyCard{width:min(640px,96vw);padding:12px 14px}
+  .roomHead{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-weight:900;font-size:clamp(16px,3vw,22px)}
+  .roomHead .code{font-size:clamp(34px,7vw,48px);letter-spacing:6px;direction:ltr;background:#1d4ed8;color:#fff;border-radius:14px;padding:0 12px;box-shadow:0 4px 0 #0b1e5a}
+  .lobbyPlayers{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+  .lp{display:flex;align-items:center;gap:6px;background:#fff;border:3px solid #b8c8f0;border-radius:14px;padding:3px 8px;min-height:46px;text-align:right}
+  .lp.me{border-color:#1d4ed8;background:#eef4ff}
+  .lp.ai{opacity:.6;border-style:dashed}
+  .lp img{width:40px;height:40px;object-fit:cover;border-radius:10px;background:#dfe9ff}
+  .lp .av{font-size:28px;width:40px;text-align:center}
+  .lp b{font-size:14px;display:block}.lp small{font-size:13px;margin-inline-start:auto;font-weight:700}
+  .lsec{margin-top:8px;font-weight:900;text-align:right;font-size:15px}
+  .lchars{display:flex;gap:6px;justify-content:center}
+  .lc{flex:1;max-width:120px;font:inherit;position:relative;background:#fff;border:4px solid #b8c8f0;border-radius:14px;padding:3px;cursor:pointer;color:#12307f;font-weight:900;font-size:14px;touch-action:manipulation}
+  .lc img{width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:10px;pointer-events:none}
+  .lc.sel{border-color:#ff5a5a;background:#fff3c4;transform:translateY(-3px);box-shadow:0 4px 0 #d61f1f}
+  .lc.taken{opacity:.45;filter:grayscale(.8)}
+  .lc em{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);background:#d61f1f;color:#fff;font-style:normal;padding:1px 8px;border-radius:8px;font-size:13px}
+  .ltracks{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .lt{font:inherit;font-weight:900;font-size:15px;padding:6px 14px;border-radius:999px;border:3px solid #b8c8f0;background:#fff;color:#12307f;cursor:pointer;touch-action:manipulation}
+  .lt.sel{border-color:#1d4ed8;background:#1d4ed8;color:#fff}
+  .lt:disabled{cursor:default}.lt:disabled:not(.sel){opacity:.5}
+  body.inlobby #muteBtn{display:none}
+  body:not(.mphost) .hostOnly{display:none !important}
+  body.mp #restartBtn, body.mp #changeBtn, body.mp #pauseRestartBtn{display:none}
+  @media (max-height:520px){.lobbyCard{width:min(820px,98vw);padding:8px 12px}.lobbyPlayers{grid-template-columns:repeat(4,1fr)}.lp{min-height:38px;padding:2px 5px}.lp img,.lp .av{width:30px;height:30px;font-size:20px}.lp b{font-size:12px}.lp small{font-size:11px}.lc{max-width:78px;font-size:12px}.lsec{margin-top:4px;font-size:13px}.roomHead .code{font-size:30px}.note{margin-top:4px;font-size:13px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 </head>
@@ -141,7 +179,10 @@
     <div class="ribbon">🏁 מרוץ העגלות הישראלי 🏁</div>
   </div>
   <div class="tBottom">
-    <button class="playBtn" id="startBtn">▶ שחק!</button>
+    <div class="modeRow">
+      <button class="playBtn" id="startBtn">▶ שחקן יחיד</button>
+      <button class="playBtn mp" id="mpBtn">🌐 מרובה משתתפים</button>
+    </div>
     <button class="helpBtn" id="helpBtn">❓ איך משחקים</button>
   </div>
 </div>
@@ -168,6 +209,37 @@
     <button class="btn blue" id="backToChar">→ חזרה</button>
   </div>
 </div>
+<div id="mpScreen" class="screen" style="display:none">
+  <div class="card mpCard">
+    <h2>🌐 מרובה משתתפים</h2>
+    <p>עד 4 שחקנים, כל אחד מהטלפון שלו. מקומות פנויים – המחשב נוהג.</p>
+    <button class="btn" id="createRoomBtn">➕ צור חדר</button>
+    <div class="orLine">או</div>
+    <div class="joinRow">
+      <input id="joinCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="קוד חדר" autocomplete="off" enterkeyhint="go" aria-label="קוד חדר">
+      <button class="btn blue" id="joinBtn">הצטרף</button>
+    </div>
+    <div id="mpMsg" class="note"></div>
+    <button class="btn ghost" id="mpBack">→ חזרה</button>
+  </div>
+</div>
+<div id="lobbyScreen" class="screen" style="display:none">
+  <div class="card lobbyCard">
+    <div class="roomHead"><span>קוד חדר</span><b id="roomCode" class="code">----</b>
+      <button class="btn ghost sm" id="copyCodeBtn">📋 העתק</button><button class="btn ghost sm" id="shareBtn">📤 שתף</button></div>
+    <div id="lobbyPlayers" class="lobbyPlayers"></div>
+    <div class="lsec">הדמות שלך:</div>
+    <div id="lobbyChars" class="lchars"></div>
+    <div class="lsec">מסלול:</div>
+    <div id="lobbyTracks" class="ltracks"></div>
+    <div id="lobbyWait" class="note"></div>
+    <div id="lobbyMsg" class="note warn"></div>
+    <div class="btnRow">
+      <button class="btn hostOnly" id="lobbyStart">🏁 התחל מרוץ</button>
+      <button class="btn ghost sm" id="lobbyLeave">🚪 עזוב חדר</button>
+    </div>
+  </div>
+</div>
 <div id="endScreen" class="screen" style="display:none">
   <div class="card endCard">
     <h1 id="endTitle">סיימת!</h1>
@@ -175,6 +247,7 @@
     <div class="resWrap"><table class="res" id="resTable"></table></div>
     <div id="resNote"></div>
     <div class="btnRow">
+      <button class="btn hostOnly" id="endLobbyBtn">🔁 מרוץ נוסף (לובי)</button>
       <button class="btn" id="restartBtn">שחק שוב 🔄</button>
       <button class="btn blue" id="changeBtn">דמות / מסלול</button>
       <button class="btn blue" id="endMenuBtn">🏠 תפריט ראשי</button>
@@ -739,9 +812,25 @@ function buildKarts(ci) {
     return Object.assign(m, { def: o, name: o.name, isPlayer: isP, base: isP ? o.stats.speed : o.aiBase, accel: isP ? o.stats.accel : 32, turn: isP ? o.stats.turn : 2.45, driftMul: isP ? (o.stats.drift || 1) : 1,
       dot: o.dot, idx: 0, pos: V(0, 0, 0), heading: 0, speed: 0, maxSpeed: 30, drifting: false, driftDir: 0, charge: 0, boost: 0, spin: 0, hop: 0,
       item: null, itemCount: 0, rolling: 0, pending: null, total: 0, finished: false, finishTime: 0, star: 0, shrink: 0, scale: 1,
-      laneBias: (i - 1.5) * 1.6, lanePhase: Math.random() * 6, laneT: 0, useTimer: 0, visYaw: 0, wheelRot: 0, lap: 1, sparkTier: 0, rollTick: 0 });
+      slot: i, local: true, remote: false, human: isP, laneBias: (i - 1.5) * 1.6, lanePhase: Math.random() * 6, laneT: 0, useTimer: 0, visYaw: 0, wheelRot: 0, lap: 1, sparkTier: 0, rollTick: 0 });
   });
   player = karts[0];
+}
+// multiplayer: slots = [{id, char}] in grid order; mySlot = this peer's kart; host simulates AI slots
+function buildKartsMP(slots, mySlot, isHost) {
+  karts.forEach(k => { scene.remove(k.root); disposeTree(k.root); });
+  karts = slots.map((s, i) => {
+    const o = CHARS[s.char], m = makeKart(o), isP = i === mySlot, human = !!s.id, local = isP || (isHost && !human);
+    return Object.assign(m, { def: o, name: o.name, isPlayer: isP, base: human ? o.stats.speed : o.aiBase, accel: human ? o.stats.accel : 32, turn: human ? o.stats.turn : 2.45, driftMul: human ? (o.stats.drift || 1) : 1,
+      dot: o.dot, idx: 0, pos: V(0, 0, 0), heading: 0, speed: 0, maxSpeed: 30, drifting: false, driftDir: 0, charge: 0, boost: 0, spin: 0, hop: 0,
+      item: null, itemCount: 0, rolling: 0, pending: null, total: 0, finished: false, finishTime: 0, star: 0, shrink: 0, scale: 1,
+      slot: i, local, remote: !local, human, peerId: s.id, nt: null,
+      laneBias: (i - 1.5) * 1.6, lanePhase: Math.random() * 6, laneT: 0, useTimer: 0, visYaw: 0, wheelRot: 0, lap: 1, sparkTier: 0, rollTick: 0 });
+  });
+  player = karts[mySlot];
+}
+function makeAI(k) {   // a remote human left: this peer (host) takes the kart over as AI
+  Object.assign(k, { local: true, remote: false, human: false, base: k.def.aiBase, accel: 32, turn: 2.45, driftMul: 1, nt: null, useTimer: 1 });
 }
 
 // ---------- projectiles / hazards ----------
@@ -749,17 +838,25 @@ const bananaGeo = new THREE.TorusGeometry(0.6, 0.22, 8, 14, Math.PI * 1.1), bana
 const shellGeoA = new THREE.SphereGeometry(0.75, 14, 10), shellMatA = toonS(0xe8262b), shellGeoB = new THREE.TorusGeometry(0.72, 0.16, 6, 16), shellMatB = toonS(0xffffff);
 let bananas = [], shells = [];
 const fwdOf = k => V(Math.sin(k.heading), 0, Math.cos(k.heading));
-function dropBanana(k) {
+let hzSeq = 0;
+function dropBanana(k, e) {
   const f = fwdOf(k); const m = new THREE.Mesh(bananaGeo, bananaMat); m.rotation.z = Math.PI * 0.95;
-  const g = new THREE.Group(); g.add(m); g.position.set(k.pos.x - f.x * 3, 0.45, k.pos.z - f.z * 3); scene.add(g);
-  bananas.push({ g, owner: k, age: 0 });
+  const g = new THREE.Group(); g.add(m);
+  if (e) g.position.set(e.x, 0.45, e.z); else g.position.set(k.pos.x - f.x * 3, 0.45, k.pos.z - f.z * 3);
+  scene.add(g);
+  const id = e ? e.id : k.slot + '_' + (++hzSeq);
+  bananas.push({ g, owner: k, age: 0, id });
+  if (!e && netOn()) netEv({ k: 'banana', s: k.slot, id, x: +g.position.x.toFixed(2), z: +g.position.z.toFixed(2) });
 }
+function removeBanana(id) { const i = bananas.findIndex(b => b.id === id); if (i >= 0) { scene.remove(bananas[i].g); bananas.splice(i, 1); } }
 function targetAhead(k) { const r = rankList(); const i = r.indexOf(k); for (let j = i - 1; j >= 0; j--) if (!r[j].finished) return r[j]; return null; }
-function fireShell(k) {
+function fireShell(k, e) {
   const f = fwdOf(k); const g = new THREE.Group();
   const a = new THREE.Mesh(shellGeoA, shellMatA); a.scale.y = 0.65; g.add(a); const b = new THREE.Mesh(shellGeoB, shellMatB); b.rotation.x = Math.PI / 2; g.add(b);
+  if (e) { g.position.set(e.x, 0.6, e.z); scene.add(g); shells.push({ g, pos: g.position, heading: e.h, idx: e.i, owner: k, target: e.tg >= 0 ? karts[e.tg] : null, age: 0 }); return; }
   g.position.set(k.pos.x + f.x * 3, 0.6, k.pos.z + f.z * 3); scene.add(g);
-  shells.push({ g, pos: g.position, heading: k.heading, idx: k.idx, owner: k, target: targetAhead(k), age: 0 });
+  const s = { g, pos: g.position, heading: k.heading, idx: k.idx, owner: k, target: targetAhead(k), age: 0 }; shells.push(s);
+  if (netOn()) netEv({ k: 'shell', s: k.slot, x: +g.position.x.toFixed(2), z: +g.position.z.toFixed(2), h: +k.heading.toFixed(3), i: k.idx, tg: s.target ? s.target.slot : -1 });
 }
 function spinKart(k, dur, byPlayer) {
   if (k.star > 0 || k.spin > 0) return false;
@@ -772,9 +869,9 @@ function updateHazards(dt) {
   for (let i = bananas.length - 1; i >= 0; i--) {
     const b = bananas[i]; b.age += dt; b.g.rotation.y += dt * 1.5;
     for (const k of karts) {
-      if (b.owner === k && b.age < 0.9) continue;
+      if (b.owner === k && b.age < 0.9 || k.remote) continue;   // only karts simulated here decide their own hits
       const dx = b.g.position.x - k.pos.x, dz = b.g.position.z - k.pos.z;
-      if (dx * dx + dz * dz < 3.2) { spinKart(k, 1.1, b.owner.isPlayer); scene.remove(b.g); bananas.splice(i, 1); break; }
+      if (dx * dx + dz * dz < 3.2) { spinKart(k, 1.1, b.owner.isPlayer); scene.remove(b.g); bananas.splice(i, 1); if (netOn()) netEv({ k: 'rm', id: b.id }); break; }
     }
   }
   for (let i = shells.length - 1; i >= 0; i--) {
@@ -788,7 +885,7 @@ function updateHazards(dt) {
     const p = P[s.idx], l = L[s.idx], lat = (s.pos.x - p.x) * l.x + (s.pos.z - p.z) * l.z;
     if (Math.abs(lat) > LIMIT + 0.5) { const o = lat - Math.sign(lat) * (LIMIT + 0.5); s.pos.x -= l.x * o; s.pos.z -= l.z * o; }
     s.g.rotation.y += dt * 12;
-    for (const k of karts) { if (k === s.owner && s.age < 0.5) continue; if (k.pos.distanceToSquared(s.pos) < 4.4) { spinKart(k, 1.25, s.owner.isPlayer); dead = true; break; } }
+    for (const k of karts) { if (k === s.owner && s.age < 0.5) continue; if (k.pos.distanceToSquared(s.pos) < 4.4) { if (!k.remote) spinKart(k, 1.25, s.owner.isPlayer); dead = true; break; } }
     for (let j = bananas.length - 1; j >= 0 && !dead; j--) { if (bananas[j].g.position.distanceToSquared(s.pos) < 2.6) { scene.remove(bananas[j].g); bananas.splice(j, 1); dead = true; } }
     if (dead) { scene.remove(s.g); shells.splice(i, 1); }
   }
@@ -846,7 +943,9 @@ for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEv
 document.addEventListener('touchmove', e => { if (!e.target.closest || !e.target.closest('.screen')) { if (e.cancelable) e.preventDefault(); } }, { passive: false });
 document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 document.addEventListener('contextmenu', e => e.preventDefault());
+let AUTO = false;
 function playerInput() {
+  if (AUTO && player) { const a = aiInput(player, 1 / 60); return a; }
   const up = keys.ArrowUp || keys.KeyW || touch.gas, dn = keys.ArrowDown || keys.KeyS || touch.brake;
   const lf = keys.ArrowLeft || keys.KeyA || touch.left, rt = keys.ArrowRight || keys.KeyD || touch.right;
   return { throttle: (up ? 1 : 0) - (dn ? 1 : 0), steer: (lf ? 1 : 0) - (rt ? 1 : 0), drift: !!(keys.ShiftLeft || keys.ShiftRight || keys.Space || touch.drift) };
@@ -886,10 +985,13 @@ function placeKarts() {
   });
 }
 function clearHazards() { bananas.forEach(b => scene.remove(b.g)); shells.forEach(s => scene.remove(s.g)); bananas = []; shells = []; }
-function hideScreens() { ['startScreen', 'helpScreen', 'charScreen', 'trackScreen', 'endScreen', 'pauseScreen'].forEach(id => $(id).style.display = 'none'); }
-function showScreen(id) { hideScreens(); $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = id === 'startScreen' || id === 'helpScreen'; }
+function hideScreens() { ['startScreen', 'helpScreen', 'charScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen'].forEach(id => $(id).style.display = 'none'); }
+function showScreen(id) { hideScreens(); $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = ['startScreen', 'helpScreen', 'mpScreen', 'lobbyScreen'].includes(id); document.body.classList.toggle('inlobby', id === 'lobbyScreen'); }
 let finTimers = [];
 function clearFinTimers() { finTimers.forEach(clearTimeout); finTimers = []; }
+function startRaceMP(slots, ti, mySlot, isHost) {
+  curTrack = ti; buildTrack(curTrack); buildKartsMP(slots, mySlot, isHost); resetRace();
+}
 function startRace(ci, ti) {
   if (ci !== undefined) selChar = ci;
   if (ti !== undefined) curTrack = ti;
@@ -898,7 +1000,7 @@ function startRace(ci, ti) {
 function resetRace() {
   clearHazards(); boxes.forEach(b => { b.active = true; b.mesh.visible = true; });
   placeKarts(); raceTime = 0; finishCount = 0; cd = 3.999; state = 'countdown'; lastCd = 4;
-  clearFinTimers(); hideScreens(); document.body.classList.remove('inmenu'); titleMode = false; SND.pause(false); pausedFrom = null; ffOn = false; postT = 0; lastResHTML = '';
+  clearFinTimers(); hideScreens(); document.body.classList.remove('inmenu'); titleMode = false; SND.pause(false); pausedFrom = null; hzSeq = 0; ffOn = false; postT = 0; lastResHTML = '';
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   releaseAllTouch(); requestAnimationFrame(measureButtons); wrongT = 0; msgTimer = 0; msg.textContent = '';
   SND.starMode = false; SND.playSong(TRACKS[curTrack].song); SND.tempoMul = 1;
@@ -914,7 +1016,8 @@ function useItem(k) {
   else if (it === 'shell') { fireShell(k); if (me) SND.shell(); }
   else if (it === 'star') { k.star = 6.5; k.spin = 0; if (me) { flash('בלתי מנוצח! ⭐', 1, '#fff36b'); SND.star(); SND.starMode = true; } }
   else if (it === 'lightning') {
-    for (const o of karts) if (o !== k && !o.finished && o.star <= 0) { spinKart(o, 0.9, false); o.shrink = 4.5; }
+    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.9, false); o.shrink = 4.5; }
+    if (netOn()) netEv({ k: 'light', s: k.slot });
     screenFlash(); SND.lightning(); flash(me ? 'ברק! ⚡' : `${k.name} הפעיל ברק! ⚡`, 1.2, '#fff36b');
   }
   k.item = null; k.itemCount = 0;
@@ -927,6 +1030,7 @@ function giveItem(k) {
 }
 function rankList() { return [...karts].sort((a, b) => (a.finished !== b.finished) ? (a.finished ? -1 : 1) : a.finished ? a.finishTime - b.finishTime : b.total - a.total); }
 function rankOf(k) { return rankList().indexOf(k) + 1; }
+function rubberRef() { const h = karts.filter(k => k.human); return h.length ? h.reduce((s, k) => s + k.total, 0) / h.length : player.total; }
 
 // ---------- physics ----------
 const NOINPUT = { throttle: 0, steer: 0, drift: false };
@@ -983,7 +1087,7 @@ function updateKart(k, dt, inp) {
     if (k.isPlayer) { k.rollTick -= dt; if (k.rollTick <= 0) { k.rollTick = 0.07; SND.roll(); } }
     if (k.rolling <= 0) { k.item = k.pending; k.itemCount = k.item === 'triple' ? 3 : 1; k.useTimer = 0.8 + Math.random() * 3; if (k.isPlayer) SND.gotItem(); }
   }
-  for (const b of boxes) if (b.active) { const dx = b.mesh.position.x - k.pos.x, dz = b.mesh.position.z - k.pos.z; if (dx * dx + dz * dz < 5.3) { b.active = false; b.mesh.visible = false; b.t = 3; giveItem(k); } }
+  for (const b of boxes) if (b.active) { const dx = b.mesh.position.x - k.pos.x, dz = b.mesh.position.z - k.pos.z; if (dx * dx + dz * dz < 5.3) { b.active = false; b.mesh.visible = false; b.t = 3; giveItem(k); if (netOn()) netEv({ k: 'box', i: boxes.indexOf(b) }); } }
 }
 function aiInput(k, dt) {
   const look = 9 + Math.floor(Math.max(0, k.speed) * 0.26), ti = (k.idx + look) % N;
@@ -992,7 +1096,7 @@ function aiInput(k, dt) {
   if (k.star <= 0) for (const b of bananas) { const dx = b.g.position.x - k.pos.x, dz = b.g.position.z - k.pos.z; if (dx * dx + dz * dz < 180 && b.owner !== k) { const bl = dx * L[k.idx].x + dz * L[k.idx].z; dodge = bl > 0 ? -4 : 4; } }
   const tx = P[ti].x + L[ti].x * (lane + dodge), tz = P[ti].z + L[ti].z * (lane + dodge);
   const dAng = angDiff(Math.atan2(tx - k.pos.x, tz - k.pos.z), k.heading);
-  const gap = player.total - k.total;
+  const gap = rubberRef() - k.total;
   if (!k.isPlayer) k.maxSpeed = k.base * clamp(1 + gap / N * 0.35, 0.9, 1.12);
   if (k.item && k.rolling <= 0 && !k.isPlayer) {
     k.useTimer -= dt; let use = k.useTimer <= 0;
@@ -1006,8 +1110,11 @@ function collideKarts() {
   for (let i = 0; i < karts.length; i++) for (let j = i + 1; j < karts.length; j++) {
     const a = karts[i], b = karts[j]; const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d2 = dx * dx + dz * dz;
     if (d2 < 5.8 && d2 > 1e-4) {
-      if (a.star > 0 && b.star <= 0) spinKart(b, 1, a.isPlayer); else if (b.star > 0 && a.star <= 0) spinKart(a, 1, b.isPlayer);
-      const d = Math.sqrt(d2), push = (2.4 - d) / 2, nx = dx / d, nz = dz / d; a.pos.x -= nx * push; a.pos.z -= nz * push; b.pos.x += nx * push; b.pos.z += nz * push; a.speed *= 0.985; b.speed *= 0.985;
+      if (a.remote && b.remote) continue;
+      if (a.star > 0 && b.star <= 0) { if (!b.remote) spinKart(b, 1, a.isPlayer); } else if (b.star > 0 && a.star <= 0) { if (!a.remote) spinKart(a, 1, b.isPlayer); }
+      const d = Math.sqrt(d2), nx = dx / d, nz = dz / d; let pa = (2.4 - d) / 2, pb = pa;
+      if (a.remote) { pa = 0; pb *= 2; } if (b.remote) { pb = 0; pa *= 2; }
+      a.pos.x -= nx * pa; a.pos.z -= nz * pa; b.pos.x += nx * pb; b.pos.z += nz * pb; if (!a.remote) a.speed *= 0.985; if (!b.remote) b.speed *= 0.985;
     }
   }
 }
@@ -1020,7 +1127,7 @@ function onPlayerFinish() {
     $('endTitle').textContent = titles[place - 1];
     const nm = player.name;
     $('endSub').textContent = (place === 1 ? `${nm} – מלך/ת העגלות!` : place === 4 ? `לא נורא, ${nm}. עוד סיבוב?` : `כל הכבוד, ${nm}!`) + `  ⏱ ${fmt(player.finishTime)}`;
-    ffOn = true; lastResHTML = ''; renderResults(); showScreen('endScreen');
+    ffOn = !netOn(); lastResHTML = ''; renderResults(); showScreen('endScreen');
   }, 1400));
   flash('סיום! 🏁', 1.6);
 }
@@ -1028,29 +1135,32 @@ function onPlayerFinish() {
 function renderResults() {
   const list = rankList(), winT = list[0].finished ? list[0].finishTime : 0;
   const html = list.map((k, i) => {
-    const medal = ['🥇', '🥈', '🥉', '4'][i];
+    const medal = ['🥇', '🥈', '🥉', '4'][i], tag = k.isPlayer ? ' <small>(את/ה)</small>' : k.human ? ' <small>🎮</small>' : netOn() ? ' <small>🤖</small>' : '';
     const tm = k.finished ? (k.est ? '~' : '') + fmt(k.finishTime) : `עוד במסלול · הקפה ${Math.min(k.lap, LAPS)}/${LAPS}`;
     const gap = k.finished && i > 0 && winT ? '+' + (k.finishTime - winT).toFixed(2) : '';
-    return `<tr class="${k.isPlayer ? 'me' : ''} ${k.finished ? '' : 'racing'}"><td>${medal}</td><td class="nm"><span class="dot" style="background:${k.dot}"></span>${k.name}${k.isPlayer ? ' <small>(את/ה)</small>' : ''}</td><td class="tm">${tm}${gap ? `<span class="gap">${gap}</span>` : ''}</td></tr>`;
+    return `<tr class="${k.isPlayer ? 'me' : ''} ${k.finished ? '' : 'racing'}"><td>${medal}</td><td class="nm"><span class="dot" style="background:${k.dot}"></span>${k.name}${tag}</td><td class="tm">${tm}${gap ? `<span class="gap">${gap}</span>` : ''}</td></tr>`;
   }).join('');
   if (html !== lastResHTML) { $('resTable').innerHTML = html; lastResHTML = html; }
   const left = karts.filter(k => !k.finished).length;
-  $('resNote').textContent = left ? `⏩ מריץ קדימה – עוד ${left} נהגים בדרך לקו הסיום…` : (karts.some(k => k.est) ? '~ זמן משוער' : '');
+  $('resNote').textContent = left && netOn() ? `⏳ עוד ${left} נהגים במסלול – התוצאות מתעדכנות בזמן אמת` : left ? `⏩ מריץ קדימה – עוד ${left} נהגים בדרך לקו הסיום…` : (karts.some(k => k.est) ? '~ זמן משוער' : '');
 }
 
 // ---------- pause ----------
 function canPause() { return state === 'race' || state === 'countdown'; }
 function pauseGame() {
   if (!canPause() || pausedFrom) return;
+  if (netOn()) { pausedFrom = 'mp'; releaseAllTouch(); for (const k in keys) keys[k] = false; syncPauseMute(); showScreen('pauseScreen'); return; }
   pausedFrom = state; state = 'paused'; SND.pause(true); releaseAllTouch(); for (const k in keys) keys[k] = false;
   syncPauseMute(); showScreen('pauseScreen');
 }
 function resumeGame() {
   if (!pausedFrom) return;
+  if (pausedFrom === 'mp') { pausedFrom = null; hideScreens(); document.body.classList.remove('inmenu'); titleMode = false; SND.init(); requestAnimationFrame(measureButtons); return; }
   state = pausedFrom; pausedFrom = null; hideScreens(); document.body.classList.remove('inmenu'); titleMode = false;
   SND.init(); SND.pause(false); last = performance.now(); requestAnimationFrame(measureButtons);
 }
 function goMainMenu() {
+  netLeave();
   clearFinTimers(); clearHazards(); pausedFrom = null; ffOn = false; state = 'menu';
   SND.init(); SND.pause(false); SND.starMode = false; SND.playSong('menu'); showScreen('startScreen');
 }
@@ -1063,7 +1173,7 @@ $('endMenuBtn').addEventListener('click', goMainMenu);
 $('pauseMuteBtn').addEventListener('click', () => { SND.setMuted(!SND.muted); try { localStorage.setItem('kart-muted', SND.muted ? '1' : '0'); } catch (_) {} syncPauseMute(); syncMute(); });
 addEventListener('keydown', e => {
   if (e.code !== 'Escape' && e.code !== 'KeyP') return;
-  if (state === 'paused') { if (e.code === 'Escape' || e.code === 'KeyP') resumeGame(); } else pauseGame();
+  if (state === 'paused' || pausedFrom === 'mp') resumeGame(); else pauseGame();
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
 addEventListener('pagehide', pauseGame);
@@ -1089,8 +1199,9 @@ function portraits() {
   } catch (e) { console.warn('portrait render failed', e); }
   return urls;
 }
+let portraitUrls = [];
 function buildMenus() {
-  const urls = portraits();
+  const urls = portraits(); portraitUrls = urls;
   $('charPicks').innerHTML = CHARS.map((c, i) => `<div class="pick" data-i="${i}">${urls[i] ? `<img src="${urls[i]}" alt="${c.name}">` : ''}<div class="nm">${c.name}</div><div class="tg">${c.tag}</div>
     ${['מהירות', 'תאוצה', 'היגוי'].map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${c.bars[j] * 20}%"></u></i></div>`).join('')}</div>`).join('');
   $('charPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => { SND.init(); SND.tink(true); selChar = +el.dataset.i; buildKarts(selChar); placeKarts(); showScreen('trackScreen'); }));
@@ -1173,6 +1284,7 @@ function frame(now) {
   const rdt = Math.min(0.05, (now - last) / 1000); last = now;
   const subSteps = TS * (state === 'finished' && ffOn ? 5 : 1);
   for (let s = 0; s < subSteps; s++) step(rdt, now);
+  if (netOn()) netInterp(rdt * TS, now);
   render(rdt, now);
   perfN++; perfT += rdt;
   if (perfT > 2.5) { const fps = perfN / perfT; perfN = 0; perfT = 0; if (fps < 36 && curPR > 1) { curPR = Math.max(1, curPR - 0.25); renderer.setPixelRatio(curPR); onResize(); } }
@@ -1188,6 +1300,7 @@ function step(dt, now) {
   if (state === 'race' || state === 'finished') {
     raceTime += dt;
     for (const k of karts) {
+      if (k.remote) continue;
       let inp;
       if (k.isPlayer) { if (state === 'finished') { k.maxSpeed = 32; inp = aiInput(k, dt); } else { k.maxSpeed = k.base; inp = playerInput(); } }
       else inp = aiInput(k, dt);
@@ -1196,7 +1309,7 @@ function step(dt, now) {
     collideKarts(); updateHazards(dt);
     if (state === 'finished') {
       postT += dt;
-      if (postT > 120) for (const k of karts) if (!k.finished) {   // safety net: estimate from remaining distance
+      if (postT > 120 && !netOn()) for (const k of karts) if (!k.finished) {   // safety net: estimate from remaining distance
         const rem = Math.max(0, LAPS * N - k.total) * SEG; k.finished = true; k.est = true; k.finishTime = raceTime + rem / Math.max(20, k.base * 0.9); finishCount++; k.place = finishCount;
       }
     }
@@ -1240,7 +1353,7 @@ function render(dt, now) {
   if (titleMode) { updateTitle(dt, now); renderer.render(titleScene, titleCam); } else renderer.render(scene, camera);
   SND.update(player, state === 'race' || state === 'countdown');
   if (msgTimer > 0) { msgTimer -= dt; if (msgTimer <= 0) msg.textContent = ''; }
-  if (state === 'finished' && ffOn && $('endScreen').style.display !== 'none') { resT -= dt; if (resT <= 0) { resT = 0.25; renderResults(); } }
+  if (state === 'finished' && (ffOn || netOn()) && $('endScreen').style.display !== 'none') { resT -= dt; if (resT <= 0) { resT = 0.25; renderResults(); } }
   hudT -= dt;
   if (hudT <= 0 && state !== 'menu' && state !== 'paused') {
     hudT = 0.05;
@@ -1252,7 +1365,7 @@ function render(dt, now) {
     else if (player.item) itemBox.innerHTML = ITEMS[player.item].icon + (player.item === 'triple' ? `<span class="cnt">×${player.itemCount}</span>` : '');
     else itemBox.textContent = '';
     itemHint.innerHTML = player.item && player.rolling <= 0 ? `${ITEMS[player.item].name} · ` + (isTouch ? 'לחץ "פריט"' : '<span class="keys">E</span> / <span class="keys">X</span>') : '';
-    board.innerHTML = rankList().map((k, i) => `<div class="${k.isPlayer ? 'me' : ''}">${i + 1}. ${k.name}</div>`).join('');
+    board.innerHTML = rankList().map((k, i) => `<div class="${k.isPlayer ? 'me' : ''}">${i + 1}. ${k.name}${k.human && !k.isPlayer ? ' 🎮' : ''}</div>`).join('');
     drawMini();
   }
 }
@@ -1261,7 +1374,257 @@ function render(dt, now) {
 buildTrack(0); buildKarts(0); placeKarts(); buildMenus(); buildTitle();
 requestAnimationFrame(frame);
 window.__track = (k) => { const ti = (k.idx + 12) % N; return angDiff(Math.atan2(P[ti].x - k.pos.x, P[ti].z - k.pos.z), k.heading); };
-window.__kart = { get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame };
+window.__kart = { get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; } };
+// ================= MULTIPLAYER (PeerJS / WebRTC, public broker, host-authoritative) =================
+const NET = { on: false, host: false, peer: null, conns: new Map(), hostConn: null, code: '', humans: [], track: 0, inRace: false, myId: '', timer: 0, hostSeen: 0, connecting: false };
+const PEER_PREFIX = 'shimon-agalot-v1-';
+function netOn() { return NET.on && NET.inRace; }
+function loadPeerJS() {
+  if (window.Peer) return Promise.resolve();
+  const srcs = ['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js', 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
+  return srcs.reduce((p, src) => p.catch(() => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = () => window.Peer ? res() : rej(); s.onerror = () => { s.remove(); rej(); }; document.head.appendChild(s); })), Promise.reject());
+}
+const mpMsg = t => { $('mpMsg').textContent = t || ''; };
+const lobbyMsg = t => { $('lobbyMsg').textContent = t || ''; };
+function setMpBusy(b) { NET.connecting = b; $('createRoomBtn').disabled = b; $('joinBtn').disabled = b; }
+
+// ---------- room setup ----------
+async function createRoom(tries = 0) {
+  setMpBusy(true); mpMsg('יוצר חדר… 🔌');
+  try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.'); return; }
+  const code = String(1000 + Math.floor(Math.random() * 9000));
+  const peer = new Peer(PEER_PREFIX + code, { debug: 0 });
+  peer.on('open', id => {
+    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: null }], track: 0, inRace: false });
+    peer.on('connection', onHostConnection);
+    setMpBusy(false); document.body.classList.add('mp', 'mphost'); showLobby(); startNetTimer();
+  });
+  peer.on('error', err => {
+    if (err.type === 'unavailable-id' && tries < 6) { peer.destroy(); createRoom(tries + 1); return; }
+    if (!NET.on) { setMpBusy(false); mpMsg('שגיאת רשת – נסו שוב (' + err.type + ')'); peer.destroy(); }
+  });
+  peer.on('disconnected', () => { if (NET.on && !peer.destroyed) try { peer.reconnect(); } catch (_) {} });
+}
+async function joinRoom(code) {
+  code = (code || '').replace(/\D/g, '');
+  if (code.length !== 4) { mpMsg('קוד חדר הוא 4 ספרות'); return; }
+  setMpBusy(true); mpMsg('מתחבר לחדר ' + code + '… 🔌');
+  try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.'); return; }
+  const peer = new Peer({ debug: 0 });
+  let opened = false;
+  const fail = t => { if (opened) return; setMpBusy(false); mpMsg(t); try { peer.destroy(); } catch (_) {} };
+  const to = setTimeout(() => fail('לא הצלחנו להתחבר לחדר. ודאו שהקוד נכון ונסו שוב.'), 15000);
+  peer.on('open', id => {
+    const c = peer.connect(PEER_PREFIX + code, { reliable: true, serialization: 'json' });
+    c.on('open', () => {
+      opened = true; clearTimeout(to);
+      Object.assign(NET, { on: true, host: false, peer, code, myId: id, hostConn: c, humans: [], inRace: false, hostSeen: performance.now() });
+      c.send({ t: 'hello' }); setMpBusy(false); document.body.classList.add('mp'); document.body.classList.remove('mphost'); startNetTimer();
+    });
+    c.on('data', d => { NET.hostSeen = performance.now(); onClientData(d); });
+    c.on('close', () => onHostLost());
+    c.on('error', () => onHostLost());
+  });
+  peer.on('error', err => { clearTimeout(to); if (err.type === 'peer-unavailable') fail('חדר ' + code + ' לא נמצא 🤔'); else if (!opened) fail('שגיאת רשת – נסו שוב (' + err.type + ')'); });
+}
+function netLeave() {
+  if (!NET.on && !NET.peer) return;
+  try { if (NET.host) NET.conns.forEach(c => { try { c.send({ t: 'bye' }); } catch (_) {} }); else if (NET.hostConn) NET.hostConn.send({ t: 'bye' }); } catch (_) {}
+  const p = NET.peer; setTimeout(() => { try { p && p.destroy(); } catch (_) {} }, 150);
+  clearInterval(NET.timer);
+  Object.assign(NET, { on: false, host: false, peer: null, conns: new Map(), hostConn: null, humans: [], inRace: false });
+  document.body.classList.remove('mp', 'mphost');
+}
+
+// ---------- host side ----------
+function onHostConnection(c) {
+  c.on('open', () => { c.seen = performance.now(); });
+  c.on('data', d => { c.seen = performance.now(); onHostData(c, d); });
+  c.on('close', () => hostDrop(c));
+  c.on('error', () => hostDrop(c));
+}
+function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except && c.open) try { c.send(m); } catch (_) {} }); }
+function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code }; }
+function onHostData(c, d) {
+  if (d.t === 'hello') {
+    if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו' }); setTimeout(() => c.close(), 300); return; }
+    if (NET.humans.length >= 4) { c.send({ t: 'deny', why: 'החדר מלא (4 שחקנים)' }); setTimeout(() => c.close(), 300); return; }
+    NET.conns.set(c.peer, c); NET.humans.push({ id: c.peer, char: null });
+    SND.tink(true); broadcastLobby(); return;
+  }
+  if (d.t === 'pick') { hostPick(c.peer, d.c); return; }
+  if (d.t === 'bye') { hostDrop(c); return; }
+  if (d.t === 'st' && NET.inRace) { const k = karts.find(k => k.peerId === c.peer); if (k && k.remote) applyState(k, d.d); return; }
+  if (d.t === 'ev' && NET.inRace) { applyEv(d.e); sendAll({ t: 'ev', e: d.e }, c); }
+}
+function hostPick(id, ci) {
+  const h = NET.humans.find(h => h.id === id); if (!h) return;
+  if (ci !== null && NET.humans.some(o => o !== h && o.char === ci)) return;   // taken
+  h.char = ci; broadcastLobby();
+}
+function broadcastLobby() { if (!NET.host) return; sendAll(lobbyState()); renderLobby(); }
+function hostDrop(c) {
+  if (!NET.conns.has(c.peer)) return;
+  NET.conns.delete(c.peer); try { c.close(); } catch (_) {}
+  const hi = NET.humans.findIndex(h => h.id === c.peer), num = hi + 1;
+  if (hi >= 0) NET.humans.splice(hi, 1);
+  if (NET.inRace) {
+    const k = karts.find(k => k.peerId === c.peer);
+    if (k && k.human) { makeAI(k); k.peerId = null; flash(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, 2.2, '#ffb84d'); sendAll({ t: 'left', s: k.slot }); }
+  } else { broadcastLobby(); lobbyMsg(`שחקן ${num} עזב את החדר`); }
+}
+function hostStart() {
+  if (!NET.host || NET.inRace) return;
+  if (NET.humans.some(h => h.char === null)) { lobbyMsg('כל השחקנים צריכים לבחור דמות'); return; }
+  const used = NET.humans.map(h => h.char), slots = NET.humans.map(h => ({ id: h.id, char: h.char }));
+  for (let c = 0; c < CHARS.length && slots.length < 4; c++) if (!used.includes(c)) slots.push({ id: null, char: c });
+  // shuffle grid order a bit so the host is not always at the back
+  for (let i = slots.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [slots[i], slots[j]] = [slots[j], slots[i]]; }
+  NET.inRace = true; sendAll({ t: 'start', slots, track: NET.track });
+  beginMPRace(slots, NET.track);
+}
+function hostBackToLobby() {
+  if (!NET.host) return;
+  NET.inRace = false; clearHazards(); state = 'menu'; clearFinTimers();
+  sendAll({ t: 'tolobby' }); broadcastLobby(); SND.playSong('menu'); showLobby();
+}
+
+// ---------- client side ----------
+function onClientData(d) {
+  if (d.t === 'lobby') { NET.humans = d.humans; NET.track = d.track; NET.code = d.code; if (!NET.inRace && $('lobbyScreen').style.display === 'none' && state === 'menu') showLobby(); renderLobby(); return; }
+  if (d.t === 'deny') { const why = d.why; netLeave(); showScreen('mpScreen'); mpMsg(why); return; }
+  if (d.t === 'start') { NET.inRace = true; beginMPRace(d.slots, d.track); return; }
+  if (d.t === 'sn' && NET.inRace) { for (const e of d.d) { const k = karts[e[0]]; if (k && k.remote) applyState(k, e); } return; }
+  if (d.t === 'ev' && NET.inRace) { applyEv(d.e); return; }
+  if (d.t === 'left' && NET.inRace) { const k = karts[d.s]; if (k) { k.human = false; k.peerId = null; flash(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, 2.2, '#ffb84d'); } return; }
+  if (d.t === 'tolobby') { NET.inRace = false; clearHazards(); clearFinTimers(); state = 'menu'; SND.playSong('menu'); showLobby(); return; }
+  if (d.t === 'bye') { onHostLost(); }
+}
+function onHostLost() {
+  if (!NET.on || NET.host) return;
+  const racing = NET.inRace && (state === 'race' || state === 'countdown' || state === 'finished');
+  netLeave();
+  if (racing) {
+    for (const k of karts) if (k.remote) makeAI(k);
+    flash('המארח התנתק – ממשיכים מול המחשב 🤖', 2.6, '#ffb84d');
+    $('resNote').textContent = '';
+  } else { state = 'menu'; showScreen('mpScreen'); mpMsg('החיבור למארח נותק 😕'); }
+}
+
+// ---------- race sync ----------
+function beginMPRace(slots, track) {
+  const my = slots.findIndex(s => s.id === NET.myId);
+  SND.init(); startRaceMP(slots, track, my < 0 ? 0 : my, NET.host);
+}
+const r2 = v => Math.round(v * 100) / 100;
+function kartState(k) {
+  const f = (k.drifting ? 1 : 0) | (k.driftDir > 0 ? 2 : 0) | (k.boost > 0 ? 4 : 0) | (k.star > 0 ? 8 : 0) | (k.shrink > 0 ? 16 : 0) | (k.charge > 0.75 ? 32 : 0) | (k.charge > 1.6 ? 64 : 0) | (k.hop > 0 ? 128 : 0);
+  return [k.slot, r2(k.pos.x), r2(k.pos.z), Math.round(k.heading * 1000) / 1000, r2(k.speed), k.total, k.lap, f, r2(Math.max(0, k.spin)), k.finished ? r2(k.finishTime) : -1];
+}
+function applyState(k, e) {
+  const [, x, z, h, sp, total, lap, f, spin, ft] = e;
+  k.last = e;
+  if (!k.nt) { k.pos.set(x, 0, z); k.heading = h; k.idx = nearest(k.pos, k.idx); }
+  k.nt = { x, z, h, sp, t: performance.now() };
+  k.total = total; k.lap = lap; k.drifting = !!(f & 1); k.driftDir = f & 2 ? 1 : -1; k.boost = f & 4 ? 0.2 : 0; k.star = f & 8 ? 1 : 0; k.shrink = f & 16 ? 1 : 0;
+  k.charge = f & 64 ? 2 : f & 32 ? 1 : k.drifting ? 0.4 : 0; if (f & 128 && k.hop <= 0) k.hop = 0.3;
+  if (spin > 0 && k.spin <= 0) k.spin = spin; else if (spin <= 0) k.spin = 0;
+  if (ft >= 0 && !k.finished) { k.finished = true; k.finishTime = ft; finishCount++; k.place = finishCount; }
+}
+function netInterp(dt, now) {
+  const a = 1 - Math.exp(-dt * 14);
+  for (const k of karts) {
+    if (!k.remote || !k.nt) continue;
+    const age = Math.min(0.25, (now - k.nt.t) / 1000), n = k.nt;
+    const px = n.x + Math.sin(n.h) * n.sp * age, pz = n.z + Math.cos(n.h) * n.sp * age;
+    if (Math.hypot(px - k.pos.x, pz - k.pos.z) > 18) k.pos.set(px, 0, pz);
+    else { k.pos.x += (px - k.pos.x) * a; k.pos.z += (pz - k.pos.z) * a; }
+    k.heading += angDiff(n.h, k.heading) * a; k.speed = n.sp;
+    if (k.spin > 0) k.spin -= dt;
+    k.idx = nearest(k.pos, k.idx);
+  }
+}
+function netEv(e) {
+  if (!NET.on || !NET.inRace) return;
+  if (NET.host) sendAll({ t: 'ev', e }); else if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'ev', e });
+}
+function applyEv(e) {
+  const k = karts[e.s];
+  if (e.k === 'box') { const b = boxes[e.i]; if (b && b.active) { b.active = false; b.mesh.visible = false; b.t = 3; } }
+  else if (e.k === 'banana' && k) { if (!bananas.some(b => b.id === e.id)) dropBanana(k, e); }
+  else if (e.k === 'shell' && k) { fireShell(k, e); if (k.pos.distanceTo(player.pos) < 40) SND.shell(); }
+  else if (e.k === 'rm') removeBanana(e.id);
+  else if (e.k === 'light' && k) {
+    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.9, false); o.shrink = 4.5; }
+    screenFlash(); SND.lightning(); flash(`${k.name} הפעיל ברק! ⚡`, 1.2, '#fff36b');
+  }
+}
+function startNetTimer() {
+  clearInterval(NET.timer);
+  let ping = 0;
+  NET.timer = setInterval(() => {
+    if (!NET.on) return;
+    const now = performance.now();
+    if (NET.inRace && karts.length) {
+      if (NET.host) sendAll({ t: 'sn', d: karts.map(k => k.remote ? k.last : kartState(k)).filter(Boolean) });
+      else if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'st', d: kartState(player) });
+    }
+    if (++ping >= 40) {   // every 2s: keep-alive + timeout detection
+      ping = 0;
+      if (NET.host) { if (!NET.inRace) sendAll(lobbyState()); NET.conns.forEach(c => { if (c.seen && now - c.seen > 9000) hostDrop(c); }); }
+      else { if (NET.hostConn && NET.hostConn.open && !NET.inRace) NET.hostConn.send({ t: 'ping' }); if (now - NET.hostSeen > 9000) onHostLost(); }
+    }
+  }, 50);
+}
+
+// ---------- lobby UI ----------
+function showLobby() { $('roomCode').textContent = NET.code; lobbyMsg(''); renderLobby(); showScreen('lobbyScreen'); }
+function renderLobby() {
+  const me = NET.humans.find(h => h.id === NET.myId);
+  let ph = '';
+  for (let i = 0; i < 4; i++) {
+    const h = NET.humans[i];
+    if (!h) { ph += `<div class="lp ai"><span class="av">🤖</span><b>מחשב</b><small>מקום פנוי</small></div>`; continue; }
+    const c = h.char !== null ? CHARS[h.char] : null, img = c && portraitUrls[h.char] ? `<img src="${portraitUrls[h.char]}" alt="">` : '<span class="av">🙂</span>';
+    ph += `<div class="lp ${h.id === NET.myId ? 'me' : ''}">${img}<b>שחקן ${i + 1}${i === 0 ? ' 👑' : ''}${h.id === NET.myId ? ' (את/ה)' : ''}</b><small>${c ? c.name : 'בוחר/ת דמות…'}</small></div>`;
+  }
+  $('lobbyPlayers').innerHTML = ph;
+  $('lobbyChars').innerHTML = CHARS.map((c, i) => {
+    const owner = NET.humans.find(h => h.char === i), mine = owner && owner === me, taken = owner && !mine;
+    return `<button class="lc ${mine ? 'sel' : ''} ${taken ? 'taken' : ''}" data-i="${i}" ${taken ? 'disabled' : ''}>${portraitUrls[i] ? `<img src="${portraitUrls[i]}" alt="">` : ''}<span>${c.name}</span>${taken ? '<em>תפוס</em>' : ''}</button>`;
+  }).join('');
+  $('lobbyChars').querySelectorAll('.lc').forEach(el => el.onclick = () => {
+    SND.init(); SND.tink(true); const i = +el.dataset.i;
+    if (NET.host) hostPick(NET.myId, i); else if (NET.hostConn) { NET.hostConn.send({ t: 'pick', c: i }); if (me) { me.char = i; renderLobby(); } }
+  });
+  $('lobbyTracks').innerHTML = TRACKS.map((t, i) => `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host ? '' : 'disabled'}>${t.emoji} ${t.name}</button>`).join('');
+  if (NET.host) $('lobbyTracks').querySelectorAll('.lt').forEach(el => el.onclick = () => { SND.tink(false); NET.track = +el.dataset.i; broadcastLobby(); });
+  const ready = NET.humans.every(h => h.char !== null);
+  $('lobbyStart').disabled = !ready;
+  $('lobbyStart').textContent = ready ? `🏁 התחל מרוץ (${NET.humans.length} שחקנים)` : 'ממתין שכולם יבחרו דמות…';
+  $('lobbyWait').textContent = NET.host ? (NET.humans.length < 2 ? 'שלחו את הקוד לחברים! מקומות פנויים יתמלאו במחשב' : '') : `ממתין שהמארח יתחיל… מסלול: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`;
+}
+const roomLink = () => `${location.origin}${location.pathname}?room=${NET.code}`;
+function toast(t) { lobbyMsg(t); setTimeout(() => { if ($('lobbyMsg').textContent === t) lobbyMsg(''); }, 2200); }
+async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (_) { const ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (_) {} ta.remove(); return ok; } }
+
+$('mpBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.beep(true); mpMsg(''); showScreen('mpScreen'); });
+$('mpBack').addEventListener('click', () => { netLeave(); showScreen('startScreen'); });
+$('createRoomBtn').addEventListener('click', () => { SND.init(); if (!NET.connecting) createRoom(); });
+$('joinBtn').addEventListener('click', () => { SND.init(); if (!NET.connecting) joinRoom($('joinCode').value); });
+$('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') $('joinBtn').click(); });
+$('joinCode').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
+$('copyCodeBtn').addEventListener('click', async () => { toast(await copyText(NET.code) ? 'הקוד הועתק! 📋' : 'קוד החדר: ' + NET.code); });
+$('shareBtn').addEventListener('click', async () => {
+  const url = roomLink(), text = `בואו למרוץ בשמעון עגלות! 🏁 קוד חדר: ${NET.code}`;
+  if (navigator.share) { try { await navigator.share({ title: 'שמעון עגלות', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  toast(await copyText(text + ' ' + url) ? 'הקישור הועתק! 🔗' : url);
+});
+$('lobbyStart').addEventListener('click', () => { SND.init(); hostStart(); });
+$('lobbyLeave').addEventListener('click', () => { netLeave(); showScreen('mpScreen'); mpMsg(''); });
+$('endLobbyBtn').addEventListener('click', () => hostBackToLobby());
+// invite link: ?room=1234 opens the join screen pre-filled (a tap is still needed – it also unlocks audio on iOS)
+{ const rc = new URLSearchParams(location.search).get('room'); if (rc && /^\d{4}$/.test(rc)) { $('joinCode').value = rc; showScreen('mpScreen'); mpMsg('הוזמנת לחדר ' + rc + ' – לחצו "הצטרף"'); } }
 </script>
 </body>
 </html>
