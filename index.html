@@ -32,6 +32,27 @@
   #flashOv{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:15;transition:opacity .5s}
   #muteBtn{position:fixed;z-index:30;-webkit-appearance:none;appearance:none;top:calc(env(safe-area-inset-top) + 14px);left:calc(50% + 52px);width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:rgba(29,78,216,.75);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 #1b2a6b;touch-action:manipulation;padding:0}
   #muteBtn{left:calc(50% - 98px)}
+  body:not(.inmenu) #muteBtn{display:none}
+  #pauseBtn{position:fixed;z-index:30;-webkit-appearance:none;appearance:none;top:calc(env(safe-area-inset-top) + 14px);left:calc(50% - 98px);width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:rgba(29,78,216,.8);color:#fff;font-size:20px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 #1b2a6b;touch-action:manipulation}
+  #pauseBtn:active{transform:scale(.92)}
+  body.inmenu #pauseBtn{display:none}
+  .btnRow{display:flex;flex-wrap:wrap;justify-content:center;gap:0 4px}
+  .btnCol{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:min(78vw,340px)}
+  .btn.ghost{background:#fff;color:#1d4ed8;border:3px solid #1d4ed8;box-shadow:0 4px 0 #12307f;font-size:clamp(16px,3.4vw,22px)}
+  .endCard{width:min(96vw,620px)}
+  .resWrap{max-width:100%;overflow-x:auto}
+  table.res{width:100%;margin:6px auto}
+  table.res td{padding:5px 8px;white-space:nowrap;text-align:center}
+  table.res td.nm{text-align:right;font-weight:800}
+  table.res .dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #12307f;margin-left:6px;vertical-align:-1px}
+  table.res td.tm{direction:ltr;font-variant-numeric:tabular-nums}
+  table.res .gap{display:block;direction:ltr;color:#5b6b99;font-size:.72em;line-height:1.1}
+  table.res small{font-size:.7em;font-weight:600}
+  table.res tr.racing td.tm{white-space:normal;font-size:.85em}
+  @media (max-width:480px){.card{padding:14px 12px}.endCard{width:96vw}table.res{font-size:15px}table.res td{padding:4px 4px}}
+  table.res tr.racing td.tm{color:#d97706}
+  #resNote{font-size:13px;color:#5b6b99;min-height:1.2em}
+  @media (max-height:520px){.endCard h1{font-size:34px;margin:0}.endCard h2{font-size:18px}table.res{font-size:15px}table.res td{padding:3px 6px}.endCard .btn{margin-top:6px}.pauseCard .btn{margin-top:4px;padding:6px 20px;font-size:19px}}
   body.inmenu #muteBtn{top:auto;bottom:calc(env(safe-area-inset-bottom) + 14px);left:calc(env(safe-area-inset-left) + 14px)}
   .screen{position:fixed;inset:0;display:flex;overflow:auto;z-index:20;padding:calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 10px);background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.15),rgba(10,20,80,.65));touch-action:pan-y}
   .card{margin:auto;background:linear-gradient(#fff,#e4efff);border:6px solid #1d4ed8;border-radius:28px;padding:18px 26px;text-align:center;max-width:96vw;box-shadow:0 10px 0 #12307f,0 20px 50px rgba(0,0,0,.4);color:#12307f}
@@ -148,14 +169,30 @@
   </div>
 </div>
 <div id="endScreen" class="screen" style="display:none">
-  <div class="card">
+  <div class="card endCard">
     <h1 id="endTitle">סיימת!</h1>
     <h2 id="endSub"></h2>
-    <table class="res" id="resTable"></table>
-    <button class="btn" id="restartBtn">שחק שוב 🔄</button>
-    <button class="btn blue" id="changeBtn">דמות / מסלול</button>
+    <div class="resWrap"><table class="res" id="resTable"></table></div>
+    <div id="resNote"></div>
+    <div class="btnRow">
+      <button class="btn" id="restartBtn">שחק שוב 🔄</button>
+      <button class="btn blue" id="changeBtn">דמות / מסלול</button>
+      <button class="btn blue" id="endMenuBtn">🏠 תפריט ראשי</button>
+    </div>
   </div>
 </div>
+<div id="pauseScreen" class="screen" style="display:none">
+  <div class="card pauseCard">
+    <h2>⏸ הפסקה</h2>
+    <div class="btnCol">
+      <button class="btn" id="resumeBtn">▶ המשך</button>
+      <button class="btn blue" id="pauseRestartBtn">🔄 התחל מחדש</button>
+      <button class="btn blue" id="pauseMenuBtn">🏠 חזרה לתפריט הראשי</button>
+      <button class="btn ghost" id="pauseMuteBtn">🔊 צליל: פועל</button>
+    </div>
+  </div>
+</div>
+<button id="pauseBtn" aria-label="הפסקה">⏸</button>
 
 <div id="touchLayer"></div>
 <div id="touch">
@@ -199,8 +236,9 @@ const SND = {
     this.drFilt = c.createBiquadFilter(); this.drFilt.type = 'bandpass'; this.drFilt.frequency.value = 3000; this.drFilt.Q.value = 2;
     const dn = c.createBufferSource(); dn.buffer = nb; dn.loop = true; dn.connect(this.drFilt); this.drFilt.connect(this.drGain); this.drGain.connect(this.sfx); dn.start();
     setInterval(() => this.schedule(), 25);
-    document.addEventListener('visibilitychange', () => { if (!this.ctx) return; document.hidden ? this.ctx.suspend() : this.ctx.resume(); });
+    document.addEventListener('visibilitychange', () => { if (!this.ctx) return; document.hidden ? this.ctx.suspend() : (!this.paused && this.ctx.resume()); });
   },
+  pause(p) { this.paused = p; if (!this.ctx) return; p ? this.ctx.suspend() : this.ctx.resume(); },
   setMuted(m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.8, this.ctx.currentTime, 0.02); },
   mtof: m => 440 * Math.pow(2, (m - 69) / 12),
   tone(freq, t, dur, { type = 'square', gain = 0.2, dest, slideTo, attack = 0.005 } = {}) {
@@ -825,7 +863,7 @@ syncMute();
 muteBtn.addEventListener('click', e => { e.stopPropagation(); SND.init(); SND.setMuted(!SND.muted); try { localStorage.setItem('kart-muted', SND.muted ? '1' : '0'); } catch (_) {} syncMute(); });
 
 // ---------- race state ----------
-let wrongT = 0, titleMode = true;
+let wrongT = 0, titleMode = true, pausedFrom = null, ffOn = false, postT = 0, lastResHTML = '';
 let state = 'menu', cd = 0, raceTime = 0, finishCount = 0, lastCd = 4;
 function placeKarts() {
   const grid = [[N - 14, 3.5], [N - 14, -3.5], [N - 7, 3.5], [N - 7, -3.5]];
@@ -833,12 +871,12 @@ function placeKarts() {
     const [gi, lat] = grid[i];
     k.idx = gi; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat);
     k.heading = Math.atan2(T[gi].x, T[gi].z); k.speed = 0; k.total = gi - N; k.lap = 1;
-    Object.assign(k, { drifting: false, charge: 0, boost: 0, spin: 0, item: null, itemCount: 0, rolling: 0, finished: false, finishTime: 0, useTimer: 0, visYaw: 0, star: 0, shrink: 0, scale: 1 });
+    Object.assign(k, { est: false, drifting: false, charge: 0, boost: 0, spin: 0, item: null, itemCount: 0, rolling: 0, finished: false, finishTime: 0, useTimer: 0, visYaw: 0, star: 0, shrink: 0, scale: 1 });
     k.root.position.copy(k.pos); k.root.rotation.y = k.heading; k.root.scale.setScalar(1);
   });
 }
 function clearHazards() { bananas.forEach(b => scene.remove(b.g)); shells.forEach(s => scene.remove(s.g)); bananas = []; shells = []; }
-function hideScreens() { ['startScreen', 'helpScreen', 'charScreen', 'trackScreen', 'endScreen'].forEach(id => $(id).style.display = 'none'); }
+function hideScreens() { ['startScreen', 'helpScreen', 'charScreen', 'trackScreen', 'endScreen', 'pauseScreen'].forEach(id => $(id).style.display = 'none'); }
 function showScreen(id) { hideScreens(); $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = id === 'startScreen' || id === 'helpScreen'; }
 let finTimers = [];
 function clearFinTimers() { finTimers.forEach(clearTimeout); finTimers = []; }
@@ -850,7 +888,7 @@ function startRace(ci, ti) {
 function resetRace() {
   clearHazards(); boxes.forEach(b => { b.active = true; b.mesh.visible = true; });
   placeKarts(); raceTime = 0; finishCount = 0; cd = 3.999; state = 'countdown'; lastCd = 4;
-  clearFinTimers(); hideScreens(); document.body.classList.remove('inmenu'); titleMode = false;
+  clearFinTimers(); hideScreens(); document.body.classList.remove('inmenu'); titleMode = false; SND.pause(false); pausedFrom = null; ffOn = false; postT = 0; lastResHTML = '';
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   releaseAllTouch(); requestAnimationFrame(measureButtons); wrongT = 0; msgTimer = 0; msg.textContent = '';
   SND.starMode = false; SND.playSong(TRACKS[curTrack].song); SND.tempoMul = 1;
@@ -972,11 +1010,53 @@ function onPlayerFinish() {
     $('endTitle').textContent = titles[place - 1];
     const nm = player.name;
     $('endSub').textContent = (place === 1 ? `${nm} – מלך/ת העגלות!` : place === 4 ? `לא נורא, ${nm}. עוד סיבוב?` : `כל הכבוד, ${nm}!`) + `  ⏱ ${fmt(player.finishTime)}`;
-    $('resTable').innerHTML = rankList().map((k, i) => `<tr class="${k.isPlayer ? 'me' : ''}"><td>${i + 1}</td><td>${k.name}</td><td dir="ltr">${k.finished ? fmt(k.finishTime) : '—'}</td></tr>`).join('');
-    showScreen('endScreen');
+    ffOn = true; lastResHTML = ''; renderResults(); showScreen('endScreen');
   }, 1400));
   flash('סיום! 🏁', 1.6);
 }
+
+function renderResults() {
+  const list = rankList(), winT = list[0].finished ? list[0].finishTime : 0;
+  const html = list.map((k, i) => {
+    const medal = ['🥇', '🥈', '🥉', '4'][i];
+    const tm = k.finished ? (k.est ? '~' : '') + fmt(k.finishTime) : `עוד במסלול · הקפה ${Math.min(k.lap, LAPS)}/${LAPS}`;
+    const gap = k.finished && i > 0 && winT ? '+' + (k.finishTime - winT).toFixed(2) : '';
+    return `<tr class="${k.isPlayer ? 'me' : ''} ${k.finished ? '' : 'racing'}"><td>${medal}</td><td class="nm"><span class="dot" style="background:${k.dot}"></span>${k.name}${k.isPlayer ? ' <small>(את/ה)</small>' : ''}</td><td class="tm">${tm}${gap ? `<span class="gap">${gap}</span>` : ''}</td></tr>`;
+  }).join('');
+  if (html !== lastResHTML) { $('resTable').innerHTML = html; lastResHTML = html; }
+  const left = karts.filter(k => !k.finished).length;
+  $('resNote').textContent = left ? `⏩ מריץ קדימה – עוד ${left} נהגים בדרך לקו הסיום…` : (karts.some(k => k.est) ? '~ זמן משוער' : '');
+}
+
+// ---------- pause ----------
+function canPause() { return state === 'race' || state === 'countdown'; }
+function pauseGame() {
+  if (!canPause() || pausedFrom) return;
+  pausedFrom = state; state = 'paused'; SND.pause(true); releaseAllTouch(); for (const k in keys) keys[k] = false;
+  syncPauseMute(); showScreen('pauseScreen');
+}
+function resumeGame() {
+  if (!pausedFrom) return;
+  state = pausedFrom; pausedFrom = null; hideScreens(); document.body.classList.remove('inmenu'); titleMode = false;
+  SND.init(); SND.pause(false); last = performance.now(); requestAnimationFrame(measureButtons);
+}
+function goMainMenu() {
+  clearFinTimers(); clearHazards(); pausedFrom = null; ffOn = false; state = 'menu';
+  SND.init(); SND.pause(false); SND.starMode = false; SND.playSong('menu'); showScreen('startScreen');
+}
+const syncPauseMute = () => { $('pauseMuteBtn').textContent = SND.muted ? '🔇 צליל: כבוי' : '🔊 צליל: פועל'; };
+$('pauseBtn').addEventListener('click', e => { e.stopPropagation(); SND.init(); pauseGame(); });
+$('resumeBtn').addEventListener('click', resumeGame);
+$('pauseRestartBtn').addEventListener('click', () => { SND.init(); resetRace(); });
+$('pauseMenuBtn').addEventListener('click', goMainMenu);
+$('endMenuBtn').addEventListener('click', goMainMenu);
+$('pauseMuteBtn').addEventListener('click', () => { SND.setMuted(!SND.muted); try { localStorage.setItem('kart-muted', SND.muted ? '1' : '0'); } catch (_) {} syncPauseMute(); syncMute(); });
+addEventListener('keydown', e => {
+  if (e.code !== 'Escape' && e.code !== 'KeyP') return;
+  if (state === 'paused') { if (e.code === 'Escape' || e.code === 'KeyP') resumeGame(); } else pauseGame();
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+addEventListener('pagehide', pauseGame);
 
 // ---------- camera ----------
 const camPos = V(0, 0, 0), camLook = V(0, 0, 0);
@@ -1078,16 +1158,18 @@ function updateTitle(dt, now) {
 
 // ---------- main loop ----------
 const TS = Math.max(1, Math.min(8, +new URLSearchParams(location.search).get('ts') || 1));
-let last = performance.now(), menuT = 0, hudT = 0, perfN = 0, perfT = 0, curPR = renderer.getPixelRatio();
+let resT = 0, last = performance.now(), menuT = 0, hudT = 0, perfN = 0, perfT = 0, curPR = renderer.getPixelRatio();
 function frame(now) {
   const rdt = Math.min(0.05, (now - last) / 1000); last = now;
-  for (let s = 0; s < TS; s++) step(rdt, now);
+  const subSteps = TS * (state === 'finished' && ffOn ? 5 : 1);
+  for (let s = 0; s < subSteps; s++) step(rdt, now);
   render(rdt, now);
   perfN++; perfT += rdt;
   if (perfT > 2.5) { const fps = perfN / perfT; perfN = 0; perfT = 0; if (fps < 36 && curPR > 1) { curPR = Math.max(1, curPR - 0.25); renderer.setPixelRatio(curPR); onResize(); } }
   requestAnimationFrame(frame);
 }
 function step(dt, now) {
+  if (state === 'paused') return;
   if (state === 'countdown') {
     cd -= dt; const n = Math.ceil(cd);
     if (n !== lastCd && n > 0) { lastCd = n; flash(String(n), 0.9, n === 1 ? '#34d058' : '#ffe14d'); SND.beep(false); }
@@ -1102,6 +1184,12 @@ function step(dt, now) {
       updateKart(k, dt, inp);
     }
     collideKarts(); updateHazards(dt);
+    if (state === 'finished') {
+      postT += dt;
+      if (postT > 120) for (const k of karts) if (!k.finished) {   // safety net: estimate from remaining distance
+        const rem = Math.max(0, LAPS * N - k.total) * SEG; k.finished = true; k.est = true; k.finishTime = raceTime + rem / Math.max(20, k.base * 0.9); finishCount++; k.place = finishCount;
+      }
+    }
     if (state === 'race') {
       const t = T[player.idx], fd = Math.sin(player.heading) * t.x + Math.cos(player.heading) * t.z;
       if (fd < -0.35 && player.speed > 4 && player.spin <= 0) { wrongT += dt; if (wrongT > 0.9 && msgTimer <= 0) flash('כיוון הפוך! ↩️', 0.9, '#ff5a5a'); } else wrongT = 0;
@@ -1142,8 +1230,9 @@ function render(dt, now) {
   if (titleMode) { updateTitle(dt, now); renderer.render(titleScene, titleCam); } else renderer.render(scene, camera);
   SND.update(player, state === 'race' || state === 'countdown');
   if (msgTimer > 0) { msgTimer -= dt; if (msgTimer <= 0) msg.textContent = ''; }
+  if (state === 'finished' && ffOn && $('endScreen').style.display !== 'none') { resT -= dt; if (resT <= 0) { resT = 0.25; renderResults(); } }
   hudT -= dt;
-  if (hudT <= 0 && state !== 'menu') {
+  if (hudT <= 0 && state !== 'menu' && state !== 'paused') {
     hudT = 0.05;
     hudTop.textContent = `הקפה ${Math.min(player.lap, LAPS)}/${LAPS}`;
     hudTime.textContent = fmt(state === 'finished' ? player.finishTime : raceTime);
@@ -1162,7 +1251,7 @@ function render(dt, now) {
 buildTrack(0); buildKarts(0); placeKarts(); buildMenus(); buildTitle();
 requestAnimationFrame(frame);
 window.__track = (k) => { const ti = (k.idx + 12) % N; return angDiff(Math.atan2(P[ti].x - k.pos.x, P[ti].z - k.pos.z), k.heading); };
-window.__kart = { get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; } };
+window.__kart = { get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame };
 </script>
 </body>
 </html>
