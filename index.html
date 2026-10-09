@@ -198,7 +198,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009215218', busy = false;
+  var BUILD = '20261009215441', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -1640,7 +1640,7 @@ function useItem(k) {
   else if (it === 'shell') { fireShell(k); if (me) { SND.sizzle(); SND.shell(); flash('פלאפל מעופף! 🧆', .7); } }
   else if (it === 'star') { k.star = 6.5; k.spin = 0; if (me) { flash('מגן דוד זהוב! ✡️', 1, '#ffd23f'); SND.star(); SND.starMode = true; } }
   else if (it === 'lightning') {
-    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.9, false); o.shrink = 4.5; }
+    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.7, false); o.shrink = 3.2; }
     if (netOn()) netEv({ k: 'light', s: k.slot });
     screenFlash(); shakeCam(0.3); SND.lightning(); flash(me ? 'תקיעת שופר! 📯' : `${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
   }
@@ -1650,9 +1650,13 @@ function giveItem(k) {
   if (k.item || k.rolling > 0) return;
   k.pending = pickItem(); k.rolling = 1.0; if (k.isPlayer) SND.pickup();
 }
-// every item has exactly the same chance, regardless of race position
 const ITEM_KEYS = Object.keys(ITEMS);
-function pickItem() { return ITEM_KEYS[Math.floor(Math.random() * ITEM_KEYS.length)]; }
+// position-independent odds: the shofar (hits everyone) is rare, all other items share the rest equally
+const SHOFAR_P = 0.055;
+function pickItem() {
+  if (Math.random() < SHOFAR_P) return 'lightning';
+  const rest = ITEM_KEYS.filter(k => k !== 'lightning'); return rest[Math.floor(Math.random() * rest.length)];
+}
 function rankList() { return [...karts].sort((a, b) => (a.finished !== b.finished) ? (a.finished ? -1 : 1) : a.finished ? a.finishTime - b.finishTime : b.total - a.total); }
 function rankOf(k) { return rankList().indexOf(k) + 1; }
 function rubberRef() { const h = karts.filter(k => k.human); return h.length ? h.reduce((s, k) => s + k.total, 0) / h.length : player.total; }
@@ -2319,7 +2323,7 @@ function applyEv(e) {
   else if (e.k === 'shell' && k) { fireShell(k, e); if (k.pos.distanceTo(player.pos) < 40) SND.shell(); }
   else if (e.k === 'rm') removeBanana(e.id);
   else if (e.k === 'light' && k) {
-    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.9, false); o.shrink = 4.5; }
+    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.7, false); o.shrink = 3.2; }
     screenFlash(); shakeCam(0.3); SND.lightning(); flash(`${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
   }
 }
