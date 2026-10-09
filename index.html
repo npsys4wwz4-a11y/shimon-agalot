@@ -158,9 +158,9 @@
   .picks,.roomHead,.lobbyPlayers,.btnCol,.btnRow,.resWrap,.joinRow{clear:both}
   .backBtn:active{transform:translateY(2px);box-shadow:0 1px 0 #12307f}
   #trackPicks{flex-wrap:nowrap}
-  #trackPicks .pick{width:min(28vw,210px)}
+  #trackPicks .pick{width:min(22vw,200px)}
   @media (max-width:480px){#trackPicks{flex-wrap:wrap;gap:8px}#trackPicks .pick{width:calc(50% - 6px);padding:5px}#trackPicks .pick .nm{font-size:19px}#trackPicks .pick .tg{font-size:11px}}
-  @media (max-height:520px){#trackPicks .pick{width:auto;flex:0 1 auto}#trackPicks .pick canvas{width:min(22vw,38vh)}#trackPicks .pick .nm{font-size:18px}}
+  @media (max-height:520px){#trackPicks .pick{width:auto;flex:0 1 auto}#trackPicks .pick canvas{width:min(17vw,34vh)}#trackPicks .pick .nm{font-size:18px}}
 
   #profBadge{position:absolute;top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));z-index:6;display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:150px;padding:7px 14px 9px;border-radius:18px;border:3px solid #fff;background:rgba(15,40,130,.82);color:#fff;font:inherit;text-align:right;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,40,.35)}
   #profBadge .r1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}#profBadge b{font-size:17px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -198,7 +198,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009220730', busy = false;
+  var BUILD = '20261009222733', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -519,6 +519,11 @@ const SONGS = {
           3,null,4,5, 6,null,5,4, 4,null,3,null, 4,null,null,null,
           7,null,6,5, 4,null,5,6, 7,null,5,null, 4,null,3,null,
           2,3,4,null, 2,null,1,null, 0,null,2,null, 0,null,null,null] },
+  hermon: { bpm: 152, key: 67, drums: 'pop', leadType: 'sine', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 4, 5, 3],
+    mel: [4,null,4,null, 4,null,null,null, 4,null,4,null, 4,null,null,null,
+          4,null,6,null, 2,null,3,4, null,null,null,null, null,null,null,null,
+          5,null,5,null, 5,null,5,5, 4,null,4,null, 4,4,4,null,
+          3,null,3,4, 3,null,null,6, 7,null,6,4, 2,null,null,null] },
   menu: { bpm: 118, key: 60, drums: 'pop', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 5, 3, 4],
     mel: [7,null,null,4, null,null,5,null, 4,null,2,null, 0,null,null,null,
           5,null,null,4, null,null,2,null, 0,null,2,null, 4,null,null,null,
@@ -590,7 +595,12 @@ const TRACKS = [
     ctrl: [[0,0],[60,10],[110,-10],[135,-55],[105,-95],[125,-140],[95,-185],[40,-182],[15,-140],[-15,-108],[-55,-128],[-75,-180],[-50,-225],[-95,-255],[-150,-235],[-165,-185],[-130,-150],[-170,-110],[-150,-60],[-175,-20],[-120,0],[-60,12]], fork: {"from":3,"to":9,"via":[[82,-70],[48,-88],[12,-100]]}, pads: [0.05, 0.5, 0.88],
     sky: 0x8fd0ff, fog: 0xc9e4f2, hemiG: 0x8f9a55, road: '#53565d', curb: ['#6b8e23', '#f4efe0'], walls: [0xd9cfb4, 0xc9bc96, 0xe2d8bd, 0xbfb08a],
     ground: ['#b9b06a', '#a9a35c', '#c7bd7c'] },
+  { surf: 'snow', mover: 'plow', ice: true, id: 'hermon', name: 'חרמון', emoji: '🏔️', desc: 'שלג, אורנים, רכבל ומעלית סקי. זהירות – קרח!', song: 'hermon', scale: 1.4,
+    ctrl: [[0,0],[65,5],[115,-15],[140,-60],[110,-100],[60,-95],[30,-120],[50,-160],[100,-170],[140,-200],[120,-245],[60,-255],[0,-235],[-40,-260],[-100,-255],[-140,-220],[-120,-180],[-80,-160],[-110,-120],[-160,-100],[-170,-50],[-130,-10],[-65,5]], fork: {"from":12,"to":18,"via":[[-20,-200],[-35,-160],[-62,-127]]}, pads: [0.05, 0.4, 0.86],
+    sky: 0xa9d8ff, fog: 0xe6f1fa, hemiG: 0xdfe8ee, road: '#4a4f58', curb: ['#d62828', '#ffffff'], walls: [0xf4f8fb, 0xe3ecf2, 0xffffff, 0xd5e1ea],
+    ground: ['#f4f8fb', '#e8f0f6', '#ffffff'] },
 ];
+let animFns = [];
 let spinners = [];
 let P = [], T = [], L = [], SEG = 1, trackGroup = null, boxes = [], curTrack = 0, seaMat = null, windBlades = null;
 const mini = document.getElementById('mini'), mctx = mini.getContext('2d');
@@ -763,8 +773,8 @@ function buildTrack(ti) {
   mmB = { cx: (minX + maxX) / 2, cz: (minZ + maxZ) / 2, s: 260 / Math.max(maxX - minX, maxZ - minZ) };
   if (BR) BR.P.forEach(p => { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); });
   const B = { minX, maxX, minZ, maxZ }; SA = [minX - 120, maxX + 120, minZ - 120, maxZ + 90];
-  seaMat = null; windBlades = null; spinners = [];
-  if (def.id === 'beach') sceneryBeach(G, B); else if (def.id === 'hills') sceneryHills(G, B); else sceneryDesert(G, B);
+  seaMat = null; windBlades = null; spinners = []; animFns = [];
+  if (def.id === 'beach') sceneryBeach(G, B); else if (def.id === 'hills') sceneryHills(G, B); else if (def.id === 'hermon') sceneryHermon(G, B); else sceneryDesert(G, B);
   buildPadsAndSigns(G, def); buildTerrainFx(G, def);
   setSky(def); requestAnimationFrame(() => prepTrackShadows(G));
   // item boxes (one extra row in the middle of the long "safe" route of the fork)
@@ -793,7 +803,7 @@ function gantry(G, p, t, halfW, text, bg) {
 }
 // ---------- slow surfaces, obstacles, moving hazards ----------
 let SURF = [], OBST = [], MOVERS = [];
-const SURF_KIND = { puddle: { mul: 0.62, name: 'שלולית', col: '#4aa8e8' }, sand: { mul: 0.58, name: 'חול', col: '#e8c27a' }, mud: { mul: 0.5, name: 'בוץ', col: '#6b4a2b' }, ice: { mul: 0.95, grip: 0.35, name: 'קרח', col: '#cdeeff' } };
+const SURF_KIND = { snow: { mul: 0.6, name: 'שלג עמוק', col: '#ffffff' }, puddle: { mul: 0.62, name: 'שלולית', col: '#4aa8e8' }, sand: { mul: 0.58, name: 'חול', col: '#e8c27a' }, mud: { mul: 0.5, name: 'בוץ', col: '#6b4a2b' }, ice: { mul: 0.95, grip: 0.35, name: 'קרח', col: '#cdeeff' } };
 const surfTex = {};
 function surfTexOf(kind) {
   return surfTex[kind] || (surfTex[kind] = canvasTex(128, 128, (g, w) => {
@@ -1008,6 +1018,74 @@ function sceneryDesert(G, B) {
 }
 
 // ---------- Judea & Samaria hills: terraces, olive groves, villages, roadside posts (scenery only) ----------
+function sceneryHermon(G, B) {
+  const rq = () => new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), Math.random() * 6.28), c = new THREE.Color();
+  const free = (x, z, r) => distToTrack(x, z) > WALL + r;
+  const rock = lam(0x8a8f96), snow = lam(0xffffff), snowB = lam(0xeef5fb);
+  // Mount Hermon + snowy mountain ring
+  const peak = (x, z, r, h) => { const b = new THREE.Mesh(new THREE.ConeGeometry(r, h, 10), rock); b.position.set(x, h / 2 - 1, z); G.add(b); const cap = new THREE.Mesh(new THREE.ConeGeometry(r * 0.55, h * 0.55, 10), snow); cap.position.set(x, h - 1 - h * 0.275 + 0.3, z); G.add(cap); };
+  peak(mmB.cx + 40, mmB.cz - 620, 260, 230);
+  for (let i = 0; i < 26; i++) { const a = i / 26 * 6.28, r = 560 + Math.random() * 140; peak(mmB.cx + Math.cos(a) * r, mmB.cz + Math.sin(a) * r, 90 + Math.random() * 60, 70 + Math.random() * 80); }
+  // snow mounds near the road
+  const mounds = []; scatter(40, WALL + 6, 1500, SA, (x, z) => mounds.push([x, z]));
+  const mm = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 6, 0, 6.28, 0, Math.PI / 2), snowB, mounds.length);
+  mounds.forEach(([x, z], i) => { const s = 2 + Math.random() * 4; m4.compose(V(x, -0.2, z), rq(), V(s * 1.5, s * 0.6, s)); mm.setMatrixAt(i, m4); }); G.add(mm);
+  // pine forest (tiers + snow caps)
+  const pines = []; scatter(260, WALL + 5, 4000, SA, (x, z) => pines.push([x, z]));
+  const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.35, 0.5, 2.2, 6), lam(0x5a4030), pines.length);
+  const tier = new THREE.InstancedMesh(new THREE.ConeGeometry(2.6, 3.4, 8), new THREE.MeshLambertMaterial(), pines.length * 3);
+  const caps = new THREE.InstancedMesh(new THREE.ConeGeometry(1.2, 1.3, 8), snow, pines.length);
+  pines.forEach(([x, z], i) => { const s = 0.8 + Math.random() * 0.8; m4.compose(V(x, 1.1 * s, z), rq(), V(s, s, s)); trunk.setMatrixAt(i, m4);
+    for (let j = 0; j < 3; j++) { const k = 1 - j * 0.25; m4.compose(V(x, (2.8 + j * 2.0) * s, z), rq(), V(s * k, s, s * k)); tier.setMatrixAt(i * 3 + j, m4); tier.setColorAt(i * 3 + j, c.set([0x2f5d3a, 0x2a5233, 0x356b41][(i + j) % 3])); }
+    m4.compose(V(x, 7.6 * s, z), rq(), V(s, s, s)); caps.setMatrixAt(i, m4); });
+  G.add(trunk, tier, caps);
+  // a moving line of chairs / cabins along a cable between two points
+  function cableway(x0, z0, x1, z1, h0, h1, opt) {
+    const g = new THREE.Group(), dx = x1 - x0, dz = z1 - z0, L0 = Math.hypot(dx, dz), yaw = Math.atan2(dx, dz), poles = Math.max(2, Math.round(L0 / opt.span));
+    for (let i = 0; i <= poles; i++) { const f = i / poles, h = h0 + (h1 - h0) * f, p = new THREE.Mesh(new THREE.CylinderGeometry(opt.pole, opt.pole * 1.3, h, 8), lam(opt.poleCol)); p.position.set(x0 + dx * f, h / 2, z0 + dz * f); g.add(p);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(opt.gap * 2 + 1, 0.4, 0.4), lam(opt.poleCol)); arm.position.set(x0 + dx * f, h, z0 + dz * f); arm.rotation.y = yaw + Math.PI / 2; g.add(arm); }
+    const side = V(Math.cos(yaw), 0, -Math.sin(yaw));
+    for (const s of [-1, 1]) { const a = V(x0, h0, z0).addScaledVector(side, s * opt.gap), b = V(x1, h1, z1).addScaledVector(side, s * opt.gap), mid = a.clone().add(b).multiplyScalar(0.5), len = a.distanceTo(b);
+      const cb = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, len, 4), lam(0x333333)); cb.position.copy(mid); cb.lookAt(b); cb.rotateX(Math.PI / 2); g.add(cb); }
+    const cars = [];
+    for (let i = 0; i < opt.count; i++) { const m = opt.make(); g.add(m); cars.push({ m, f: i / opt.count, dir: i % 2 ? 1 : -1 }); }
+    G.add(g);
+    animFns.push((dt, t) => { for (const cr of cars) {
+      let f, s;
+      if (opt.shuttle) { const u = (Math.sin(t * opt.speed / L0 * 2 + cr.f * Math.PI) + 1) / 2; f = u; s = cr.dir; }
+      else { cr.f = (cr.f + dt * opt.speed / L0 / 2) % 1; const u = cr.f * 2; f = u < 1 ? u : 2 - u; s = u < 1 ? 1 : -1; }
+      cr.m.position.set(x0 + dx * f, h0 + (h1 - h0) * f - opt.hang, z0 + dz * f).addScaledVector(side, s * opt.gap); cr.m.rotation.y = yaw; } });
+  }
+  const spots = []; scatter(10, WALL + 28, 4000, SA, (x, z) => { if (spots.every(([a, b]) => Math.hypot(a - x, b - z) > 120)) spots.push([x, z]); });
+  // try to lay a straight line from a spot heading away from the track centre
+  const lineFrom = (x, z, L0, r) => { const a = Math.atan2(x - mmB.cx, z - mmB.cz); for (const da of [0, 0.5, -0.5, 1, -1]) { const ex = x + Math.sin(a + da) * L0, ez = z + Math.cos(a + da) * L0; let ok = true; for (let f = 0; f <= 1; f += 0.05) if (!free(x + (ex - x) * f, z + (ez - z) * f, r)) { ok = false; break; } if (ok) return [ex, ez]; } return null; };
+  const chair = () => { const g = new THREE.Group(); const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.2, 4), lam(0x333333)); hang.position.y = 1.1; g.add(hang); const seat = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.25, 0.9), lam(0x1d4ed8)); g.add(seat); const back = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.9, 0.15), lam(0x1d4ed8)); back.position.set(0, 0.5, -0.4); g.add(back); return g; };
+  const cabin = () => { const g = new THREE.Group(); const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3, 4), lam(0x333333)); hang.position.y = 1.5; g.add(hang); const b = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.6, 3.2), lam(0xd62828)); b.position.y = -1.3; g.add(b); const w = new THREE.Mesh(new THREE.BoxGeometry(3.3, 1.0, 3.3), lam(0x9fd3ef)); w.position.y = -0.9; g.add(w); return g; };
+  let used = 0;
+  for (const [x, z] of spots) {
+    if (used === 0) { const e = lineFrom(x, z, 170, 6); if (!e) continue; cableway(x, z, e[0], e[1], 7, 26, { span: 28, pole: 0.35, poleCol: 0x9aa0a6, gap: 2.2, count: 12, speed: 9, hang: 2.2, make: chair }); used++; }
+    else if (used === 1) { const e = lineFrom(x, z, 240, 8); if (!e) continue; cableway(x, z, e[0], e[1], 14, 60, { span: 120, pole: 0.9, poleCol: 0xc9ced3, gap: 3, count: 2, speed: 22, hang: 3, shuttle: true, make: cabin });
+      for (const [sx, sz, sh] of [[x, z, 14], [e[0], e[1], 60]]) { const st = new THREE.Mesh(new THREE.BoxGeometry(12, sh * 0.9, 10), lam(0x8d99a6)); st.position.set(sx, sh * 0.45, sz); G.add(st); const rf = new THREE.Mesh(new THREE.BoxGeometry(13, 0.8, 11), snow); rf.position.set(sx, sh * 0.9 + 0.4, sz); G.add(rf); } used++; }
+    else break;
+  }
+  // Druze-style stone village: flat roofs (snow on top), arched windows
+  const box = new THREE.BoxGeometry(1, 1, 1), stA = lam(0xd8cdb4), stB = lam(0xc4b796), dark = lam(0x3b3b46);
+  const vill = spots.slice(2, 5);
+  vill.forEach(([cx, cz]) => {
+    for (let i = 0; i < 12; i++) {
+      const x = cx + (Math.random() - .5) * 50, z = cz + (Math.random() - .5) * 50; if (!free(x, z, 9)) continue;
+      const w = 6 + Math.random() * 3, d = 6 + Math.random() * 3, h = 3.6 + Math.floor(Math.random() * 2) * 3.2, yaw = Math.random() * 6.28, g = new THREE.Group();
+      const hb = new THREE.Mesh(box, i % 2 ? stA : stB); hb.scale.set(w, h, d); hb.position.y = h / 2; g.add(hb);
+      const rf = new THREE.Mesh(box, snow); rf.scale.set(w + 0.4, 0.5, d + 0.4); rf.position.y = h + 0.25; g.add(rf);
+      for (let k = -1; k <= 1; k += 2) { const win = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 10, 1, false, 0, Math.PI), dark); win.rotation.set(Math.PI / 2, 0, Math.PI / 2); win.position.set(k * w * 0.25, h * 0.62, d / 2 + 0.05); g.add(win); const wl = new THREE.Mesh(box, dark); wl.scale.set(1.2, 1.0, 0.1); wl.position.set(k * w * 0.25, h * 0.62 - 0.5, d / 2 + 0.05); g.add(wl); }
+      g.position.set(x, 0, z); g.rotation.y = yaw; G.add(g);
+    }
+  });
+  // snowmen
+  let sn = 0; scatter(14, WALL + 4, 800, SA, (x, z) => { if (sn++ > 9) return; const g = new THREE.Group(); [[1.2, 1.1], [0.85, 2.8], [0.6, 4.0]].forEach(([r, y]) => { const b = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), snow); b.position.y = y; g.add(b); });
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.7, 6), lam(0xff7a00)); nose.rotation.x = Math.PI / 2; nose.position.set(0, 4.0, 0.85); g.add(nose); const sc = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.15, 6, 14), lam(0x1d4ed8)); sc.rotation.x = Math.PI / 2; sc.position.y = 3.45; g.add(sc);
+    g.position.set(x, 0, z); g.rotation.y = Math.atan2(-x + mmB.cx, -z + mmB.cz); G.add(g); });
+}
 function sceneryHills(G, B) {
   const c = new THREE.Color(), rq = () => new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), Math.random() * 6.28);
   const free = (x, z, r) => distToTrack(x, z) > WALL + r;
@@ -1553,6 +1631,7 @@ function levelProgress(xp) { const L = levelOf(xp), a = xpFor(L), b = xpFor(L + 
 const UNLOCKS = [
   { type: 'kart', i: 2, level: 2 },   // מונית שירות
   { type: 'kart', i: 3, level: 3 },   // טרקטור מהמושב
+  { type: 'track', i: 3, level: 5 },  // חרמון
 ];
 function unlockLevel(type, i) { const u = UNLOCKS.find(u => u.type === type && u.i === i); return u ? u.level : 1; }
 function isUnlocked(type, i) { return levelOf(PROFILE.xp) >= unlockLevel(type, i) || /[?&]unlockall/.test(location.search); }
@@ -1960,7 +2039,7 @@ function buildMenus() {
   $('charPicks').innerHTML = CHARS.map((c, i) => `<div class="pick" data-i="${i}">${urls[i] ? `<img src="${urls[i]}" alt="${c.name}">` : ''}<div class="nm">${c.name}</div><div class="tg">${c.tag}</div>
     ${['מהירות', 'תאוצה', 'היגוי'].map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${c.bars[j] * 20}%"></u></i></div>`).join('')}</div>`).join('');
   $('charPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => { SND.init(); SND.tink(true); selChar = +el.dataset.i; buildKartPicks(); showScreen('kartScreen'); }));
-  $('trackPicks').innerHTML = TRACKS.map((t, i) => `<div class="pick" data-i="${i}"><canvas width="240" height="240"></canvas><div class="nm">${t.emoji} ${t.name}</div><div class="tg">${t.desc}</div></div>`).join('');
+  $('trackPicks').innerHTML = TRACKS.map((t, i) => `<div class="pick ${isUnlocked('track', i) ? '' : 'locked'}" data-i="${i}" ${isUnlocked('track', i) ? '' : `data-lock="🔒 נפתח ברמה ${unlockLevel('track', i)}"`}><canvas width="240" height="240"></canvas><div class="nm">${t.emoji} ${t.name}</div><div class="tg">${t.desc}</div></div>`).join('');
   $('trackPicks').querySelectorAll('.pick').forEach(el => {
     const t = TRACKS[+el.dataset.i], cv = el.querySelector('canvas'), g = cv.getContext('2d');
     const gr = g.createLinearGradient(0, 0, 0, 240); gr.addColorStop(0, '#' + t.sky.toString(16).padStart(6, '0')); gr.addColorStop(1, t.ground[0]); g.fillStyle = gr; g.fillRect(0, 0, 240, 240);
@@ -1969,7 +2048,7 @@ function buildMenus() {
     const sc = 190 / Math.max(b - a, d - c); g.lineJoin = 'round';
     for (const [w, col] of [[20, t.curb[0]], [12, '#555']]) { g.beginPath(); pts.forEach((p, i) => { const x = 120 + (p.x - (a + b) / 2) * sc, y = 112 + (p.z - (c + d) / 2) * sc; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.closePath(); g.lineWidth = w; g.strokeStyle = col; g.stroke();
       if (br) { g.beginPath(); br.pts.forEach((p, i) => { const x = 120 + (p.x - (a + b) / 2) * sc, y = 112 + (p.z - (c + d) / 2) * sc; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.lineWidth = w * 0.7; g.strokeStyle = w === 12 ? '#ffb020' : col; g.stroke(); } }
-    el.addEventListener('click', () => { SND.init(); startRace(selChar, +el.dataset.i); });
+    el.addEventListener('click', () => { SND.init(); if (!isUnlocked('track', +el.dataset.i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; } startRace(selChar, +el.dataset.i); });
   });
 }
 $('startBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.beep(true); needName(() => showScreen('charScreen')); });
@@ -2090,7 +2169,7 @@ function render(dt, now) {
   if (seaMat) seaMat.map.offset.set(now / 40000, now / 25000);
   if (windBlades) windBlades.rotation.z += dt * 0.8;
   for (const [o, ax, sp] of spinners) o.rotation[ax] += dt * sp;
-  updateMovers(raceTime);
+  updateMovers(raceTime); for (const f of animFns) f(dt, now / 1000);
   { const pulse = 0.8 + 0.2 * Math.sin(now / 110); for (const b of BOOST) b.mesh.material.color.setRGB(pulse, pulse, pulse); }
   const hue = (now / 400) % 1;
   for (const k of karts) {
@@ -2473,7 +2552,7 @@ function renderLobby() {
     SND.init(); SND.tink(true); const i = +el.dataset.i; selKart = i;
     if (NET.host) { if (me) { me.kart = i; broadcastLobby(); } } else if (NET.hostConn) { NET.hostConn.send({ t: 'kart', k: i }); if (me) { me.kart = i; renderLobby(); } }
   });
-  $('lobbyTracks').innerHTML = TRACKS.map((t, i) => `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host ? '' : 'disabled'}>${t.emoji} ${t.name}</button>`).join('');
+  $('lobbyTracks').innerHTML = TRACKS.map((t, i) => { const lk = NET.host && !isUnlocked('track', i); return `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host && !lk ? '' : 'disabled'}>${lk ? '🔒 ' : t.emoji + ' '}${t.name}${lk ? ` (רמה ${unlockLevel('track', i)})` : ''}</button>`; }).join('');
   if (NET.host) $('lobbyTracks').querySelectorAll('.lt').forEach(el => el.onclick = () => { SND.tink(false); NET.track = +el.dataset.i; broadcastLobby(); });
   const ready = NET.humans.every(h => h.char !== null);
   $('lobbyStart').disabled = !ready;
