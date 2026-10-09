@@ -49,7 +49,7 @@
   table.res .gap{display:block;direction:ltr;color:#5b6b99;font-size:.72em;line-height:1.1}
   table.res small{font-size:.7em;font-weight:600}
   table.res tr.racing td.tm{white-space:normal;font-size:.85em}
-  @media (max-width:480px){.card{padding:14px 12px}.endCard{width:96vw}table.res{font-size:15px}table.res td{padding:4px 4px}}
+  @media (max-width:480px){#charPicks{gap:8px}#charPicks .pick{width:calc(50% - 6px);padding:5px}#charPicks .pick .tg{font-size:11px;min-height:0}.card{padding:14px 12px}.endCard{width:96vw}table.res{font-size:15px}table.res td{padding:4px 4px}}
   table.res tr.racing td.tm{color:#d97706}
   #resNote{font-size:13px;color:#5b6b99;min-height:1.2em}
   @media (max-height:520px){.endCard h1{font-size:34px;margin:0}.endCard h2{font-size:18px}table.res{font-size:15px}table.res td{padding:3px 6px}.endCard .btn{margin-top:6px}.pauseCard .btn{margin-top:4px;padding:6px 20px;font-size:19px}}
@@ -643,7 +643,9 @@ const CHARS = [
     stats: { speed: 44.5, accel: 30, turn: 2.3 }, bars: [5, 2, 2],
     main: 0x0b2a6b, sec: 0xffffff, hub: 0xffc83d, shirt: 0x4f9dff, stripe: 0xffffff, skin: 0x4a2c1a, hair: 'short', hairCol: 0x0d0d0d, beard: true, smile: true, dot: '#ffc83d', aiBase: 41.6 },
 ];
-const FILLER = { id: 'rafi', name: 'רפי', main: 0xe23b3b, sec: 0xffd23f, hub: 0xdddddd, shirt: 0xe23b3b, skin: 0xf2c29b, hair: 'cap', cap: 0xe23b3b, mustache: true, dot: '#ff3b3b', aiBase: 40.2, noFlag: true, noStar: true };
+CHARS.push({ id: 'rafi', name: 'רפי', tag: 'כובע טמבל, משקפי שמש וסנדלים. מלך הדריפטים – היגוי והחלקה הכי טובים!',
+  stats: { speed: 42.8, accel: 31, turn: 2.75, drift: 1.3 }, bars: [3, 3, 5],
+  main: 0x2f6bff, sec: 0xffffff, hub: 0xffd23f, shirt: 0xffffff, stripe: 0x2f6bff, skin: 0xe8b48a, hair: 'tembel', hat: 0x8fc3ff, sunglasses: true, mustache: true, grin: true, dot: '#ff3b3b', aiBase: 40.9 });
 
 function makeKart(o, parent) {
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
@@ -680,6 +682,8 @@ function makeKart(o, parent) {
   for (const s of [1, -1]) { add(new THREE.SphereGeometry(0.1, 8, 6), white, s * 0.16, 0.09, 0.36, head); add(new THREE.SphereGeometry(0.055, 6, 5), dark, s * 0.16, 0.09, 0.45, head); }
   if (o.mustache) add(new THREE.BoxGeometry(0.42, 0.1, 0.1), toon(0x3b2412), 0, -0.15, 0.41, head);
   if (o.lips) add(new THREE.BoxGeometry(0.2, 0.07, 0.06), toon(o.lips), 0, -0.21, 0.41, head);
+  if (o.sunglasses) { const sg = toon(0x111111); add(new THREE.BoxGeometry(0.66, 0.14, 0.08), sg, 0, 0.09, 0.47, head); for (const s of [1, -1]) add(new THREE.BoxGeometry(0.06, 0.05, 0.4), sg, s * 0.4, 0.12, 0.28, head); }
+  if (o.grin) add(new THREE.BoxGeometry(0.26, 0.07, 0.05), white, 0, -0.25, 0.41, head);
   if (o.smile) add(new THREE.BoxGeometry(0.22, 0.06, 0.05), white, 0, -0.17, 0.42, head);
   if (o.hair === 'cap') {
     add(new THREE.SphereGeometry(0.47, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), toon(o.cap), 0, 0.08, 0, head);
@@ -694,6 +698,12 @@ function makeKart(o, parent) {
     if (o.shades) { const sh = add(new THREE.BoxGeometry(0.66, 0.12, 0.1), toon(0x111111), 0, 0.43, 0.25, head); sh.rotation.x = -0.4; add(new THREE.BoxGeometry(0.7, 0.03, 0.1), toon(o.nails), 0, 0.5, 0.22, head); }
     if (o.earrings) { const gm = toon(0xffcc33); for (const s of [1, -1]) add(new THREE.TorusGeometry(0.1, 0.025, 6, 12), gm, s * 0.45, -0.22, 0.05, head); }
     for (const s of [1, -1]) add(new THREE.BoxGeometry(0.16, 0.05, 0.04), toon(0x3a7bff), s * 0.16, 0.19, 0.42, head); // eye shadow
+  } else if (o.hair === 'tembel') {
+    const hm = new THREE.MeshToonMaterial({ color: o.hat, side: THREE.DoubleSide }); mats.push(hm);
+    add(new THREE.CylinderGeometry(0.36, 0.47, 0.42, 16), hm, 0, 0.33, -0.02, head);                 // crown
+    add(new THREE.SphereGeometry(0.36, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), hm, 0, 0.53, -0.02, head);
+    add(new THREE.CylinderGeometry(0.47, 0.7, 0.16, 18, 1, true), hm, 0, 0.1, -0.02, head);           // floppy brim
+    add(new THREE.CylinderGeometry(0.475, 0.475, 0.08, 16, 1, true), toon(0x2f6bff), 0, 0.17, -0.02, head); // band
   } else if (o.hair === 'short') {
     add(new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.4), toon(o.hairCol), 0, 0.04, -0.03, head);
     if (o.beard) { const b = add(new THREE.SphereGeometry(0.3, 10, 8), toon(o.hairCol), 0, -0.33, 0.17, head); b.scale.set(1.15, 0.55, 0.8); }
@@ -722,11 +732,11 @@ let karts = [], player = null, selChar = 0;
 function buildKarts(ci) {
   karts.forEach(k => { scene.remove(k.root); disposeTree(k.root); });
   const others = CHARS.filter((_, i) => i !== ci);
-  const list = [CHARS[ci], ...others, FILLER];
+  const list = [CHARS[ci], ...others];
   karts = list.map((o, i) => {
     const m = makeKart(o);
     const isP = i === 0;
-    return Object.assign(m, { def: o, name: o.name, isPlayer: isP, base: isP ? o.stats.speed : o.aiBase, accel: isP ? o.stats.accel : 32, turn: isP ? o.stats.turn : 2.45,
+    return Object.assign(m, { def: o, name: o.name, isPlayer: isP, base: isP ? o.stats.speed : o.aiBase, accel: isP ? o.stats.accel : 32, turn: isP ? o.stats.turn : 2.45, driftMul: isP ? (o.stats.drift || 1) : 1,
       dot: o.dot, idx: 0, pos: V(0, 0, 0), heading: 0, speed: 0, maxSpeed: 30, drifting: false, driftDir: 0, charge: 0, boost: 0, spin: 0, hop: 0,
       item: null, itemCount: 0, rolling: 0, pending: null, total: 0, finished: false, finishTime: 0, star: 0, shrink: 0, scale: 1,
       laneBias: (i - 1.5) * 1.6, lanePhase: Math.random() * 6, laneT: 0, useTimer: 0, visYaw: 0, wheelRot: 0, lap: 1, sparkTier: 0, rollTick: 0 });
@@ -940,7 +950,7 @@ function updateKart(k, dt, inp) {
       else if (k.charge > 0.75) { k.boost = Math.max(k.boost, 0.55); if (k.isPlayer) { flash('בוסט!', .6, '#4fc3ff'); SND.boost(); } }
       k.drifting = false;
     } else {
-      k.charge += dt * (Math.sign(inp.steer) === k.driftDir ? 1.35 : 0.8);
+      k.charge += dt * (Math.sign(inp.steer) === k.driftDir ? 1.35 : 0.8) * k.driftMul;
       const tier = k.charge > 1.6 ? 2 : k.charge > 0.75 ? 1 : 0;
       if (tier > k.sparkTier) { k.sparkTier = tier; if (k.isPlayer) SND.tink(tier === 2); }
       k.heading += k.driftDir * (1.3 + 0.8 * inp.steer * k.driftDir) * (k.turn / 2.4) * dt * sf;
@@ -1120,13 +1130,13 @@ function buildTitle() {
   const floor = new THREE.Mesh(new THREE.CircleGeometry(26, 48), new THREE.MeshLambertMaterial({ map: ft })); floor.rotation.x = -Math.PI / 2; S.add(floor);
   const ring = new THREE.Mesh(new THREE.RingGeometry(26, 28, 64), new THREE.MeshBasicMaterial({ color: 0xffd23f, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.02; S.add(ring);
   podium = new THREE.Group(); S.add(podium);
-  const tiers = [[0, 2.2, 0xffd23f, '1'], [-4.7, 1.4, 0xffffff, '2'], [4.7, 0.9, 0x5b8dff, '3']];
+  const tiers = [[-2.35, 2.2, 0xffd23f, '1'], [-7.05, 1.5, 0xffffff, '2'], [2.35, 1.0, 0x5b8dff, '3'], [7.05, 0.55, 0x9fd0ff, '4']];
   tiers.forEach(([x, h, c, n]) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(4.5, h, 4.5), toonS(c)); m.position.set(x, h / 2, 0); podium.add(m);
     const tx = canvasTex(128, 128, (g) => { g.fillStyle = '#0b1e5a'; g.font = '900 104px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, 64, 72); });
     const lbl = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.6, h * .8), Math.min(1.6, h * .8)), new THREE.MeshBasicMaterial({ map: tx, transparent: true })); lbl.position.set(x, h / 2, 2.27); podium.add(lbl);
   });
-  CHARS.forEach((c, i) => { const k = makeKart(c, podium); const [x, h] = tiers[i]; k.root.position.set(x, h, 0.2); k.root.rotation.y = i === 1 ? 0.35 : i === 2 ? -0.35 : 0; titleKarts.push({ k, h, ph: i * 1.7 }); });
+  CHARS.forEach((c, i) => { const k = makeKart(c, podium); const [x, h] = tiers[i]; k.root.position.set(x, h, 0.2); k.root.rotation.y = x < -5 ? 0.35 : x > 5 ? -0.35 : x < 0 ? 0.12 : -0.12; titleKarts.push({ k, h, ph: i * 1.7 }); });
   const wst = canvasTex(128, 128, (g) => drawStar(g, 64, 66, 48, 12, '#ffffff'));
   for (let i = 0; i < 9; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: wst, transparent: true, depthWrite: false, side: THREE.DoubleSide })); S.add(m); floaters.push({ m, a: i / 9 * Math.PI * 2, y: 3 + (i % 3) * 3.5, r: 15 + (i % 2) * 4 }); }
   const cols = [0x1d4ed8, 0xffffff, 0xffd23f, 0xff6bd6, 0x4fc3ff], n = 170;
@@ -1151,7 +1161,7 @@ function updateTitle(dt, now) {
   // fit the three karts in view for any aspect ratio (portrait phones get a farther camera)
   const asp = innerWidth / innerHeight; titleCam.aspect = asp;
   const th = Math.tan(THREE.MathUtils.degToRad(titleCam.fov / 2)), hh = th * asp;
-  const dist = Math.max(asp < 1 ? 16.5 : (asp > 1.9 ? 21.5 : 18.5), (asp < 1 ? 7.6 : 8.6) / hh);
+  const dist = Math.max(asp < 1 ? 16.5 : (asp > 1.9 ? 21.5 : 18.5), (asp < 1 ? 9.9 : 11) / hh);
   const lookY = asp < 1 ? 2.6 : 2.7;
   titleCam.position.set(Math.sin(t * 0.2) * 1.2, lookY + dist * 0.2, dist); titleCam.lookAt(0, lookY, 0); titleCam.updateProjectionMatrix();
 }
