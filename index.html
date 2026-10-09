@@ -227,10 +227,10 @@ const SND = {
   update(player, racing) {
     if (!this.ctx) return; const t = this.ctx.currentTime;
     const sp = Math.max(0, Math.abs(player.speed));
-    this.eng1.frequency.setTargetAtTime(48 + sp * 3.4 + (player.boost > 0 ? 25 : 0), t, 0.06);
-    this.eng2.frequency.setTargetAtTime((48 + sp * 3.4) / 2, t, 0.06);
-    this.engFilt.frequency.setTargetAtTime(400 + sp * 40, t, 0.1);
-    this.engGain.gain.setTargetAtTime(racing ? 0.035 + 0.035 * Math.min(1, sp / 32) : 0, t, 0.1);
+    this.eng1.frequency.setTargetAtTime(48 + sp * 2.6 + (player.boost > 0 ? 25 : 0), t, 0.06);
+    this.eng2.frequency.setTargetAtTime((48 + sp * 2.6) / 2, t, 0.06);
+    this.engFilt.frequency.setTargetAtTime(400 + sp * 30, t, 0.1);
+    this.engGain.gain.setTargetAtTime(racing ? 0.035 + 0.035 * Math.min(1, sp / 43) : 0, t, 0.1);
     const dr = racing && player.drifting && player.charge > 0.2;
     this.drGain.gain.setTargetAtTime(dr ? 0.07 : 0, t, 0.04);
     this.drFilt.frequency.setTargetAtTime(player.charge > 1.6 ? 6000 : player.charge > 0.75 ? 4000 : 2500, t, 0.05);
@@ -550,16 +550,16 @@ function sceneryDesert(G, B) {
 // ---------- characters ----------
 const CHARS = [
   { id: 'shimon', name: 'שמעון', tag: 'הקלאסיקה. כובע מגן דוד, שפם ועגלה כחול-לבן. מאוזן בכל דבר.',
-    stats: { speed: 32.5, accel: 24, turn: 2.15 }, bars: [3, 3, 3],
-    main: 0x1d4ed8, sec: 0xffffff, hub: 0x1d4ed8, shirt: 0x1d4ed8, stripe: 0xffffff, skin: 0xf2c29b, hair: 'cap', cap: 0xffffff, brim: 0x1d4ed8, capStar: true, mustache: true, dot: '#2f6bff', aiBase: 30.9 },
+    stats: { speed: 43.3, accel: 32, turn: 2.4 }, bars: [3, 3, 3],
+    main: 0x1d4ed8, sec: 0xffffff, hub: 0x1d4ed8, shirt: 0x1d4ed8, stripe: 0xffffff, skin: 0xf2c29b, hair: 'cap', cap: 0xffffff, brim: 0x1d4ed8, capStar: true, mustache: true, dot: '#2f6bff', aiBase: 41.1 },
   { id: 'shantal', name: 'שונטל', tag: 'פן מושלם, לק ורוד בוהק ואפס סבלנות בפקקים. תאוצה מטורפת!',
-    stats: { speed: 31.9, accel: 28, turn: 2.3 }, bars: [2, 5, 4],
-    main: 0xffffff, sec: 0x2563eb, hub: 0xff2ea6, shirt: 0xffffff, stripe: 0x2563eb, skin: 0xf0bf95, hair: 'long', hairCol: 0x1a1210, nails: 0xff2ea6, lips: 0xe0115f, earrings: true, shades: true, dot: '#ff6bd6', aiBase: 30.6 },
+    stats: { speed: 42.5, accel: 37.5, turn: 2.56 }, bars: [2, 5, 4],
+    main: 0xffffff, sec: 0x2563eb, hub: 0xff2ea6, shirt: 0xffffff, stripe: 0x2563eb, skin: 0xf0bf95, hair: 'long', hairCol: 0x1a1210, nails: 0xff2ea6, lips: 0xe0115f, earrings: true, shades: true, dot: '#ff6bd6', aiBase: 40.7 },
   { id: 'avraham', name: 'אברהם', tag: 'רגוע, חייכן ומהיר כמו הרוח. מהירות שיא הכי גבוהה.',
-    stats: { speed: 33.4, accel: 22.5, turn: 2.05 }, bars: [5, 2, 2],
-    main: 0x0b2a6b, sec: 0xffffff, hub: 0xffc83d, shirt: 0x4f9dff, stripe: 0xffffff, skin: 0x4a2c1a, hair: 'short', hairCol: 0x0d0d0d, beard: true, smile: true, dot: '#ffc83d', aiBase: 31.3 },
+    stats: { speed: 44.5, accel: 30, turn: 2.3 }, bars: [5, 2, 2],
+    main: 0x0b2a6b, sec: 0xffffff, hub: 0xffc83d, shirt: 0x4f9dff, stripe: 0xffffff, skin: 0x4a2c1a, hair: 'short', hairCol: 0x0d0d0d, beard: true, smile: true, dot: '#ffc83d', aiBase: 41.6 },
 ];
-const FILLER = { id: 'rafi', name: 'רפי', main: 0xe23b3b, sec: 0xffd23f, hub: 0xdddddd, shirt: 0xe23b3b, skin: 0xf2c29b, hair: 'cap', cap: 0xe23b3b, mustache: true, dot: '#ff3b3b', aiBase: 30.2, noFlag: true, noStar: true };
+const FILLER = { id: 'rafi', name: 'רפי', main: 0xe23b3b, sec: 0xffd23f, hub: 0xdddddd, shirt: 0xe23b3b, skin: 0xf2c29b, hair: 'cap', cap: 0xe23b3b, mustache: true, dot: '#ff3b3b', aiBase: 40.2, noFlag: true, noStar: true };
 
 function makeKart(o, parent) {
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
@@ -642,7 +642,7 @@ function buildKarts(ci) {
   karts = list.map((o, i) => {
     const m = makeKart(o);
     const isP = i === 0;
-    return Object.assign(m, { def: o, name: o.name, isPlayer: isP, base: isP ? o.stats.speed : o.aiBase, accel: isP ? o.stats.accel : 24, turn: isP ? o.stats.turn : 2.15,
+    return Object.assign(m, { def: o, name: o.name, isPlayer: isP, base: isP ? o.stats.speed : o.aiBase, accel: isP ? o.stats.accel : 32, turn: isP ? o.stats.turn : 2.45,
       dot: o.dot, idx: 0, pos: V(0, 0, 0), heading: 0, speed: 0, maxSpeed: 30, drifting: false, driftDir: 0, charge: 0, boost: 0, spin: 0, hop: 0,
       item: null, itemCount: 0, rolling: 0, pending: null, total: 0, finished: false, finishTime: 0, star: 0, shrink: 0, scale: 1,
       laneBias: (i - 1.5) * 1.6, lanePhase: Math.random() * 6, laneT: 0, useTimer: 0, visYaw: 0, wheelRot: 0, lap: 1, sparkTier: 0, rollTick: 0 });
@@ -686,10 +686,10 @@ function updateHazards(dt) {
   for (let i = shells.length - 1; i >= 0; i--) {
     const s = shells[i]; s.age += dt; let dead = s.age > 6;
     let tx, tz;
-    if (s.target && !s.target.finished) { const d = s.pos.distanceTo(s.target.pos); if (d < 50) { tx = s.target.pos.x; tz = s.target.pos.z; } }
+    if (s.target && !s.target.finished) { const d = s.pos.distanceTo(s.target.pos); if (d < 65) { tx = s.target.pos.x; tz = s.target.pos.z; } }
     if (tx === undefined) { const ti = (s.idx + 10) % N; tx = P[ti].x; tz = P[ti].z; }
-    s.heading += clamp(angDiff(Math.atan2(tx - s.pos.x, tz - s.pos.z), s.heading), -5 * dt, 5 * dt);
-    s.pos.x += Math.sin(s.heading) * 62 * dt; s.pos.z += Math.cos(s.heading) * 62 * dt;
+    s.heading += clamp(angDiff(Math.atan2(tx - s.pos.x, tz - s.pos.z), s.heading), -6.5 * dt, 6.5 * dt);
+    s.pos.x += Math.sin(s.heading) * 84 * dt; s.pos.z += Math.cos(s.heading) * 84 * dt;
     s.idx = nearest(s.pos, s.idx);
     const p = P[s.idx], l = L[s.idx], lat = (s.pos.x - p.x) * l.x + (s.pos.z - p.z) * l.z;
     if (Math.abs(lat) > LIMIT + 0.5) { const o = lat - Math.sign(lat) * (LIMIT + 0.5); s.pos.x -= l.x * o; s.pos.z -= l.z * o; }
@@ -801,15 +801,15 @@ function updateKart(k, dt, inp) {
   if (k.star > 0) { k.star -= dt; if (k.star <= 0 && k.isPlayer) SND.starMode = false; }
   if (k.shrink > 0) k.shrink -= dt;
   let maxF = k.maxSpeed * (k.boost > 0 ? 1.45 : 1) * (k.star > 0 ? 1.18 : 1) * (k.shrink > 0 ? 0.72 : 1);
-  if (k.boost > 0 || k.star > 0 && inp.throttle > 0) k.speed = Math.min(maxF, k.speed + 70 * dt);
+  if (k.boost > 0 || k.star > 0 && inp.throttle > 0) k.speed = Math.min(maxF, k.speed + 95 * dt);
   else if (inp.throttle > 0) { if (k.speed < maxF) k.speed += k.accel * (1 - 0.65 * Math.max(0, k.speed) / maxF) * dt; }
-  else if (inp.throttle < 0) { k.speed -= (k.speed > 0.5 ? 45 : 16) * dt; k.speed = Math.max(k.speed, -11); }
-  else { const f = 9 * dt; k.speed = Math.abs(k.speed) < f ? 0 : k.speed - Math.sign(k.speed) * f; }
-  if (k.speed > maxF) k.speed = Math.max(maxF, k.speed - 25 * dt);
-  const sf = clamp(k.speed / 9, -1, 1);
-  if (inp.drift && !k.drifting && Math.abs(inp.steer) > 0.2 && k.speed > 13) { k.drifting = true; k.driftDir = Math.sign(inp.steer); k.charge = 0; k.hop = 0.3; k.sparkTier = 0; }
+  else if (inp.throttle < 0) { k.speed -= (k.speed > 0.5 ? 60 : 20) * dt; k.speed = Math.max(k.speed, -14); }
+  else { const f = 12 * dt; k.speed = Math.abs(k.speed) < f ? 0 : k.speed - Math.sign(k.speed) * f; }
+  if (k.speed > maxF) k.speed = Math.max(maxF, k.speed - 33 * dt);
+  const sf = clamp(k.speed / 10, -1, 1);
+  if (inp.drift && !k.drifting && Math.abs(inp.steer) > 0.2 && k.speed > 17) { k.drifting = true; k.driftDir = Math.sign(inp.steer); k.charge = 0; k.hop = 0.3; k.sparkTier = 0; }
   if (k.drifting) {
-    if (!inp.drift || k.speed < 7) {
+    if (!inp.drift || k.speed < 9) {
       if (k.charge > 1.6) { k.boost = Math.max(k.boost, 1.0); if (k.isPlayer) { flash('סופר בוסט!', .7, '#ff9a2f'); SND.boost(); } }
       else if (k.charge > 0.75) { k.boost = Math.max(k.boost, 0.55); if (k.isPlayer) { flash('בוסט!', .6, '#4fc3ff'); SND.boost(); } }
       k.drifting = false;
@@ -817,8 +817,8 @@ function updateKart(k, dt, inp) {
       k.charge += dt * (Math.sign(inp.steer) === k.driftDir ? 1.35 : 0.8);
       const tier = k.charge > 1.6 ? 2 : k.charge > 0.75 ? 1 : 0;
       if (tier > k.sparkTier) { k.sparkTier = tier; if (k.isPlayer) SND.tink(tier === 2); }
-      k.heading += k.driftDir * (1.2 + 0.75 * inp.steer * k.driftDir) * (k.turn / 2.15) * dt * sf;
-      k.speed -= 1.5 * dt;
+      k.heading += k.driftDir * (1.3 + 0.8 * inp.steer * k.driftDir) * (k.turn / 2.4) * dt * sf;
+      k.speed -= 2 * dt;
     }
   }
   if (!k.drifting) k.heading += inp.steer * k.turn * dt * sf;
@@ -833,7 +833,7 @@ function updateKart(k, dt, inp) {
     k.pos.x -= l.x * over; k.pos.z -= l.z * over;
     const into = (fx * l.x + fz * l.z) * s * Math.sign(k.speed || 1);
     if (into > 0) {
-      if (k.isPlayer && into > 0.25 && Math.abs(k.speed) > 8) SND.wall(Math.min(1, into * Math.abs(k.speed) / 25));
+      if (k.isPlayer && into > 0.25 && Math.abs(k.speed) > 10) SND.wall(Math.min(1, into * Math.abs(k.speed) / 33));
       k.speed *= 1 - clamp(into * dt * 5, 0, 0.5); k.heading -= s * into * dt * 3.5 * Math.sign(k.speed || 1);
     }
   }
@@ -850,7 +850,7 @@ function updateKart(k, dt, inp) {
   for (const b of boxes) if (b.active) { const dx = b.mesh.position.x - k.pos.x, dz = b.mesh.position.z - k.pos.z; if (dx * dx + dz * dz < 5.3) { b.active = false; b.mesh.visible = false; b.t = 3; giveItem(k); } }
 }
 function aiInput(k, dt) {
-  const look = 8 + Math.floor(Math.max(0, k.speed) * 0.28), ti = (k.idx + look) % N;
+  const look = 9 + Math.floor(Math.max(0, k.speed) * 0.26), ti = (k.idx + look) % N;
   k.laneT += dt * 0.35; const lane = Math.sin(k.laneT + k.lanePhase) * 3.5 + k.laneBias;
   let dodge = 0;
   if (k.star <= 0) for (const b of bananas) { const dx = b.g.position.x - k.pos.x, dz = b.g.position.z - k.pos.z; if (dx * dx + dz * dz < 180 && b.owner !== k) { const bl = dx * L[k.idx].x + dz * L[k.idx].z; dodge = bl > 0 ? -4 : 4; } }
@@ -864,7 +864,7 @@ function aiInput(k, dt) {
     if (k.item === 'banana') { use = use || karts.some(o => o !== k && o.total < k.total && k.total - o.total < 12); }
     if (use) useItem(k);
   }
-  return { throttle: Math.abs(dAng) > 0.7 ? 0.2 : 1, steer: clamp(dAng * 3, -1, 1), drift: false };
+  return { throttle: Math.abs(dAng) > 0.6 ? 0 : 1, steer: clamp(dAng * 3.2, -1, 1), drift: false };
 }
 function collideKarts() {
   for (let i = 0; i < karts.length; i++) for (let j = i + 1; j < karts.length; j++) {
@@ -894,7 +894,7 @@ function onPlayerFinish() {
 const camPos = V(0, 0, 0), camLook = V(0, 0, 0);
 function camTarget(out, look) {
   const fx = Math.sin(player.heading), fz = Math.cos(player.heading);
-  out.set(player.pos.x - fx * 9.5, 4.6, player.pos.z - fz * 9.5); look.set(player.pos.x + fx * 5, 1.6, player.pos.z + fz * 5);
+  out.set(player.pos.x - fx * 10.5, 4.9, player.pos.z - fz * 10.5); look.set(player.pos.x + fx * 6, 1.6, player.pos.z + fz * 6);
 }
 function snapCamera() { camTarget(camPos, camLook); camera.position.copy(camPos); camera.lookAt(camLook); }
 const tmpA = V(0, 0, 0), tmpB = V(0, 0, 0);
@@ -951,7 +951,7 @@ function step(dt, now) {
     raceTime += dt;
     for (const k of karts) {
       let inp;
-      if (k.isPlayer) { if (state === 'finished') { k.maxSpeed = 24; inp = aiInput(k, dt); } else { k.maxSpeed = k.base; inp = playerInput(); } }
+      if (k.isPlayer) { if (state === 'finished') { k.maxSpeed = 32; inp = aiInput(k, dt); } else { k.maxSpeed = k.base; inp = playerInput(); } }
       else inp = aiInput(k, dt);
       updateKart(k, dt, inp);
     }
@@ -984,9 +984,9 @@ function render(dt, now) {
     menuT += dt * 0.25; const r = 8.5;
     camera.position.set(player.pos.x + Math.cos(menuT) * r, 4, player.pos.z + Math.sin(menuT) * r); camera.lookAt(player.pos.x, 1.5, player.pos.z);
   } else {
-    camTarget(tmpA, tmpB); const a = 1 - Math.exp(-dt * 7 * TS);
+    camTarget(tmpA, tmpB); const a = 1 - Math.exp(-dt * 8 * TS);
     camPos.lerp(tmpA, a); camLook.lerp(tmpB, a); camera.position.copy(camPos); camera.lookAt(camLook);
-    const fov = (camera.aspect < 1 ? 82 : 70) + (player.boost > 0 || player.star > 0 ? 10 : 0) + Math.max(0, player.speed) * 0.12;
+    const fov = (camera.aspect < 1 ? 82 : 70) + (player.boost > 0 || player.star > 0 ? 10 : 0) + Math.max(0, player.speed) * 0.1;
     camera.fov += (fov - camera.fov) * Math.min(1, dt * 4); camera.updateProjectionMatrix();
   }
   renderer.render(scene, camera);
