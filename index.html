@@ -2,6 +2,9 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>שמעון עגלות 🏁</title>
 <meta name="description" content="שמעון עגלות – מרוץ עגלות תלת-ממדי בדפדפן">
@@ -192,6 +195,35 @@
   @media (max-height:520px){.lobbyCard{width:min(820px,98vw);padding:8px 12px}.lobbyPlayers{grid-template-columns:repeat(4,1fr)}.lp{min-height:38px;padding:2px 5px}.lp img,.lp .av{width:30px;height:30px;font-size:20px}.lp b{font-size:12px}.lp small{font-size:11px}.lc{max-width:78px;font-size:12px}.lsec{margin-top:4px;font-size:13px}.roomHead .code{font-size:30px}.note{margin-top:4px;font-size:13px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+<script>
+// ===== auto-update (iOS home-screen apps cache aggressively) =====
+(function () {
+  var BUILD = '20261009212039', busy = false;
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
+  if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
+  var pending = null;
+  function racing() { var k = window.__kart; return k && (k.state === 'race' || k.state === 'countdown' || k.state === 'paused'); }
+  function toast() { var t = document.createElement('div'); t.textContent = 'גרסה חדשה! מתעדכן…'; t.style.cssText = 'position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:99;background:#1d4ed8;color:#fff;font:900 20px Arial;padding:10px 22px;border-radius:20px;border:3px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.35);direction:rtl'; document.body.appendChild(t); }
+  function apply(v) {
+    if (racing()) { pending = v; return; }
+    toast();
+    setTimeout(function () { var u = new URL(location.href); u.searchParams.set('v', v); location.replace(u.toString()); }, 1200);
+  }
+  function check() {
+    if (busy || pending) return; busy = true;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { busy = false; if (j && j.build && String(j.build) > BUILD) apply(String(j.build)); })
+      .catch(function () { busy = false; });
+  }
+  window.__BUILD = BUILD;
+  window.addEventListener('load', function () { setTimeout(check, 1500); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) check(); });
+  window.addEventListener('focus', check);
+  setInterval(function () { if (pending && !racing()) apply(pending); else if (!racing()) check(); }, 3 * 60 * 1000);
+  setInterval(function () { if (pending && !racing()) apply(pending); }, 2000);   // apply right after the race ends
+})();
+</script>
 </head>
 <body class="inmenu">
 <canvas id="c"></canvas>
