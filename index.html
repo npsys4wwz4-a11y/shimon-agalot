@@ -198,7 +198,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009220119', busy = false;
+  var BUILD = '20261009220730', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -578,15 +578,15 @@ const m4 = new THREE.Matrix4(), qI = new THREE.Quaternion();
 
 // ---------- tracks ----------
 const TRACKS = [
-  { id: 'beach', name: 'חוף תל אביב', emoji: '🏖️', desc: 'ים, דקלים, מגדלים ושמשיות. סאמר וייב!', song: 'beach', scale: 1.4,
+  { surf: 'puddle', mover: 'icecream', id: 'beach', name: 'חוף תל אביב', emoji: '🏖️', desc: 'ים, דקלים, מגדלים ושמשיות. סאמר וייב!', song: 'beach', scale: 1.4,
     ctrl: [[0,0],[80,5],[150,0],[185,-15],[215,5],[250,-10],[290,-30],[300,-70],[270,-92],[225,-85],[190,-110],[170,-160],[130,-178],[100,-150],[90,-112],[40,-122],[-20,-150],[-80,-172],[-150,-162],[-200,-122],[-228,-72],[-208,-30],[-160,-22],[-122,-42],[-88,-16],[-45,0]], fork: {"from":10,"to":14,"via":[[160,-118],[138,-104],[115,-118]]}, pads: [0.04, 0.55, 0.9],
     sky: 0x6cc4ff, fog: 0x9fd6ff, hemiG: 0xd9c08a, road: '#5b5f6e', curb: ['#1d4ed8', '#ffffff'], walls: [0x2f6bff, 0xffffff, 0xffd23f, 0xffffff, 0x2fd0c0, 0xffffff],
     ground: ['#f0d59a', '#e8cb8a', '#f6dfaa'] },
-  { id: 'desert', name: 'מדבר ירושלים', emoji: '🏜️', desc: 'אבן ירושלמית, גמלים, צברים וטחנת רוח.', song: 'desert', scale: 1.4,
+  { surf: 'sand', mover: 'camel', id: 'desert', name: 'מדבר ירושלים', emoji: '🏜️', desc: 'אבן ירושלמית, גמלים, צברים וטחנת רוח.', song: 'desert', scale: 1.4,
     ctrl: [[0,0],[90,10],[165,-5],[205,-45],[200,-95],[160,-115],[120,-100],[85,-118],[95,-158],[140,-170],[175,-200],[150,-240],[90,-250],[30,-222],[-5,-168],[-60,-188],[-110,-245],[-165,-225],[-180,-175],[-140,-140],[-170,-95],[-150,-45],[-100,-30],[-55,5]], fork: {"from":12,"to":16,"via":[[40,-272],[-20,-276],[-75,-266]]}, pads: [0.05, 0.3, 0.86],
     sky: 0xffcf8f, fog: 0xf5c99a, hemiG: 0xb07a45, road: '#6e625a', curb: ['#c2410c', '#fff3d6'], walls: [0xe9d7ae, 0xd8bf86, 0xe9d7ae, 0xc9a96a],
     ground: ['#e3ad6c', '#d89e5d', '#eab97c'] },
-  { id: 'hills', name: 'איו"ש', emoji: '⛰️', desc: 'כביש מתפתל בין טרסות, כרמי זיתים, יישובים וכפרים.', song: 'hills', scale: 1.4,
+  { surf: 'mud', mover: 'tractor', id: 'hills', name: 'איו"ש', emoji: '⛰️', desc: 'כביש מתפתל בין טרסות, כרמי זיתים, יישובים וכפרים.', song: 'hills', scale: 1.4,
     ctrl: [[0,0],[60,10],[110,-10],[135,-55],[105,-95],[125,-140],[95,-185],[40,-182],[15,-140],[-15,-108],[-55,-128],[-75,-180],[-50,-225],[-95,-255],[-150,-235],[-165,-185],[-130,-150],[-170,-110],[-150,-60],[-175,-20],[-120,0],[-60,12]], fork: {"from":3,"to":9,"via":[[82,-70],[48,-88],[12,-100]]}, pads: [0.05, 0.5, 0.88],
     sky: 0x8fd0ff, fog: 0xc9e4f2, hemiG: 0x8f9a55, road: '#53565d', curb: ['#6b8e23', '#f4efe0'], walls: [0xd9cfb4, 0xc9bc96, 0xe2d8bd, 0xbfb08a],
     ground: ['#b9b06a', '#a9a35c', '#c7bd7c'] },
@@ -612,7 +612,10 @@ function computePath(def, n) {
 }
 // ---- multi-path track: path 0 = main loop, path 1 = fork branch (open, narrower) ----
 let BR = null, BOOST = [], SA = [-400, 400, -450, 180];
-const BR_HW = 6.5, BR_LIMIT = BR_HW + CURB - 1.3;
+const BR_HW = 5.5, BR_LIMIT = BR_HW + CURB - 1.3;
+// shortcut run-off: walls removed in the middle part; you can slide off into slow terrain up to brLim(i)
+const brOff = i => BR && BR.off ? BR.off[i] : 0;
+const brLim = i => BR_LIMIT + brOff(i);
 function pathOf(o) { return o.path === 1 && BR ? BR : null; }
 function pP(o) { const b = pathOf(o); return b ? b.P[o.idx] : P[o.idx]; }
 function pT(o) { const b = pathOf(o); return b ? b.T[o.idx] : T[o.idx]; }
@@ -640,12 +643,12 @@ function trackProject(o) {
   }
   let pick = cur;
   if (alt) {
-    const limOf = c => c.path === 1 ? BR_LIMIT : LIMIT;
+    const limOf = c => c.path === 1 ? brLim(c.idx) : LIMIT;
     const curOut = Math.abs(latOn(cur.path, cur.idx)) > limOf(cur), altIn = Math.abs(latOn(alt.path, alt.idx)) <= limOf(alt);
     if (alt.d + 2 < cur.d || (curOut && altIn)) pick = alt;
   }
   o.path = pick.path; o.idx = pick.idx;
-  const p = pP(o), l = pL(o); return { lat: (o.pos.x - p.x) * l.x + (o.pos.z - p.z) * l.z, lim: o.path === 1 ? BR_LIMIT : LIMIT, l };
+  const p = pP(o), l = pL(o); return { lat: (o.pos.x - p.x) * l.x + (o.pos.z - p.z) * l.z, lim: o.path === 1 ? brLim(o.idx) : LIMIT, l };
 }
 // a point `ahead` steps further along the route this object is following (o.takeBr decides at the fork)
 function routeAhead(o, ahead) {
@@ -668,7 +671,10 @@ function buildTrack(ti) {
   if (br) {
     const bp = br.pts, n = bp.length, bt = [], bl = [];
     for (let i = 0; i < n; i++) { const t = V(0, 0, 0).subVectors(bp[Math.min(n - 1, i + 1)], bp[Math.max(0, i - 1)]).setY(0).normalize(); bt.push(t); bl.push(V(t.z, 0, -t.x)); }
-    BR = { a: br.a, b: br.b, P: bp, T: bt, L: bl, n, len: br.len };
+    BR = { a: br.a, b: br.b, P: bp, T: bt, L: bl, n, len: br.len, off: new Array(n).fill(0) };
+    // per-point run-off width: never reaches the main road; 0 near the junctions (walls kept there)
+    for (let i = 0; i < n; i++) { if (i < 22 || i > n - 23) continue; const d = distToPts(bp[i].x, bp[i].z, P, 2); BR.off[i] = clamp(d - WALL - BR_HW - CURB - 4, 0, 13); }
+    for (let k = 0; k < 3; k++) for (let i = 1; i < n - 1; i++) BR.off[i] = Math.min(BR.off[i], (BR.off[i - 1] + BR.off[i + 1]) / 2 + 1.2);
   }
   scene.background = new THREE.Color(def.sky); scene.fog.color.set(def.fog); hemi.groundColor.set(def.hemiG);
   // road + curbs
@@ -720,7 +726,13 @@ function buildTrack(ti) {
       }
     };
     wallRun(P, L, true, WALL, (x, z) => inBr(x, z, BR_HW + CURB + 0.6));
-    if (BR) wallRun(BR.P, BR.L, false, BR_HW + CURB, (x, z) => inMain(x, z, WALL + 0.6));
+    if (BR) {   // shortcut walls only where there is no run-off (near the junctions); a rock line marks the run-off edge
+      const near = (x, z) => { let bi = 0, bd = 1e9; BR.P.forEach((p, i) => { const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; bi = i; } }); return bi; };
+      wallRun(BR.P, BR.L, false, BR_HW + CURB, (x, z) => inMain(x, z, WALL + 0.6) || BR.off[near(x, z)] > 0.5);
+      const rk = []; for (let i = 0; i < BR.n; i += 2) { if (BR.off[i] < 0.5) continue; for (const s of [1, -1]) { const o = (BR_HW + CURB + BR.off[i] + 0.6) * s; rk.push([BR.P[i].x + BR.L[i].x * o, BR.P[i].z + BR.L[i].z * o]); } }
+      const rm = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.75, 0), lam(0x8d8d86), rk.length), q2 = new THREE.Quaternion();
+      rk.forEach(([x, z], i) => { q2.setFromAxisAngle(V(0, 1, 0), Math.random() * 6); m4.compose(V(x, 0.35, z), q2, V(1 + Math.random() * .6, 0.6 + Math.random() * .5, 1 + Math.random() * .6)); rm.setMatrixAt(i, m4); }); G.add(rm);
+    }
     wm.count = n; G.add(wm);
   }
   // ground
@@ -753,7 +765,7 @@ function buildTrack(ti) {
   const B = { minX, maxX, minZ, maxZ }; SA = [minX - 120, maxX + 120, minZ - 120, maxZ + 90];
   seaMat = null; windBlades = null; spinners = [];
   if (def.id === 'beach') sceneryBeach(G, B); else if (def.id === 'hills') sceneryHills(G, B); else sceneryDesert(G, B);
-  buildPadsAndSigns(G, def);
+  buildPadsAndSigns(G, def); buildTerrainFx(G, def);
   setSky(def); requestAnimationFrame(() => prepTrackShadows(G));
   // item boxes (one extra row in the middle of the long "safe" route of the fork)
   boxes = [];
@@ -778,6 +790,52 @@ function gantry(G, p, t, halfW, text, bg) {
   const sm = new THREE.MeshLambertMaterial({ map: signTex(text, bg) }), side = lam(0xffffff);
   const board = new THREE.Mesh(new THREE.BoxGeometry(halfW * 2 + 2.4, 2.2, 0.3), [side, side, side, side, sm, sm]); board.position.y = 7.2; g.add(board);
   g.position.set(p.x, 0, p.z); g.rotation.y = Math.atan2(t.x, t.z); G.add(g);
+}
+// ---------- slow surfaces, obstacles, moving hazards ----------
+let SURF = [], OBST = [], MOVERS = [];
+const SURF_KIND = { puddle: { mul: 0.62, name: 'שלולית', col: '#4aa8e8' }, sand: { mul: 0.58, name: 'חול', col: '#e8c27a' }, mud: { mul: 0.5, name: 'בוץ', col: '#6b4a2b' }, ice: { mul: 0.95, grip: 0.35, name: 'קרח', col: '#cdeeff' } };
+const surfTex = {};
+function surfTexOf(kind) {
+  return surfTex[kind] || (surfTex[kind] = canvasTex(128, 128, (g, w) => {
+    const c = SURF_KIND[kind].col, r = g.createRadialGradient(64, 64, 10, 64, 64, 64); r.addColorStop(0, c); r.addColorStop(0.8, c); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, w, w);
+    g.globalAlpha = 0.35; for (let i = 0; i < 26; i++) { g.fillStyle = kind === 'puddle' || kind === 'ice' ? '#fff' : '#000'; g.beginPath(); const a = Math.random() * 6.28, d = Math.random() * 44; g.ellipse(64 + Math.cos(a) * d, 64 + Math.sin(a) * d, 3 + Math.random() * 8, 1.5 + Math.random() * 3, Math.random() * 3, 0, 7); g.fill(); }
+  }));
+}
+function addSurf(G, x, z, r, kind) {
+  const m = new THREE.Mesh(new THREE.CircleGeometry(r, 24), new THREE.MeshLambertMaterial({ map: surfTexOf(kind), transparent: true, depthWrite: false }));
+  m.rotation.x = -Math.PI / 2; m.position.set(x, 0.085, z); m.scale.y = 0.75 + Math.random() * 0.4; m.userData.flat = true; G.add(m); SURF.push({ x, z, r, kind });
+}
+const stripeTex = canvasTex(64, 64, (g, w) => { g.fillStyle = '#ff6a00'; g.fillRect(0, 0, w, w); g.fillStyle = '#fff'; g.fillRect(0, 22, w, 10); g.fillRect(0, 46, w, 6); });
+function addBarrel(G, x, z) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1.8, 14), new THREE.MeshLambertMaterial({ map: stripeTex })); m.position.set(x, 0.9, z); G.add(m); OBST.push({ x, z, r: 1.0, hard: true }); }
+function addCone(G, x, z) { const m = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.3, 10), new THREE.MeshLambertMaterial({ map: stripeTex })); m.position.set(x, 0.65, z); G.add(m); OBST.push({ x, z, r: 0.6, hard: false }); }
+function makeMover(kind) {
+  const g = new THREE.Group(), L2 = c => new THREE.MeshLambertMaterial({ color: c }), box = (w, h, d, c, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), L2(c)); m.position.set(x, y, z); g.add(m); return m; };
+  if (kind === 'camel') { box(1.3, 1.2, 3.2, 0xc8955a, 0, 2.4, 0); box(1.0, 0.9, 1.0, 0xb98548, 0, 3.3, 0); box(0.5, 1.6, 0.5, 0xc8955a, 0, 3.2, 1.6).rotation.x = -0.4; box(0.6, 0.6, 1.0, 0xc8955a, 0, 4.0, 2.1); for (const [x, z] of [[.45, 1.1], [-.45, 1.1], [.45, -1.1], [-.45, -1.1]]) box(0.3, 1.9, 0.3, 0xa87840, x, 0.95, z); }
+  else if (kind === 'tractor') { box(1.6, 1.0, 2.6, 0xd13b2b, 0, 1.3, 0.3); box(1.2, 1.2, 1.1, 0x333333, 0, 2.3, -0.6); for (const [x, z, r] of [[1.0, 1.2, .55], [-1.0, 1.2, .55], [1.1, -0.8, 1.0], [-1.1, -0.8, 1.0]]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.5, 14), L2(0x1a1a1a)); w.rotation.z = Math.PI / 2; w.position.set(x, r, z); g.add(w); } }
+  else if (kind === 'icecream') { box(2.0, 1.4, 1.4, 0xffffff, 0, 1.2, 0); box(2.1, 0.3, 1.5, 0xff5fa2, 0, 2.0, 0); const pole = box(0.12, 2.4, 0.12, 0x999999, 0, 3.2, 0); const um = new THREE.Mesh(new THREE.ConeGeometry(1.8, 0.8, 8), L2(0xffd23f)); um.position.y = 4.4; g.add(um); for (const x of [.8, -.8]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12), L2(0x222222)); w.rotation.x = Math.PI / 2; w.position.set(x, 0.4, 0.75); g.add(w); } }
+  else { box(2.2, 1.0, 3.0, 0xff7a00, 0, 1.0, 0); box(1.4, 0.9, 1.2, 0x222244, 0, 1.9, -0.4); box(3.2, 0.9, 0.3, 0xffd23f, 0, 0.7, 1.7); }   // snowplow
+  return g;
+}
+function buildTerrainFx(G, def) {
+  SURF = []; OBST = []; MOVERS = [];
+  const kind = def.surf || 'mud';
+  [0.21, 0.46, 0.73].forEach((f, j) => { const i = Math.floor(f * N), s = j % 2 ? 1 : -1, o = s * HW * 0.48; addSurf(G, P[i].x + L[i].x * o, P[i].z + L[i].z * o, 4.6, kind); });
+  if (def.ice) for (const f of [0.3, 0.6, 0.93]) { const i = Math.floor(f * N); addSurf(G, P[i].x, P[i].z, 6.5, 'ice'); }
+  if (!BR) return;
+  const at = (f, lat) => { const i = Math.floor(f * (BR.n - 1)); return [BR.P[i].x + BR.L[i].x * lat, BR.P[i].z + BR.L[i].z * lat]; };
+  addSurf(G, ...at(0.2, 2.4), 3.6, kind); addSurf(G, ...at(0.55, -2.6), 3.6, kind);
+  for (const d of [-1.2, 1.2]) addBarrel(G, ...at(0.45 + d * 0.004, 2.6 + d)); addBarrel(G, ...at(0.452, -3.6));
+  for (let c = 0; c < 4; c++) addCone(G, ...at(0.83 + c * 0.012, -3.4 + c * 0.6));
+  if (def.id === 'hills') { const i = Math.floor(BR.n * 0.55), span = BR_HW + CURB + 3; for (const sg of [-1, 1]) for (const d of [0, 1]) { const o = sg * (span + d * 9); OBST.push({ x: BR.P[i].x + BR.L[i].x * o, z: BR.P[i].z + BR.L[i].z * o, r: 1.9, hard: true }); } }
+  const mi = Math.floor(0.62 * (BR.n - 1)), mesh = makeMover(def.mover || 'tractor'); G.add(mesh);
+  MOVERS.push({ mesh, p: BR.P[mi], l: BR.L[mi], amp: BR_HW + CURB + Math.min(4, BR.off[mi]), period: 5.5, r: 1.8, x: 0, z: 0 });
+}
+function updateMovers(t) {
+  for (const m of MOVERS) {
+    const s = Math.sin(t * Math.PI * 2 / m.period), o = s * m.amp, v = Math.cos(t * Math.PI * 2 / m.period);
+    m.x = m.p.x + m.l.x * o; m.z = m.p.z + m.l.z * o; m.mesh.position.set(m.x, 0, m.z);
+    m.mesh.rotation.y = Math.atan2(m.l.x * Math.sign(v || 1), m.l.z * Math.sign(v || 1));
+  }
 }
 function buildPadsAndSigns(G, def) {
   BOOST = [];
@@ -1459,6 +1517,7 @@ function fxUpdate(dt, now) {
     if (!near) continue;
     const rate = dt * 60;
     if (sp > 14 && Math.random() < (k.drifting ? 0.9 : 0.25) * rate) for (const r of rear) emit(dust, r.x, 0.4, r.z, -fx * 3 + (Math.random() - .5) * 3, 1.5 + Math.random(), -fz * 3 + (Math.random() - .5) * 3, dustCol, 0.7 + Math.random() * 0.4);
+    if (k.surf && sp > 6 && Math.random() < 0.8 * rate) { const c = k.surf === 'puddle' ? 0xbfe8ff : k.surf === 'ice' ? 0xffffff : k.surf === 'mud' ? 0x5a3a1c : k.surf === 'sand' ? 0xe8c27a : dustCol; for (const r of rear) emit(dust, r.x, 0.5, r.z, (Math.random() - .5) * 5, 2.5 + Math.random() * 2, (Math.random() - .5) * 5, c, 0.6); }
     if (k.drifting && k.charge > 0.75 && Math.random() < 0.9 * rate) { const r = rear[k.driftDir > 0 ? 0 : 1]; emit(sparksP, r.x, 0.3, r.z, (Math.random() - .5) * 8 - fx * 4, 3 + Math.random() * 4, (Math.random() - .5) * 8 - fz * 4, k.charge > 1.6 ? 0xff8a1f : 0x4fc3ff, 0.35); }
     if ((k.boost > 0 || k.star > 0) && Math.random() < rate) { const ex = k.pos.x - fx * 2.6 * k.scale + rx * 0.45, ez = k.pos.z - fz * 2.6 * k.scale + rz * 0.45; emit(sparksP, ex, 0.8, ez, -fx * 10 + (Math.random() - .5) * 2, 0.5 + Math.random(), -fz * 10 + (Math.random() - .5) * 2, k.star > 0 ? 0xffd23f : Math.random() < .5 ? 0xffa020 : 0xff4a1a, 0.25); }
     if (k.wallHit > 0) { for (let i = 0; i < 6; i++) emit(sparksP, k.pos.x + fx * 1.5, 0.8, k.pos.z + fz * 1.5, (Math.random() - .5) * 14, 3 + Math.random() * 5, (Math.random() - .5) * 14, 0xfff0a0, 0.3); k.wallHit = 0; }
@@ -1676,6 +1735,14 @@ function rubberRef() { const h = karts.filter(k => k.human); return h.length ? h
 // ---------- physics ----------
 const NOINPUT = { throttle: 0, steer: 0, drift: false };
 function nearest(pos, hint) { let best = hint, bd = 1e9; for (let o = -30; o <= 30; o++) { const i = (hint + o + N) % N; const dx = pos.x - P[i].x, dz = pos.z - P[i].z, d = dx * dx + dz * dz; if (d < bd) { bd = d; best = i; } } return best; }
+function hitObstacle(k, x, z, r, slow, mover) {
+  const dx = k.pos.x - x, dz = k.pos.z - z, R = r + 1.1 * k.scale, d2 = dx * dx + dz * dz;
+  if (d2 >= R * R || d2 < 1e-6) return;
+  const d = Math.sqrt(d2), nx = dx / d, nz = dz / d; k.pos.x = x + nx * R; k.pos.z = z + nz * R;
+  if (k.star > 0) return;
+  if (mover) { spinKart(k, 0.8, false); k.speed *= 0.5; }
+  else { if (Math.abs(k.speed) > 8) { k.wallHit = 1; if (k.isPlayer) { SND.wall(0.6); shakeCam(0.25); } } k.speed *= slow; }
+}
 function updateKart(k, dt, inp) {
   if (k.shield > 0) k.shield = Math.max(0, k.shield - dt);
   k.lastSteer = inp.steer; k.lastThrottle = inp.throttle;
@@ -1683,7 +1750,7 @@ function updateKart(k, dt, inp) {
   if (k.boost > 0) k.boost -= dt;
   if (k.star > 0) { k.star -= dt; if (k.star <= 0 && k.isPlayer) SND.starMode = false; }
   if (k.shrink > 0) k.shrink -= dt;
-  let maxF = k.maxSpeed * (k.boost > 0 ? 1.45 : 1) * (k.star > 0 ? 1.18 : 1) * (k.shrink > 0 ? 0.72 : 1);
+  let maxF = k.maxSpeed * (k.boost > 0 ? 1.45 : 1) * (k.star > 0 ? 1.18 : 1) * (k.shrink > 0 ? 0.72 : 1) * (k.star > 0 ? 1 : (k.surfMul || 1));
   if (k.boost > 0 || k.star > 0 && inp.throttle > 0) k.speed = Math.min(maxF, k.speed + 95 * dt);
   else if (inp.throttle > 0) { if (k.speed < maxF) k.speed += k.accel * (1 - 0.65 * Math.max(0, k.speed) / maxF) * dt; }
   else if (inp.throttle < 0) { k.speed -= (k.speed > 0.5 ? 60 : 20) * dt; k.speed = Math.max(k.speed, -14); }
@@ -1704,7 +1771,7 @@ function updateKart(k, dt, inp) {
       k.speed -= 2 * dt;
     }
   }
-  if (!k.drifting) k.heading += inp.steer * k.turn * dt * sf;
+  if (!k.drifting) k.heading += inp.steer * k.turn * dt * sf * (k.grip < 1 ? 0.55 + 0.45 * k.grip : 1);
   const fx = Math.sin(k.heading), fz = Math.cos(k.heading);
   let mx = fx, mz = fz;
   if (k.drifting) { const a = k.heading - k.driftDir * 0.18; mx = Math.sin(a); mz = Math.cos(a); }
@@ -1729,6 +1796,16 @@ function updateKart(k, dt, inp) {
       k.progT = raceTime; k.progTot = k.total; k.recovers = (k.recovers || 0) + 1;
     }
   }
+  // slow surfaces / run-off terrain
+  if (!k.remote) {
+    let sm = 1, grip = 1, sk = null;
+    for (const s of SURF) { const dx = k.pos.x - s.x, dz = k.pos.z - s.z; if (dx * dx + dz * dz < s.r * s.r * 0.8) { const K = SURF_KIND[s.kind]; sm = Math.min(sm, K.mul); if (K.grip) grip = Math.min(grip, K.grip); sk = s.kind; } }
+    if (k.path === 1 && Math.abs(lat) > BR_HW + CURB - 0.3) { sm = Math.min(sm, 0.5); sk = sk || 'off'; }
+    if (sk && !k.surf && k.isPlayer) flash(sk === 'off' ? 'יצאת מהכביש! 🪨' : SURF_KIND[sk].name + '! ' + (sk === 'ice' ? '🧊' : sk === 'puddle' ? '💦' : sk === 'sand' ? '🏜️' : '🟤'), .6, '#ffd23f');
+    k.surfMul = sm; k.grip = grip; k.surf = sk;
+    for (const o of OBST) hitObstacle(k, o.x, o.z, o.r, o.hard ? 0.45 : 0.75, false);
+    for (const m of MOVERS) hitObstacle(k, m.x, m.z, m.r, 0.6, true);
+  }
   // boost pads
   let on = false;
   for (const b of BOOST) { const dx = k.pos.x - b.x, dz = k.pos.z - b.z, al = dx * b.tx + dz * b.tz, la = dx * b.lx + dz * b.lz; if (Math.abs(al) < 4 && Math.abs(la) < b.w / 2) { on = true; break; } }
@@ -1752,6 +1829,11 @@ function aiInput(k, dt) {
   k.laneT += dt * 0.35; const lane = Math.sin(k.laneT + k.lanePhase) * 3.5 + k.laneBias;
   let dodge = 0;
   if (k.star <= 0) for (const b of bananas) { const dx = b.g.position.x - k.pos.x, dz = b.g.position.z - k.pos.z; if (dx * dx + dz * dz < 180 && b.owner !== k) { const kl = pL(k), bl = dx * kl.x + dz * kl.z; dodge = bl > 0 ? -4 : 4; } }
+  if (k.star <= 0) {
+    const fx = Math.sin(k.heading), fz = Math.cos(k.heading), kl = pL(k);
+    const avoid = (x, z, r) => { const dx = x - k.pos.x, dz = z - k.pos.z, ah = dx * fx + dz * fz; if (ah < 1 || ah > 24) return; const bl = dx * kl.x + dz * kl.z; if (Math.abs(bl - lane) < r + 2) dodge = bl > lane ? -(r + 2.4) : (r + 2.4); };
+    for (const o of OBST) avoid(o.x, o.z, o.r); for (const m of MOVERS) avoid(m.x, m.z, m.r + 1); for (const s of SURF) if (s.kind !== 'ice') avoid(s.x, s.z, s.r * 0.8);
+  }
   const ln = (k.path === 1 || (k.takeBr && BR && modD(k.idx, BR.a) < look)) ? clamp(lane + dodge, -4, 4) : lane + dodge; const tx = ra.p.x + ra.l.x * ln, tz = ra.p.z + ra.l.z * ln;
   const dAng = angDiff(Math.atan2(tx - k.pos.x, tz - k.pos.z), k.heading);
   const gap = rubberRef() - k.total;
@@ -2008,6 +2090,7 @@ function render(dt, now) {
   if (seaMat) seaMat.map.offset.set(now / 40000, now / 25000);
   if (windBlades) windBlades.rotation.z += dt * 0.8;
   for (const [o, ax, sp] of spinners) o.rotation[ax] += dt * sp;
+  updateMovers(raceTime);
   { const pulse = 0.8 + 0.2 * Math.sin(now / 110); for (const b of BOOST) b.mesh.material.color.setRGB(pulse, pulse, pulse); }
   const hue = (now / 400) % 1;
   for (const k of karts) {
@@ -2065,7 +2148,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 // ================= MULTIPLAYER (PeerJS / WebRTC, public broker, host-authoritative) =================
 const NET = { on: false, host: false, peer: null, conns: new Map(), hostConn: null, code: '', humans: [], track: 0, inRace: false, myId: '', timer: 0, hostSeen: 0, connecting: false };
 const PEER_PREFIX = 'shimon-agalot-v1-';
