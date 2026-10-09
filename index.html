@@ -58,6 +58,8 @@
   .tb{position:fixed;z-index:10;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.28);border:3px solid rgba(255,255,255,.85);color:#fff;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center;touch-action:none;text-shadow:0 2px 0 #1b2a6b}
   .tb.on{background:rgba(255,225,77,.6)}
   .tb small{font-size:14px}
+  body.touch #hudPos{bottom:auto;top:calc(env(safe-area-inset-top) + 46px);font-size:44px}
+  body.touch #board{display:none}
   body.inmenu .hud, body.inmenu #mini, body.inmenu .tb{display:none !important}
   @media (max-height:520px){.pick{width:150px;padding:5px}.pick .tg{display:none}.card{padding:10px 16px}.card h1{font-size:40px}.card h2{font-size:24px;margin-bottom:4px}.card p{font-size:13px;margin:3px 0}.btn{font-size:20px;padding:8px 24px}}
   @media (max-width:700px),(max-height:450px){#board{display:none}#mini{width:100px;height:100px}}
@@ -704,7 +706,7 @@ addEventListener('keydown', e => { keys[e.code] = true; if (['Space', 'ArrowUp',
 addEventListener('keyup', e => { keys[e.code] = false; });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; for (const k in touch) touch[k] = false; });
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-if (isTouch) document.getElementById('touch').style.display = 'block';
+if (isTouch) { document.getElementById('touch').style.display = 'block'; document.body.classList.add('touch'); }
 document.querySelectorAll('.tb').forEach(b => {
   const k = b.dataset.k;
   const on = e => { e.preventDefault(); touch[k] = true; b.classList.add('on'); if (k === 'item') useItem(player); try { b.setPointerCapture(e.pointerId); } catch (_) {} };
