@@ -198,7 +198,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009215741', busy = false;
+  var BUILD = '20261009220119', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -1657,8 +1657,10 @@ function useItem(k) {
   k.item = null; k.itemCount = 0;
 }
 function giveItem(k) {
-  if (k.item || k.rolling > 0) return;
-  k.pending = pickItem(); k.rolling = 1.0; if (k.isPlayer) SND.pickup();
+  if (k.rolling > 0) return;                     // already spinning the roulette
+  const swap = !!k.item;                          // holding something? it gets swapped for a new random item
+  k.item = null; k.itemCount = 0;
+  k.pending = pickItem(); k.rolling = 1.0; if (k.isPlayer) { SND.pickup(); if (swap) flash('🔄 החלפת פריט!', .6, '#ffd23f'); }
 }
 const ITEM_KEYS = Object.keys(ITEMS);
 // position-independent odds: the shofar (hits everyone) is rare, all other items share the rest equally
