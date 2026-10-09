@@ -198,7 +198,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009212039', busy = false;
+  var BUILD = '20261009215218', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -585,7 +585,7 @@ const TRACKS = [
     sky: 0xffcf8f, fog: 0xf5c99a, hemiG: 0xb07a45, road: '#6e625a', curb: ['#c2410c', '#fff3d6'], walls: [0xe9d7ae, 0xd8bf86, 0xe9d7ae, 0xc9a96a],
     ground: ['#e3ad6c', '#d89e5d', '#eab97c'] },
   { id: 'hills', name: 'איו"ש', emoji: '⛰️', desc: 'כביש מתפתל בין טרסות, כרמי זיתים, יישובים וכפרים.', song: 'hills', scale: 1.4,
-    ctrl: [[0,0],[60,10],[110,-10],[135,-55],[105,-95],[125,-140],[95,-185],[40,-182],[15,-140],[-15,-108],[-55,-128],[-75,-180],[-50,-225],[-95,-255],[-150,-235],[-165,-185],[-130,-150],[-170,-110],[-150,-60],[-175,-20],[-120,0],[-60,12]], fork: {"from":3,"to":8,"via":[[80,-72],[52,-98],[30,-120]]}, pads: [0.05, 0.5, 0.88],
+    ctrl: [[0,0],[60,10],[110,-10],[135,-55],[105,-95],[125,-140],[95,-185],[40,-182],[15,-140],[-15,-108],[-55,-128],[-75,-180],[-50,-225],[-95,-255],[-150,-235],[-165,-185],[-130,-150],[-170,-110],[-150,-60],[-175,-20],[-120,0],[-60,12]], fork: {"from":3,"to":9,"via":[[82,-70],[48,-88],[12,-100]]}, pads: [0.05, 0.5, 0.88],
     sky: 0x8fd0ff, fog: 0xc9e4f2, hemiG: 0x8f9a55, road: '#53565d', curb: ['#6b8e23', '#f4efe0'], walls: [0xd9cfb4, 0xc9bc96, 0xe2d8bd, 0xbfb08a],
     ground: ['#b9b06a', '#a9a35c', '#c7bd7c'] },
 ];
@@ -622,16 +622,27 @@ const modD = (i, j) => { let d = (j - i) % N; if (d < 0) d += N; return d; };   
 function progS(o) { return o.path === 1 && BR ? BR.a + (BR.b - BR.a) * o.idx / (BR.n - 1) : o.idx; }
 // update o.path/o.idx to the closest road; returns lateral offset and wall limit for that road
 function trackProject(o) {
+  // candidates: current road + the other road when near a junction; switch with hysteresis (real distances)
+  const latOn = (path, idx) => { const PP = path === 1 ? BR.P : P, LL = path === 1 ? BR.L : L, p = PP[idx], l = LL[idx]; return (o.pos.x - p.x) * l.x + (o.pos.z - p.z) * l.z; };
+  let cur, alt = null;
   if (o.path === 1 && BR) {
-    const [bi, bd] = nearBr(o.pos, o.idx); o.idx = bi;
-    if (bi < 25 || bi > BR.n - 26) { const [mi, md] = nearMain(o.pos, bi < 25 ? BR.a : BR.b); if (md + 1.5 < bd) { o.path = 0; o.idx = mi; } }
+    const [bi, bd] = nearBr(o.pos, o.idx); cur = { path: 1, idx: bi, d: Math.sqrt(bd) };
+    if (bi < 30 || bi > BR.n - 31) { const [mi, md] = nearMain(o.pos, bi < 30 ? BR.a + bi : (BR.b - (BR.n - 1 - bi) + N) % N); alt = { path: 0, idx: mi, d: Math.sqrt(md) }; }
   } else {
-    const [mi, md] = nearMain(o.pos, o.idx); o.idx = mi; o.path = 0;
+    const [mi, md] = nearMain(o.pos, o.idx); cur = { path: 0, idx: mi, d: Math.sqrt(md) };
     if (BR) {
-      const da = Math.min(modD(BR.a, mi), modD(mi, BR.a)), db = Math.min(modD(BR.b, mi), modD(mi, BR.b));
-      if (da < 30 || db < 30) { const [bi, bd] = nearBr(o.pos, da < 30 ? 0 : BR.n - 1, 40); if (bd + 1.5 < md) { o.path = 1; o.idx = bi; } }
+      const da = Math.min(modD(BR.a, mi), modD(mi, BR.a));
+      // only enter the branch at its START (rejoin end is one-way: branch -> main)
+      if (da < 35) { const [bi, bd] = nearBr(o.pos, Math.min(BR.n - 1, modD(BR.a, mi) < 35 ? modD(BR.a, mi) : 0), 45); alt = { path: 1, idx: bi, d: Math.sqrt(bd) }; }
     }
   }
+  let pick = cur;
+  if (alt) {
+    const limOf = c => c.path === 1 ? BR_LIMIT : LIMIT;
+    const curOut = Math.abs(latOn(cur.path, cur.idx)) > limOf(cur), altIn = Math.abs(latOn(alt.path, alt.idx)) <= limOf(alt);
+    if (alt.d + 2 < cur.d || (curOut && altIn)) pick = alt;
+  }
+  o.path = pick.path; o.idx = pick.idx;
   const p = pP(o), l = pL(o); return { lat: (o.pos.x - p.x) * l.x + (o.pos.z - p.z) * l.z, lim: o.path === 1 ? BR_LIMIT : LIMIT, l };
 }
 // a point `ahead` steps further along the route this object is following (o.takeBr decides at the fork)
@@ -1568,7 +1579,7 @@ function placeKarts() {
   const grid = [[N - 14, 3.5], [N - 14, -3.5], [N - 7, 3.5], [N - 7, -3.5]];
   karts.forEach((k, i) => {
     const [gi, lat] = grid[i];
-    k.idx = gi; k.itemsUsed = 0; k.padBoosts = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat);
+    k.idx = gi; k.progT = undefined; k.recovers = 0; k.itemsUsed = 0; k.padBoosts = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat);
     k.heading = Math.atan2(T[gi].x, T[gi].z); k.speed = 0; k.total = gi - N; k.lap = 1;
     Object.assign(k, { est: false, drifting: false, charge: 0, boost: 0, spin: 0, item: null, itemCount: 0, rolling: 0, finished: false, finishTime: 0, useTimer: 0, visYaw: 0, star: 0, shrink: 0, scale: 1 });
     k.root.position.copy(k.pos); k.root.rotation.y = k.heading; k.root.scale.setScalar(1);
@@ -1692,6 +1703,15 @@ function updateKart(k, dt, inp) {
     }
   }
   let d = progS(k) - oldS; if (d < -N / 2) d += N; if (d > N / 2) d -= N; k.total += d;
+  // stuck detection & recovery (bots / autopilot): no forward progress for 3 s -> back onto the road centre
+  if (state === 'race' && !k.finished && !k.remote) {
+    if (k.progT === undefined || k.total > k.progTot + 4) { k.progTot = k.total; k.progT = raceTime; }
+    else if ((!k.isPlayer || AUTO) && raceTime > 5 && raceTime - k.progT > 3 && k.spin <= 0) {
+      const p = pP(k), t = pT(k), l = pL(k), lane = clamp(k.laneBias || 0, -2, 2);
+      k.pos.set(p.x + l.x * lane + t.x * 2, 0, p.z + l.z * lane + t.z * 2); k.heading = Math.atan2(t.x, t.z); k.speed = 8; k.drifting = false; k.charge = 0;
+      k.progT = raceTime; k.progTot = k.total; k.recovers = (k.recovers || 0) + 1;
+    }
+  }
   // boost pads
   let on = false;
   for (const b of BOOST) { const dx = k.pos.x - b.x, dz = k.pos.z - b.z, al = dx * b.tx + dz * b.tz, la = dx * b.lx + dz * b.lz; if (Math.abs(al) < 4 && Math.abs(la) < b.w / 2) { on = true; break; } }
