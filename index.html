@@ -198,7 +198,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009215441', busy = false;
+  var BUILD = '20261009215741', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -264,7 +264,7 @@
     <p><span class="keys">↑/W</span> גז &nbsp; <span class="keys">↓/S</span> ברקס/רוורס &nbsp; <span class="keys">←→/AD</span> היגוי</p>
     <p><span class="keys">Shift/רווח</span> דריפט – החזק בפנייה ושחרר לבוסט &nbsp; <span class="keys">E/X</span> פריט</p>
     <p>בטלפון: ◀ ▶ משמאל, גז/ברקס/פריט מימין. אפשר להחליק אצבע בין ◀ ל-▶.</p>
-    <p>☕ קפה שחור – טורבו · 🍩 3 סופגניות – 3 טורבו · 🥙 פיתה חומוס – שלולית מחליקה · 🧆 פלאפל מעופף – מונחה · ✡️ מגן דוד זהוב – בלתי מנוצח · 📯 שופר – מכווץ את כולם</p>
+    <p>☕ קפה שחור – טורבו · 🛡️ כיפת ברזל – מגן שחוסם פגיעה אחת · 🥙 פיתה חומוס – שלולית מחליקה · 🧆 פלאפל מעופף – מונחה · ✡️ מגן דוד זהוב – בלתי מנוצח · 📯 שופר – מכווץ את כולם</p>
   </div>
 </div>
 <div id="charScreen" class="screen" style="display:none">
@@ -464,6 +464,8 @@ const SND = {
   },
   // ---------- sfx ----------
   sip() { const t = this.now(); this.noise(t, 0.25, { gain: 0.25, type: 'bandpass', freq: 600, freqTo: 1800, q: 4 }); this.tone(300, t + 0.05, 0.12, { type: 'sine', gain: 0.2, slideTo: 520 }); },
+  shield() { const t = this.now(); [523, 784, 1047, 1568].forEach((f, i) => this.tone(f, t + i * 0.06, 0.18, { type: 'triangle', gain: 0.14 })); this.noise(t, 0.4, { gain: 0.08, type: 'highpass', freq: 3000 }); },
+  block() { const t = this.now(); this.tone(1400, t, 0.25, { type: 'square', gain: 0.12, slideTo: 2200 }); this.tone(700, t, 0.3, { type: 'triangle', gain: 0.16 }); this.noise(t, 0.15, { gain: 0.2, type: 'bandpass', freq: 4000, q: 2 }); },
   nom() { const t = this.now(); [0, 0.11].forEach(d => this.tone(260, t + d, 0.08, { type: 'square', gain: 0.12, slideTo: 180 })); },
   splat() { const t = this.now(); this.noise(t, 0.3, { gain: 0.45, type: 'lowpass', freq: 1200, freqTo: 200 }); },
   sizzle() { const t = this.now(); this.noise(t, 0.45, { gain: 0.22, freq: 5000 }); this.tone(700, t, 0.35, { type: 'triangle', gain: 0.12, slideTo: 300 }); },
@@ -527,7 +529,7 @@ try { SND.muted = localStorage.getItem('kart-muted') === '1'; } catch (_) {}
 // ---------- constants ----------
 const N = 1000, HW = 9, CURB = 1.6, WALL = HW + CURB, LIMIT = WALL - 1.3, LAPS = 3;
 const ITEMS = {
-  mushroom: { icon: '☕', name: 'קפה שחור' }, triple: { icon: '🍩', name: '3 סופגניות' }, banana: { icon: '🥙', name: 'פיתה חומוס' },
+  mushroom: { icon: '☕', name: 'קפה שחור' }, shield: { icon: '🛡️', name: 'כיפת ברזל' }, banana: { icon: '🥙', name: 'פיתה חומוס' },
   shell: { icon: '🧆', name: 'פלאפל מעופף' }, star: { icon: '✡️', name: 'מגן דוד זהוב' }, lightning: { icon: '📯', name: 'שופר' },
 };
 
@@ -1272,6 +1274,12 @@ function fireShell(k, e) {
 }
 function spinKart(k, dur, byPlayer) {
   if (k.star > 0 || k.spin > 0) return false;
+  if (k.shield > 0) {   // Iron Dome absorbs exactly one hit
+    k.shield = 0; k.shieldPop = 0.5;
+    if (k.isPlayer) { flash('כיפת ברזל יירטה! 🛡️', .9, '#7fd8ff'); SND.block(); } else if (k.pos.distanceTo(player.pos) < 35) SND.block();
+    if (typeof netEv === 'function' && !k.remote) netEv({ k: 'block', s: k.slot });
+    return 'blocked';
+  }
   k.spin = dur; k.boost = 0; k.drifting = false;
   if (k.isPlayer) { flash('אופס! 😵', 1, '#ffe135'); SND.spin(); shakeCam(0.55); }
   else if (byPlayer || k.pos.distanceTo(player.pos) < 35) SND.spin();
@@ -1633,14 +1641,16 @@ function resetRace() {
 function useItem(k) {
   if (state !== 'race' || !k || !k.item || k.rolling > 0 || k.finished) return;
   const it = k.item, me = k.isPlayer; k.itemsUsed = (k.itemsUsed || 0) + 1;
-  if (it === 'mushroom' || it === 'triple') {
-    k.boost = Math.max(k.boost, 1.4); if (me) { if (it === 'triple') { flash('סופגנייה! 🍩 טורבו', .7); SND.nom(); } else { flash('קפה שחור! ☕ טורבו', .7); SND.sip(); } SND.boost(); }
-    if (it === 'triple' && --k.itemCount > 0) { k.useTimer = 0.9 + Math.random(); return; }
+  if (it === 'shield') {
+    k.shield = 10; if (me) { flash('כיפת ברזל! 🛡️ מוגן מפגיעה אחת', 1.1, '#7fd8ff'); SND.shield(); }
+    netEv({ k: 'shield', s: k.slot });
+  } else if (it === 'mushroom') {
+    k.boost = Math.max(k.boost, 1.4); if (me) { flash('קפה שחור! ☕ טורבו', .7); SND.sip(); SND.boost(); }
   } else if (it === 'banana') { dropBanana(k); if (me) { SND.splat(); flash('חומוס על הכביש! 🥙', .7); } }
   else if (it === 'shell') { fireShell(k); if (me) { SND.sizzle(); SND.shell(); flash('פלאפל מעופף! 🧆', .7); } }
   else if (it === 'star') { k.star = 6.5; k.spin = 0; if (me) { flash('מגן דוד זהוב! ✡️', 1, '#ffd23f'); SND.star(); SND.starMode = true; } }
   else if (it === 'lightning') {
-    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.7, false); o.shrink = 3.2; }
+    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { if (spinKart(o, 0.7, false) !== 'blocked') o.shrink = 3.2; }
     if (netOn()) netEv({ k: 'light', s: k.slot });
     screenFlash(); shakeCam(0.3); SND.lightning(); flash(me ? 'תקיעת שופר! 📯' : `${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
   }
@@ -1665,6 +1675,7 @@ function rubberRef() { const h = karts.filter(k => k.human); return h.length ? h
 const NOINPUT = { throttle: 0, steer: 0, drift: false };
 function nearest(pos, hint) { let best = hint, bd = 1e9; for (let o = -30; o <= 30; o++) { const i = (hint + o + N) % N; const dx = pos.x - P[i].x, dz = pos.z - P[i].z, d = dx * dx + dz * dz; if (d < bd) { bd = d; best = i; } } return best; }
 function updateKart(k, dt, inp) {
+  if (k.shield > 0) k.shield = Math.max(0, k.shield - dt);
   k.lastSteer = inp.steer; k.lastThrottle = inp.throttle;
   if (k.spin > 0) { k.spin -= dt; k.speed *= Math.pow(0.15, dt); inp = NOINPUT; k.drifting = false; }
   if (k.boost > 0) k.boost -= dt;
@@ -1728,7 +1739,7 @@ function updateKart(k, dt, inp) {
   if (k.rolling > 0) {
     k.rolling -= dt;
     if (k.isPlayer) { k.rollTick -= dt; if (k.rollTick <= 0) { k.rollTick = 0.07; SND.roll(); } }
-    if (k.rolling <= 0) { k.item = k.pending; k.itemCount = k.item === 'triple' ? 3 : 1; k.useTimer = 0.8 + Math.random() * 3; if (k.isPlayer) SND.gotItem(); }
+    if (k.rolling <= 0) { k.item = k.pending; k.itemCount = 1; k.useTimer = 0.8 + Math.random() * 3; if (k.isPlayer) SND.gotItem(); }
   }
   for (const b of boxes) if (b.active) { const dx = b.mesh.position.x - k.pos.x, dz = b.mesh.position.z - k.pos.z; if (dx * dx + dz * dz < 5.3) { b.active = false; b.mesh.visible = false; b.t = 3; giveItem(k); if (netOn()) netEv({ k: 'box', i: boxes.indexOf(b) }); } }
 }
@@ -1987,6 +1998,9 @@ const hexGeo = (() => { const s = new THREE.Shape(); for (let i = 0; i < 12; i++
   const h = new THREE.Shape(); for (let i = 0; i < 6; i++) { const a = Math.PI / 2 + i * Math.PI / 3, r = 0.3; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? h.lineTo(x, y) : h.moveTo(x, y); } s.holes.push(h);
   const g = new THREE.ExtrudeGeometry(s, { depth: 0.12, bevelEnabled: false }); g.translate(0, 0, -0.06); return g; })();
 const hexMat = new THREE.MeshBasicMaterial({ color: 0xffd23f, side: THREE.DoubleSide });
+const domeGeo = new THREE.SphereGeometry(2.9, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+const domeMat = new THREE.MeshBasicMaterial({ color: 0x7fd8ff, transparent: true, opacity: 0.33, wireframe: false, depthWrite: false, side: THREE.DoubleSide, map: canvasTex(128, 128, (g, w, h) => { g.fillStyle = '#9fe6ff'; g.fillRect(0, 0, w, h); g.strokeStyle = '#ffffff'; g.lineWidth = 4; for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) { const cx = x * 32 + (y % 2) * 16, cy = y * 32 + 16; g.beginPath(); for (let a = 0; a < 6; a++) { const r = 14, an = a * Math.PI / 3; g.lineTo(cx + r * Math.cos(an), cy + r * Math.sin(an)); } g.closePath(); g.stroke(); } }, true) });
+domeMat.map.repeat.set(4, 2);
 function render(dt, now) {
   for (const b of boxes) { b.mesh.rotation.y += dt * 1.6; b.mesh.rotation.x += dt * 0.7; b.mesh.position.y = 1.4 + Math.sin(now / 300 + b.mesh.position.x) * 0.2; }
   if (seaMat) seaMat.map.offset.set(now / 40000, now / 25000);
@@ -2007,6 +2021,8 @@ function render(dt, now) {
     k.flame.visible = k.boost > 0 || k.star > 0; if (k.flame.visible) k.flame.scale.set(1, 0.7 + Math.random() * 0.7, 1);
     if (k.star > 0) { k.mats.forEach((m, i) => m.emissive.setHSL(0.12, 1, 0.22 + 0.16 * Math.sin(now / 70 + i))); k.starOn = true; }
     else if (k.starOn) { k.mats.forEach(m => m.emissive.setRGB(0, 0, 0)); k.starOn = false; }
+    if (k.shield > 0 && !k.dome) { k.dome = new THREE.Mesh(domeGeo, domeMat.clone()); k.dome.position.y = 0.2; k.root.add(k.dome); }
+    if (k.dome) { const pop = k.shieldPop > 0; if (pop) k.shieldPop -= dt; k.dome.visible = k.shield > 0 || pop; if (k.dome.visible) { const s = pop ? 1 + (0.5 - k.shieldPop) * 2.5 : 1 + Math.sin(now / 160) * 0.04; k.dome.scale.setScalar(s); k.dome.material.opacity = pop ? Math.max(0, k.shieldPop) * 0.9 : (k.shield < 2 ? 0.15 + 0.2 * (Math.sin(now / 60) > 0) : 0.33); k.dome.rotation.y = now / 900; } }
     if (k.star > 0 && !k.mdStar) { k.mdStar = new THREE.Mesh(hexGeo, hexMat); k.mdStar.position.y = 4.6; k.root.add(k.mdStar); }
     if (k.mdStar) { k.mdStar.visible = k.star > 0; if (k.star > 0) { k.mdStar.rotation.y = now / 300; k.mdStar.position.y = 4.6 + Math.sin(now / 200) * 0.25; } }
     k.head.rotation.y = k.isPlayer && state === 'race' ? playerInput().steer * 0.3 : 0;
@@ -2033,7 +2049,7 @@ function render(dt, now) {
     hudPos.innerHTML = `<small>מקום</small> ${rankOf(player)}<small>/4</small>`;
     const keysOrder = Object.keys(ITEMS);
     if (player.rolling > 0) itemBox.textContent = ITEMS[keysOrder[Math.floor(now / 80) % keysOrder.length]].icon;
-    else if (player.item) itemBox.innerHTML = ITEMS[player.item].icon + (player.item === 'triple' ? `<span class="cnt">×${player.itemCount}</span>` : '');
+    else if (player.item) itemBox.innerHTML = ITEMS[player.item].icon;
     else itemBox.textContent = '';
     itemHint.innerHTML = player.item && player.rolling <= 0 ? `${ITEMS[player.item].name} · ` + (isTouch ? 'לחץ "פריט"' : '<span class="keys">E</span> / <span class="keys">X</span>') : '';
     board.innerHTML = rankList().map((k, i) => `<div class="${k.isPlayer ? 'me' : ''}">${i + 1}. ${k.name}${k.human && !k.isPlayer ? ' 🎮' : ''}</div>`).join('');
@@ -2286,7 +2302,7 @@ function beginMPRace(slots, track) {
 }
 const r2 = v => Math.round(v * 100) / 100;
 function kartState(k) {
-  const f = (k.drifting ? 1 : 0) | (k.driftDir > 0 ? 2 : 0) | (k.boost > 0 ? 4 : 0) | (k.star > 0 ? 8 : 0) | (k.shrink > 0 ? 16 : 0) | (k.charge > 0.75 ? 32 : 0) | (k.charge > 1.6 ? 64 : 0) | (k.hop > 0 ? 128 : 0);
+  const f = (k.drifting ? 1 : 0) | (k.driftDir > 0 ? 2 : 0) | (k.boost > 0 ? 4 : 0) | (k.star > 0 ? 8 : 0) | (k.shrink > 0 ? 16 : 0) | (k.charge > 0.75 ? 32 : 0) | (k.charge > 1.6 ? 64 : 0) | (k.hop > 0 ? 128 : 0) | (k.shield > 0 ? 256 : 0);
   return [k.slot, r2(k.pos.x), r2(k.pos.z), Math.round(k.heading * 1000) / 1000, r2(k.speed), k.total, k.lap, f, r2(Math.max(0, k.spin)), k.finished ? r2(k.finishTime) : -1];
 }
 function applyState(k, e) {
@@ -2294,7 +2310,7 @@ function applyState(k, e) {
   k.last = e;
   if (!k.nt) { k.pos.set(x, 0, z); k.heading = h; trackProject(k); }
   k.nt = { x, z, h, sp, t: performance.now() };
-  k.total = total; k.lap = lap; k.drifting = !!(f & 1); k.driftDir = f & 2 ? 1 : -1; k.boost = f & 4 ? 0.2 : 0; k.star = f & 8 ? 1 : 0; k.shrink = f & 16 ? 1 : 0;
+  k.total = total; k.lap = lap; k.drifting = !!(f & 1); k.driftDir = f & 2 ? 1 : -1; k.boost = f & 4 ? 0.2 : 0; k.star = f & 8 ? 1 : 0; k.shrink = f & 16 ? 1 : 0; k.shield = f & 256 ? 1 : 0;
   k.charge = f & 64 ? 2 : f & 32 ? 1 : k.drifting ? 0.4 : 0; if (f & 128 && k.hop <= 0) k.hop = 0.3;
   if (spin > 0 && k.spin <= 0) k.spin = spin; else if (spin <= 0) k.spin = 0;
   if (ft >= 0 && !k.finished) { k.finished = true; k.finishTime = ft; finishCount++; k.place = finishCount; }
@@ -2319,11 +2335,13 @@ function netEv(e) {
 function applyEv(e) {
   const k = karts[e.s];
   if (e.k === 'box') { const b = boxes[e.i]; if (b && b.active) { b.active = false; b.mesh.visible = false; b.t = 3; } }
+  else if (e.k === 'shield' && k) { if (k.remote) k.shield = 10; }
+  else if (e.k === 'block' && k) { if (k.remote) { k.shield = 0; k.shieldPop = 0.5; } }
   else if (e.k === 'banana' && k) { if (!bananas.some(b => b.id === e.id)) dropBanana(k, e); }
   else if (e.k === 'shell' && k) { fireShell(k, e); if (k.pos.distanceTo(player.pos) < 40) SND.shell(); }
   else if (e.k === 'rm') removeBanana(e.id);
   else if (e.k === 'light' && k) {
-    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { spinKart(o, 0.7, false); o.shrink = 3.2; }
+    for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { if (spinKart(o, 0.7, false) !== 'blocked') o.shrink = 3.2; }
     screenFlash(); shakeCam(0.3); SND.lightning(); flash(`${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
   }
 }
