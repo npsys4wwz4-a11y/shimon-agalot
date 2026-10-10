@@ -448,7 +448,7 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010134412', busy = false;
+  var BUILD = '20261010141218', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -2227,7 +2227,7 @@ function playerInput() {
   // touch: hold BRAKE while steering at speed = drift (keeps the gas on); brake when straight / slow = normal brake
   const brakeDrift = !!touch.brake && player && (player.drifting || (Math.abs(steer) > 0.3 && player.speed > 17));
   const trickBtn = !!(touch.brake || touch.drift || kbDrift || keys.ArrowDown || keys.KeyS), trick = trickBtn && !trickPrev; trickPrev = trickBtn;
-  return { throttle: brakeDrift ? 1 : (up ? 1 : 0) - (dn ? 1 : 0), steer, drift: kbDrift || !!touch.drift || brakeDrift, trick };
+  return { throttle: brakeDrift ? 1 : dn ? -1 : up ? 1 : 0, steer, drift: kbDrift || !!touch.drift || brakeDrift, trick };
 }
 // ================= GRAPHICS FX: sky, shadows, toon ramp, particles, skid marks, shake, adaptive quality =================
 const FX = { q: isTouch ? 1 : 2, shake: 0 };   // quality: 2 = desktop (2k shadows), 1 = phone (1k shadows), 0 = no shadows, fewer particles
