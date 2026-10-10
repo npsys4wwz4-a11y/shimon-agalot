@@ -454,7 +454,7 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010145834', busy = false;
+  var BUILD = '20261010152549', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -500,7 +500,7 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
   <button id="profBadge" aria-label="פרופיל"><span class="r1"><b id="pbName"></b><span class="lv">רמה <i id="pbLvl">1</i></span></span><span class="xpbar"><u id="pbBar"></u></span><small id="pbXp"></small></button>
   <div class="tTop">
     <div class="logoWrap">
-      <svg class="logoSvg" viewBox="0 0 640 250" role="img" aria-label="שמעון עגלות">
+      <svg class="logoSvg" id="logoSvg" viewBox="0 0 640 250" overflow="visible" role="img" aria-label="שמעון עגלות">
         <defs>
           <linearGradient id="lgFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#bfe3ff"/><stop offset=".55" stop-color="#5b93ff"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
           <linearGradient id="lgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a6"/><stop offset=".5" stop-color="#ffcf2e"/><stop offset="1" stop-color="#e08a00"/></linearGradient>
@@ -512,15 +512,26 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
           <g fill="none" stroke="#fff" stroke-width="5.5" stroke-linejoin="miter"><polygon points="0,-21 18.2,10.5 -18.2,10.5"/><polygon points="0,21 18.2,-10.5 -18.2,-10.5"/></g>
           <ellipse cx="-10" cy="-18" rx="14" ry="7" fill="#fff" opacity=".35" transform="rotate(-25)"/>
         </g>
-        <g font-family="Rubik,Arial" font-weight="900" font-size="112" text-anchor="middle" direction="rtl">
-          <text x="320" y="200" fill="#0b1e5a" stroke="#0b1e5a" stroke-width="34" stroke-linejoin="round" transform="translate(0 10)" textLength="540" lengthAdjust="spacingAndGlyphs">שמעון עגלות</text>
-          <text x="320" y="200" fill="#0b1e5a" stroke="#0b1e5a" stroke-width="30" stroke-linejoin="round" textLength="540" lengthAdjust="spacingAndGlyphs">שמעון עגלות</text>
-          <text x="320" y="200" fill="url(#lgGold)" stroke="url(#lgGold)" stroke-width="18" stroke-linejoin="round" textLength="540" lengthAdjust="spacingAndGlyphs">שמעון עגלות</text>
-          <text x="320" y="200" fill="url(#lgFill)" stroke="#0b1e5a" stroke-width="6" stroke-linejoin="round" paint-order="stroke" textLength="540" lengthAdjust="spacingAndGlyphs">שמעון עגלות</text>
-          <text x="320" y="200" fill="#fff" opacity=".42" clip-path="url(#lgTop)" textLength="540" lengthAdjust="spacingAndGlyphs">שמעון עגלות</text>
+        <g font-family="Rubik,Arial" font-weight="900" font-size="112" text-anchor="middle">
+          <text x="320" y="200" fill="#0b1e5a" stroke="#0b1e5a" stroke-width="34" stroke-linejoin="round" transform="translate(0 10)">שמעון עגלות</text>
+          <text x="320" y="200" fill="#0b1e5a" stroke="#0b1e5a" stroke-width="30" stroke-linejoin="round">שמעון עגלות</text>
+          <text x="320" y="200" fill="url(#lgGold)" stroke="url(#lgGold)" stroke-width="18" stroke-linejoin="round">שמעון עגלות</text>
+          <text x="320" y="200" fill="url(#lgFill)" stroke="#0b1e5a" stroke-width="6" stroke-linejoin="round" paint-order="stroke">שמעון עגלות</text>
+          <text x="320" y="200" fill="#fff" opacity=".42" clip-path="url(#lgTop)">שמעון עגלות</text>
         </g>
       </svg>
     </div>
+    <script>
+    (function () {   // fit the logo viewBox to the real rendered text (WebKit RTL/textLength quirks) + stroke padding
+      function fit() { try {
+        var s = document.getElementById('logoSvg'); if (!s || !s.getBBox) return; var t = s.querySelectorAll('text')[0], b = t.getBBox(); if (!b.width) return;
+        var pad = 26, x0 = Math.min(b.x - pad, 320 - 50), x1 = Math.max(b.x + b.width + pad, 320 + 50), y0 = 0, y1 = Math.max(250, b.y + b.height + pad);
+        var w = x1 - x0, cx = 320; w = Math.max(w, 2 * Math.max(cx - x0, x1 - cx));   // keep the emblem centred
+        s.setAttribute('viewBox', (cx - w / 2).toFixed(1) + ' ' + y0 + ' ' + w.toFixed(1) + ' ' + (y1 - y0).toFixed(1));
+      } catch (e) {} }
+      fit(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit); addEventListener('load', fit); setTimeout(fit, 1500);
+    })();
+    </script>
     <div class="ribbon">🏁 מרוץ העגלות הישראלי 🏁</div>
   </div>
   <div class="tBottom">
@@ -878,6 +889,7 @@ document.title = document.title.replace(STRIP, '').trim();
 </script>
 <script type="module">
 import * as THREE from 'three';
+let GP = null, AI_MUL = 1, cupSel = 0, diffSel = 1, gpPending = false;   // championship state (declared first: read by game3 during init)
 // ================= AUDIO (procedural Web Audio) =================
 const SND = {
   ctx: null, muted: false, song: null, step: 0, nextTime: 0, tempoMul: 1, starMode: false, lastWall: 0,
@@ -2440,7 +2452,12 @@ function seeded(str) { let h = 1779033703 ^ str.length; for (let i = 0; i < str.
 const msToMidnightIL = () => { const now = new Date(), [y, m, d] = ilParts(now); const off = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' })) - new Date(now.toLocaleString('en-US', { timeZone: 'UTC' })); return Date.UTC(y, m - 1, d + 1) - off - now.getTime(); };
 
 // ---------- wallet ----------
-PROFILE.coins = PROFILE.coins || 0; PROFILE.owned = PROFILE.owned || []; PROFILE.eq = PROFILE.eq || {}; PROFILE.tro = PROFILE.tro || {};
+// sanitize saved data from older builds / corrupted storage: wrong types fall back to defaults instead of crashing init
+{ const P = PROFILE, obj = v => v && typeof v === 'object' && !Array.isArray(v);
+  P.coins = Number.isFinite(+P.coins) && +P.coins >= 0 ? Math.floor(+P.coins) : 0; P.xp = Number.isFinite(+P.xp) && +P.xp >= 0 ? +P.xp : 0;
+  P.races = +P.races || 0; P.wins = +P.wins || 0; if (typeof P.name !== 'string') P.name = ''; if (typeof P.uid !== 'string') P.uid = Math.random().toString(36).slice(2, 10);
+  P.owned = Array.isArray(P.owned) ? P.owned.filter(x => typeof x === 'string') : []; if (!obj(P.eq)) P.eq = {}; if (!obj(P.tro)) P.tro = {}; if (!obj(P.ch)) delete P.ch;
+  if (!obj(P.st) || typeof P.st.last !== 'string' || !Number.isFinite(+P.st.n)) delete P.st; }
 function addCoins(n) { PROFILE.coins = Math.max(0, Math.round(PROFILE.coins + n)); saveProfile(); renderMetaBadges(); }
 function grantXP(n) { const Lb = levelOf(PROFILE.xp); PROFILE.xp += Math.round(n); saveProfile(); const La = levelOf(PROFILE.xp); renderBadge(); return { Lb, La, unlocked: UNLOCKS.filter(u => u.level > Lb && u.level <= La) }; }
 function coinToast(txt) { const t = document.createElement('div'); t.className = 'coinToast'; t.textContent = txt; document.body.appendChild(t); setTimeout(() => t.remove(), 2300); }
@@ -3316,7 +3333,7 @@ const CUPS = [
 ];
 const DIFFS = [{ name: 'קל', cc: '50cc', ai: 0.88, mul: 1 }, { name: 'בינוני', cc: '100cc', ai: 1.0, mul: 1.5 }, { name: 'קשה', cc: '150cc', ai: 1.09, mul: 2 }];
 const GP_PTS = [10, 7, 5, 3];
-let GP = null, AI_MUL = 1, cupSel = 0, diffSel = 1, gpPending = false;
+// GP globals are declared at the top of audio.js (used by earlier modules during init)
 const cupOpen = i => levelOf(PROFILE.xp) >= CUPS[i].level || /[?&]unlockall/.test(location.search);
 const trophyIcon = p => p ? ['🥇', '🥈', '🥉'][p - 1] : '▫️';
 
