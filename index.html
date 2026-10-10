@@ -442,13 +442,19 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 #shopPrevInfo{text-align:center;font-weight:800;color:var(--navy);max-width:min(30vw,170px)} #shopPrevInfo .pPrice{color:#b86b00;font-weight:900} #shopPrevInfo .pMiss{color:#d61f1f;font-size:13px} #shopPrevInfo .pOwn{color:#1d7a2a}
 .shopItem.prev{border-color:var(--sky)!important;box-shadow:inset 0 2px 0 #fff,0 4px 0 #2f8fd8,0 0 16px rgba(127,208,255,.8)!important}
 @media (max-width:480px){#shopPrevInfo{max-width:60vw}}
+/* logo: always fully visible below the notch / status bar, never overlapped by the ribbon */
+.logoWrap{padding-top:max(6px,env(safe-area-inset-top));overflow:visible}
+.logoSvg{width:min(90vw,600px);max-height:23vh;height:auto}
+.title .ribbon{margin-top:8px!important;position:relative;z-index:1}
+@media (max-height:520px){.logoWrap{padding-top:max(2px,env(safe-area-inset-top))}.logoSvg{height:25vh;max-height:25vh;width:auto;max-width:56vw}.title .ribbon{margin-top:3px!important;font-size:13px!important;padding:3px 20px!important}}
+@media (max-height:340px){.logoSvg{height:22vh;max-height:22vh}}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010141218', busy = false;
+  var BUILD = '20261010142746', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
