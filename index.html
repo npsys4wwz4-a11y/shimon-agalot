@@ -449,12 +449,16 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 @media (max-height:520px){.logoWrap{padding-top:max(2px,env(safe-area-inset-top))}.logoSvg{height:25vh;max-height:25vh;width:auto;max-width:56vw}.title .ribbon{margin-top:3px!important;font-size:13px!important;padding:3px 20px!important}}
 @media (max-height:340px){.logoSvg{height:22vh;max-height:22vh}}
 
+input.vol{direction:ltr;-webkit-appearance:none;appearance:none;width:min(200px,46vw);height:14px;border-radius:99px;background:linear-gradient(90deg,#ffd23f var(--p,80%),#0b1e5a var(--p,80%));border:2px solid #0b1e5a;box-shadow:inset 0 2px 3px rgba(0,0,0,.35);touch-action:none}
+input.vol::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#bfe3ff 45%,#2f6bff);border:3px solid #0b1e5a;box-shadow:0 3px 0 #0b1e5a}
+input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#bfe3ff;border:3px solid #0b1e5a}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010152549', busy = false;
+  var BUILD = '20261010195046', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -712,10 +716,12 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 <div id="ctrlScreen" class="screen" style="display:none">
   <div class="card ctrlCard">
 <button class="backBtn" id="ctrlBack" data-back><svg class="ic"><use href="#i-back"/></svg> חזרה</button>
-    <h2>⚙ שליטה</h2>
+    <h2>⚙ הגדרות</h2>
     <div class="cRow"><b>היגוי</b><div class="cOpts" id="ctrlSteer"><button class="tab" data-v="buttons">כפתורים</button><button class="tab" data-v="swipe">החלקה</button><button class="tab" data-v="tilt">הטיית מכשיר</button></div></div>
     <div class="cRow"><b>גז אוטומטי</b><div class="cOpts"><button class="tab" id="ctrlGas"></button></div></div>
     <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tab" id="ctrlDrift"></button></div></div>
+    <div class="cRow"><b>מוזיקה</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
+    <div class="cRow"><b>אפקטים</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volSfx" min="0" max="100" step="5"></div></div>
     <p class="note" id="ctrlHelp"></p>
     <p class="note warn" id="ctrlMsg"></p>
   </div>
@@ -899,8 +905,8 @@ const SND = {
     const c = this.ctx = new AC();
     const comp = c.createDynamicsCompressor(); comp.connect(c.destination);
     this.master = c.createGain(); this.master.gain.value = this.muted ? 0 : 0.8; this.master.connect(comp);
-    this.music = c.createGain(); this.music.gain.value = 0.3; this.music.connect(this.master);
-    this.sfx = c.createGain(); this.sfx.gain.value = 0.85; this.sfx.connect(this.master);
+    this.music = c.createGain(); this.music.gain.value = 0.2 * this.vol.m; this.music.connect(this.master);
+    this.sfx = c.createGain(); this.sfx.gain.value = 0.85 * this.vol.s; this.sfx.connect(this.master);
     // iOS unlock: play a silent buffer inside the user gesture
     const sb = c.createBuffer(1, 1, 22050), ss = c.createBufferSource(); ss.buffer = sb; ss.connect(c.destination); ss.start(0);
     c.resume();
@@ -923,6 +929,9 @@ const SND = {
     document.addEventListener('visibilitychange', () => { if (!this.ctx) return; document.hidden ? this.ctx.suspend() : (!this.paused && this.ctx.resume()); });
   },
   pause(p) { this.paused = p; if (!this.ctx) return; p ? this.ctx.suspend() : this.ctx.resume(); },
+  vol: { m: 0.8, s: 1 },
+  setVol(m, s) { this.vol = { m: Math.max(0, Math.min(1, m)), s: Math.max(0, Math.min(1, s)) }; try { localStorage.setItem('kart-vol', JSON.stringify(this.vol)); } catch (_) {}
+    if (this.ctx) { this.music.gain.setTargetAtTime(0.2 * this.vol.m, this.ctx.currentTime, 0.03); this.sfx.gain.setTargetAtTime(0.85 * this.vol.s, this.ctx.currentTime, 0.03); } },
   setMuted(m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.8, this.ctx.currentTime, 0.02); },
   mtof: m => 440 * Math.pow(2, (m - 69) / 12),
   tone(freq, t, dur, { type = 'square', gain = 0.2, dest, slideTo, attack = 0.005 } = {}) {
@@ -973,7 +982,29 @@ const SND = {
     this.tone(this.mtof(S.key + sc(arp[s % 4])), t, spb * 0.9, { type: 'square', gain: 0.035, dest: M });
     // lead
     const n = S.mel[i];
-    if (n !== null && n !== undefined) this.tone(this.mtof(S.key + 12 + sc(n)), t, spb * 1.8, { type: S.leadType || 'square', gain: 0.11, dest: M });
+    if (n !== null && n !== undefined) {
+      const f = this.mtof(S.key + 12 + sc(n));
+      if (S.lead === 'bell') { this.tone(f, t, spb * 4, { type: 'sine', gain: 0.12, dest: M }); this.tone(f * 2.76, t, spb * 1.5, { type: 'sine', gain: 0.03, dest: M }); this.tone(f * 2, t, spb * 2, { type: 'triangle', gain: 0.025, dest: M }); }
+      else if (S.lead === 'oud') { this.tone(f, t, spb * 1.3, { type: 'sawtooth', gain: 0.07, dest: M }); this.tone(f * 2, t, spb * 0.5, { type: 'triangle', gain: 0.04, dest: M }); }
+      else if (S.lead === 'brass') { this.tone(f, t, spb * 1.8, { type: 'sawtooth', gain: 0.06, attack: 0.03, dest: M }); this.tone(f / 2, t, spb * 1.8, { type: 'square', gain: 0.03, attack: 0.03, dest: M }); }
+      else this.tone(f, t, spb * 1.8, { type: S.leadType || 'square', gain: 0.1, dest: M });
+    }
+    const ch = [0, 2, 4].map(o => this.mtof(S.key + sc(deg + o)));
+    if (S.layer === 'surf') {   // offbeat strummed chords + shaker: summery pop
+      if (s % 4 === 2) ch.forEach((f, j) => this.tone(f, t + j * 0.012, spb * 0.8, { type: 'square', gain: 0.022, dest: M }));
+      if (s % 2 === 1) this.noise(t, 0.04, { gain: 0.07, type: 'bandpass', freq: 6000, q: 1.5, dest: M });
+    } else if (S.layer === 'oud') {   // drone on root + fifth
+      if (s === 0) { this.tone(this.mtof(root - 12), t, spb * 15, { type: 'triangle', gain: 0.05, attack: 0.2, dest: M }); this.tone(this.mtof(root - 5), t, spb * 15, { type: 'sine', gain: 0.035, attack: 0.2, dest: M }); }
+      if (s === 6 || s === 14) this.noise(t, 0.03, { gain: 0.12, type: 'bandpass', freq: 5000, q: 4, dest: M });   // riq jingle
+    } else if (S.layer === 'accordion') {   // hora: pumping accordion chords on the off-beats + clap
+      if (s % 4 === 2) ch.forEach(f => { this.tone(f, t, spb * 1.6, { type: 'sawtooth', gain: 0.016, attack: 0.02, dest: M }); this.tone(f * 1.005, t, spb * 1.6, { type: 'sawtooth', gain: 0.012, attack: 0.02, dest: M }); });
+      if (s === 4 || s === 12) this.noise(t, 0.06, { gain: 0.2, type: 'bandpass', freq: 1200, q: 1.2, dest: M });
+    } else if (S.layer === 'winter') {   // sleigh bells + soft pad
+      this.noise(t, 0.05, { gain: s % 2 ? 0.04 : 0.08, type: 'bandpass', freq: 9000, q: 6, dest: M });
+      if (s === 0) ch.forEach(f => this.tone(f / 2, t, spb * 16, { type: 'sine', gain: 0.03, attack: 0.4, dest: M }));
+    } else if (S.layer === 'fanfare') {
+      if (s % 8 === 0) ch.forEach(f => this.tone(f, t, spb * 6, { type: 'sawtooth', gain: 0.02, attack: 0.04, dest: M }));
+    }
     if (this.starMode) this.tone(this.mtof(S.key + 24 + sc(arp[(s * 3) % 4])), t, spb * 0.6, { type: 'square', gain: 0.05, dest: M });
   },
   // ---------- sfx ----------
@@ -1029,33 +1060,44 @@ const SND = {
   },
 };
 const SONGS = {
-  beach: { bpm: 150, key: 60, drums: 'pop', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 4, 5, 3],
+  beach: { bpm: 150, key: 60, drums: 'pop', layer: 'surf', leadType: 'square', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 4, 5, 3],
     mel: [4,null,4,5, 7,null,4,null, 9,null,7,null, 5,4,2,null,
           4,null,4,5, 6,null,4,null, 8,null,6,null, 4,null,null,null,
           5,null,5,7, 9,null,7,5, 4,null,5,null, 7,null,9,null,
           10,null,9,null, 7,null,5,null, 4,null,2,null, 4,null,null,null] },
-  desert: { bpm: 132, key: 62, drums: 'darbuka', leadType: 'sawtooth', scale: [0, 1, 4, 5, 7, 8, 10], prog: [0, 1, 0, 6],
+  desert: { bpm: 132, key: 62, drums: 'darbuka', lead: 'oud', layer: 'oud', scale: [0, 1, 4, 5, 7, 8, 10], prog: [0, 1, 0, 6],
     mel: [0,1,2,null, 3,null,2,1, 2,null,1,null, 0,null,null,null,
           4,null,5,4, 3,null,2,null, 1,2,3,null, 2,null,null,null,
           7,null,6,5, 4,null,5,4, 3,null,2,null, 1,null,2,null,
           2,null,1,null, 0,null,1,2, 1,null,0,null, 0,null,null,null] },
-  hills: { bpm: 144, key: 64, drums: 'hora', leadType: 'triangle', scale: [0, 2, 3, 5, 7, 8, 11], prog: [0, 3, 4, 0],
+  hills: { bpm: 144, key: 64, drums: 'hora', leadType: 'square', layer: 'accordion', scale: [0, 2, 3, 5, 7, 8, 11], prog: [0, 3, 4, 0],
     mel: [0,null,2,3, 4,null,4,null, 3,2,3,null, 2,null,null,null,
           3,null,4,5, 6,null,5,4, 4,null,3,null, 4,null,null,null,
           7,null,6,5, 4,null,5,6, 7,null,5,null, 4,null,3,null,
           2,3,4,null, 2,null,1,null, 0,null,2,null, 0,null,null,null] },
-  hermon: { bpm: 152, key: 67, drums: 'pop', leadType: 'sine', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 4, 5, 3],
+  hermon: { bpm: 152, key: 67, drums: 'pop', lead: 'bell', layer: 'winter', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 4, 5, 3],
     mel: [4,null,4,null, 4,null,null,null, 4,null,4,null, 4,null,null,null,
           4,null,6,null, 2,null,3,4, null,null,null,null, null,null,null,null,
           5,null,5,null, 5,null,5,5, 4,null,4,null, 4,4,4,null,
           3,null,3,4, 3,null,null,6, 7,null,6,4, 2,null,null,null] },
-  menu: { bpm: 118, key: 60, drums: 'pop', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 5, 3, 4],
+  gp: { bpm: 128, key: 62, drums: 'pop', lead: 'brass', layer: 'fanfare', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 3, 4, 4],
+    mel: [0,null,4,null, 7,null,null,7, 9,null,7,null, 4,null,null,null,
+          5,null,7,null, 9,null,null,9, 11,null,9,null, 7,null,null,null,
+          7,null,9,7, 4,null,7,null, 9,null,7,null, 11,null,12,null,
+          11,null,9,null, 7,null,4,null, 7,null,null,null, null,null,null,null] },
+  podium: { bpm: 104, key: 60, drums: 'pop', lead: 'brass', layer: 'fanfare', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 3, 4, 0],
+    mel: [0,null,null,4, 7,null,null,null, 7,null,9,null, 7,null,null,null,
+          5,null,null,9, 12,null,null,null, 11,null,9,null, 7,null,null,null,
+          4,null,null,7, 9,null,null,null, 9,null,11,null, 12,null,null,null,
+          11,null,12,null, 14,null,null,null, 12,null,null,null, null,null,null,null] },
+  menu: { bpm: 118, layer: 'surf', key: 60, drums: 'pop', scale: [0, 2, 4, 5, 7, 9, 11], prog: [0, 5, 3, 4],
     mel: [7,null,null,4, null,null,5,null, 4,null,2,null, 0,null,null,null,
           5,null,null,4, null,null,2,null, 0,null,2,null, 4,null,null,null,
           3,null,null,5, null,null,7,null, 9,null,7,null, 5,null,4,null,
           4,null,5,null, 6,null,7,null, 8,null,null,null, null,null,null,null] },
 };
 try { SND.muted = localStorage.getItem('kart-muted') === '1'; } catch (_) {}
+try { const v = JSON.parse(localStorage.getItem('kart-vol') || 'null'); if (v && isFinite(v.m) && isFinite(v.s)) SND.vol = { m: Math.max(0, Math.min(1, +v.m)), s: Math.max(0, Math.min(1, +v.s)) }; } catch (_) {}
 // ---------- constants ----------
 const N = 1000, HW = 9, CURB = 1.6, WALL = HW + CURB, LIMIT = WALL - 1.3, LAPS = 3;
 const ITEMS = {
@@ -2980,7 +3022,7 @@ function onPlayerFinish() {
   const coinGain = Math.round([40, 25, 15, 10][place - 1] * (netOn() ? 1.25 : 1)); addCoins(coinGain);
   const chNew = chUpdate({ place, track: curTrack, kart: selKart, items: player.itemsBy || {}, shortcuts: player.shortcuts || 0, clean: player.cleanLaps || 0, pads: player.padBoosts || 0, mp: netOn() });
   xpRes.coins = coinGain; xpRes.chNew = chNew;
-  finTimers.push(setTimeout(() => SND.playSong('menu'), 3500));
+  finTimers.push(setTimeout(() => SND.playSong(GP ? 'gp' : 'menu'), 3500));
   finTimers.push(setTimeout(() => {
     const titles = ['🏆 ניצחת!', '🥈 מקום שני!', '🥉 מקום שלישי!', 'מקום רביעי...'];
     $('endTitle').textContent = titles[place - 1];
@@ -3326,6 +3368,11 @@ function showTut() {
     : `⬆ / W – גז · ⬇ / S – ברקס<br>⬅ ➡ – היגוי<br>Shift / רווח – דריפט (ובאוויר: טריק)<br>E – פריט · H – צופר · Esc – הפסקה`) + `<small>(אפשר לשנות ב"⚙ שליטה" בתפריט ההפסקה)</small>`;
   $('tutOverlay').style.display = 'flex'; clearTimeout(tutT); tutT = setTimeout(() => { $('tutOverlay').style.display = 'none'; }, 6500);
 }
+
+// volume sliders (settings screen)
+function syncVol() { for (const [id, v] of [['volMusic', SND.vol.m], ['volSfx', SND.vol.s]]) { const e = $(id); if (e) { e.value = Math.round(v * 100); e.style.setProperty('--p', Math.round(v * 100) + '%'); } } }
+for (const id of ['volMusic', 'volSfx']) $(id).addEventListener('input', e => { SND.init(); const m = +$('volMusic').value / 100, s = +$('volSfx').value / 100; SND.setVol(m, s); syncVol(); if (id === 'volSfx') SND.tink(true); });
+syncVol();
 // ================= CHAMPIONSHIPS (אליפות): 4 races, points 10/7/5/3, standings, 3D podium, trophies =================
 const CUPS = [
   { id: 'falafel', name: 'גביע הפלאפל', emoji: '🧆', tracks: [0, 1, 2, 0], level: 1, desc: 'החוף, ירושלים, איו"ש ושוב לחוף' },
@@ -3362,6 +3409,7 @@ function gpTryScore() {
 function gpMeta() { for (const k of karts) GP.meta[k.slot] = { c: CHARS.indexOf(CHARS.find(c => c.id === k.def.id)), ki: k.kartI, name: k.name, cos: k.isPlayer ? myCos() : (GP.meta[k.slot] && GP.meta[k.slot].cos) || {} }; }
 function standings() { return Object.keys(GP.meta).map(Number).sort((a, b) => (GP.pts[b] || 0) - (GP.pts[a] || 0) || a - b); }
 function renderStandings() {
+  if (SND.song !== SONGS.gp && state !== 'race') SND.playSong('gp');
   if (!GP) { $('gpBox').style.display = 'none'; return; }
   $('gpBox').style.display = '';
   const last = GP.i === 3;
@@ -3397,6 +3445,7 @@ function podiumKarts(list) {   // list: [{o, ki}] in finishing order (1st..4th)
 }
 function podiumDefault() { podiumKarts(CHARS.slice(0, 4).map((c, i) => ({ o: c, ki: AI_KART[i] }))); }
 function showPodium() {
+  setTimeout(() => { if (curScreen === 'podiumScreen') SND.playSong('podium'); }, 2600);
   const order = standings(), mySlot = karts.findIndex(k => k.isPlayer), place = order.indexOf(mySlot) + 1, cup = CUPS[GP.cup], d = GP.diff;
   podiumKarts(order.map(s => { const m = GP.meta[s]; return { o: { ...CHARS[Math.max(0, m.c)], ...(karts[s] && karts[s].isPlayer ? myCos() : cosOk(m.cos)) }, ki: m.ki }; }));
   if (place <= 3) { trophyMesh = makeTrophy(place); const [x, h] = titleTiers[place - 1]; trophyMesh.position.set(x, h + 4.4, 0.2); podium.add(trophyMesh); }
@@ -3412,7 +3461,7 @@ function showPodium() {
   $('podRewards').textContent = `+${xp} XP  ·  +${coins} ₪  ${note}` + (lv.La > lv.Lb ? `  ·  ⭐ עלית לרמה ${lv.La}!` : '');
   $('podTable').innerHTML = order.map((s, r) => `<tr class="${karts[s] && karts[s].isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉', '4'][r]}</td><td class="nm">${esc(GP.meta[s].name)}</td><td><b>${GP.pts[s] || 0}</b> נק׳</td></tr>`).join('');
   $('podLobbyBtn').style.display = GP.mp && NET.host ? '' : 'none'; $('podAgainBtn').style.display = GP.mp ? 'none' : ''; $('podWait').style.display = GP.mp && !NET.host ? '' : 'none';
-  clearFinTimers(); clearHazards(); state = 'menu'; SND.playSong('menu'); SND.fanfare(Math.min(place, 3));
+  clearFinTimers(); clearHazards(); state = 'menu'; SND.stopSong(); SND.fanfare(Math.min(place, 3));
   showScreen('podiumScreen'); if (place <= 3) confettiBurst();
 }
 function leavePodium(to) { const mp = GP && GP.mp; podiumDefault(); gpEndAbandon(); if (to === 'lobby' && mp) hostBackToLobby(); else if (to === 'again') { showScreen('cupScreen'); renderCups(); } else goMainMenu(); }
