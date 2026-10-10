@@ -460,12 +460,18 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 .bub.pop{animation:bubPop .28s cubic-bezier(.3,1.6,.5,1)}
 @keyframes bubPop{0%{scale:.3}100%{scale:1}}
 
+#profBadge .pbNext{font-size:10.5px;color:#ffe58a;font-weight:800;opacity:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.shopItem.lvlock .si{filter:saturate(.35) brightness(.85)}
+.shopItem.lvlock::after{content:'';position:absolute;top:6px;left:6px;width:22px;height:22px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='4' y='10' width='16' height='12' rx='3' fill='%23ffd23f' stroke='%230b1e5a' stroke-width='2'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3' fill='none' stroke='%230b1e5a' stroke-width='2.5'/%3E%3C/svg%3E") center/contain no-repeat}
+.shopItem{position:relative}
+.shopItem .si .sw{background-size:cover}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010202306', busy = false;
+  var BUILD = '20261010205123', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -508,7 +514,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 <button id="muteBtn" aria-label="השתק">🔊</button>
 
 <div id="startScreen" class="screen title">
-  <button id="profBadge" aria-label="פרופיל"><span class="r1"><b id="pbName"></b><span class="lv">רמה <i id="pbLvl">1</i></span></span><span class="xpbar"><u id="pbBar"></u></span><small id="pbXp"></small></button>
+  <button id="profBadge" aria-label="פרופיל"><span class="r1"><b id="pbName"></b><span class="lv">רמה <i id="pbLvl">1</i></span></span><span class="xpbar"><u id="pbBar"></u></span><small id="pbXp"></small><small id="pbNext" class="pbNext"></small></button>
   <div class="tTop">
     <div class="logoWrap">
       <svg class="logoSvg" id="logoSvg" viewBox="0 0 640 250" overflow="visible" role="img" aria-label="שמעון עגלות">
@@ -1048,6 +1054,9 @@ const SND = {
     if (h === 'cuca') [392, 392, 392, 523, 659, 392, 392, 392, 523, 659].slice(0, 5).forEach((f, i) => T(f, i * 0.11, i === 4 ? 0.3 : 0.09, { type: 'sawtooth', gain: 0.12 }));
     else if (h === 'mizrahi') { T(660, 0, 0.6, { type: 'sine', gain: 0.18, slideTo: 880 }); [0.15, 0.22, 0.29, 0.36, 0.43].forEach((d, i) => T(i % 2 ? 880 : 830, d, 0.07, { type: 'triangle', gain: 0.1 })); T(740, 0.5, 0.35, { type: 'sine', gain: 0.16, slideTo: 660 }); }
     else if (h === 'train') { for (const f of [311, 370, 466]) T(f, 0, 0.75, { type: 'sawtooth', gain: 0.07 }); }
+    else if (h === 'clown') { [0, 0.16, 0.32].forEach((d, i) => T(300 + i * 60, d, 0.13, { type: 'sawtooth', gain: 0.1, slideTo: 600 + i * 120 })); this.noise(t + 0.48, 0.18, { gain: 0.08, type: 'bandpass', freq: 2500, q: 5 }); }
+    else if (h === 'shofar') { T(233, 0, 0.5, { type: 'sawtooth', gain: 0.09, slideTo: 349, attack: 0.08 }); T(349, 0.55, 0.7, { type: 'sawtooth', gain: 0.09, slideTo: 340, attack: 0.05 }); }
+    else if (h === 'hava') { [[330, 0], [415, 0.14], [415, 0.28], [370, 0.42], [330, 0.56], [415, 0.76], [415, 0.9], [370, 1.04], [330, 1.18]].forEach(([f, d]) => T(f, d, 0.12, { type: 'square', gain: 0.1 })); }
     else if (h === 'duck') { [0, 0.2].forEach(d => { T(520, d, 0.14, { type: 'sawtooth', gain: 0.12, slideTo: 300 }); this.noise(t + d, 0.12, { gain: 0.06, type: 'bandpass', freq: 1200, q: 3 }); }); }
     else { T(440, 0, 0.13); T(554, 0, 0.13); T(440, 0.19, 0.18); T(554, 0.19, 0.18); }   // classic "tit-tit"
   },
@@ -1936,9 +1945,11 @@ const KARTS = [
   { id: 'sherut', name: 'מונית', tag: 'עוצרת איפה שבא לה. מהירות שיא גבוהה.', mod: { speed: 1.6, accel: -1.5, turn: -0.06, weight: 1.3 }, bars: [5, 2, 3, 4], col: 0xffd000 },
   { id: 'tractor', name: 'טרקטור', tag: 'כבד ובלתי ניתן לעצירה. דוחף את כולם!', mod: { speed: 0.6, accel: -2.5, turn: -0.14, weight: 1.9 }, bars: [4, 1, 2, 5], col: 0x2e9b45 },
   { id: 'jeep', name: 'ג\'יפ סופה', tag: 'ג\'יפ שטח מהחנות. אחיזה מעולה וכבד – לא נבהל מבוץ וחול.', mod: { speed: 0.8, accel: 0.5, turn: 0.04, weight: 1.6, offroad: 0.6 }, bars: [4, 3, 3, 4], col: 0xc2b280, shop: 'kart_jeep' },
+  { id: 'golf', name: 'רכב גולף', tag: 'שקט, קליל וזריז. הכי טוב בסיבובים צפופים.', mod: { speed: -0.6, accel: 3, turn: 0.22, weight: 0.85 }, bars: [2, 4, 5, 2], col: 0xf4f4f4, shop: 'kart_golf' },
+  { id: 'ice', name: 'משאית גלידה', tag: 'כבדה וחזקה, מנגינה בצופר. מהירות שיא גבוהה.', mod: { speed: 1.4, accel: -0.8, turn: -0.04, weight: 1.7 }, bars: [5, 2, 3, 5], col: 0xffb3d1, shop: 'kart_ice' },
   { id: 'gold', name: 'עגלת הזהב', tag: 'פרס לאלופים: זהב באליפות קשה. הכל קצת יותר טוב.', mod: { speed: 1.2, accel: 2, turn: 0.1, weight: 1.1 }, bars: [5, 4, 4, 3], col: 0xffc400, gold: true },
 ];
-const AI_KART = [0, 1, 2, 3, 1];   // AI drivers' vehicles (by character index)
+const AI_KART = [0, 1, 2, 3, 1, 1, 3];   // AI drivers' vehicles (by character index)
 function kartStats(o, ki, human) {
   const m = KARTS[ki].mod;
   return human ? { base: o.stats.speed + m.speed, accel: o.stats.accel + m.accel, turn: o.stats.turn + m.turn, driftMul: o.stats.drift || 1, weight: m.weight, offroad: m.offroad || 0 }
@@ -1967,9 +1978,28 @@ CHARS.push({ id: 'mazal', name: 'מזל', tag: 'סבתא הכי מהירה בש�
   stats: { speed: 43.0, accel: 35, turn: 2.6 }, bars: [3, 4, 4],
   main: 0x7c3aed, sec: 0xffffff, hub: 0xffd23f, shirt: 0x7c3aed, stripe: 0xffffff, skin: 0xf1c7a3, hair: 'bun', hairCol: 0xd9d9de, lips: 0xd6336c, earrings: true, granny: true, smile: true, dot: '#a78bfa', aiBase: 41.0 });
 
+CHARS.push({ id: 'tali', name: 'טלי', tag: 'גולשת מחוף הילטון. שיער בלונדיני, משקפי שמש ואפס פחד. היגוי ודריפט מעולים!', shop: 'char_tali',
+  stats: { speed: 42.9, accel: 34, turn: 2.68, drift: 1.2 }, bars: [3, 4, 5],
+  main: 0x0ea5e9, sec: 0xffffff, hub: 0xffd23f, shirt: 0x22d3ee, stripe: 0xffffff, skin: 0xe9b88f, hair: 'long', hairCol: 0xf2d16b, lips: 0xff6b8a, shades: true, smile: true, dot: '#22d3ee', aiBase: 41.0 });
+CHARS.push({ id: 'beni', name: 'בני', tag: 'בעל המכולת מהשכונה. כיפה, זקן וחיוך – כבד ומהיר בישורות.', shop: 'char_beni',
+  stats: { speed: 44.2, accel: 31, turn: 2.38 }, bars: [5, 3, 2],
+  main: 0x1e3a8a, sec: 0xffffff, hub: 0xffd23f, shirt: 0xffffff, stripe: 0x1e3a8a, skin: 0xe0ac7e, hair: 'kippa', hairCol: 0x3b2a1a, kippaCol: 0x1d4ed8, beard: true, smile: true, dot: '#60a5fa', aiBase: 41.3 });
+// special paints: metallic / chrome / animated (animated ones are updated every frame in animPaints)
+const ANIM_PAINT = [];
+function paintMat(p, mats) {
+  let m;
+  if (p === 'm_blue' || p === 'm_gold' || p === 'chrome') m = new THREE.MeshPhongMaterial({ color: { m_blue: 0x2457d6, m_gold: 0xe2a400, chrome: 0xc9d0da }[p], specular: p === 'chrome' ? 0xffffff : 0xfff4c0, shininess: p === 'chrome' ? 140 : 70, emissive: p === 'chrome' ? 0x30343c : 0x101010 });
+  else if (p === 'rainbow' || p === 'pulse') { m = new THREE.MeshToonMaterial({ color: 0xff0000 }); ANIM_PAINT.push({ m, k: p }); if (ANIM_PAINT.length > 60) ANIM_PAINT.splice(0, ANIM_PAINT.length - 60); }
+  else m = new THREE.MeshToonMaterial({ color: p });
+  mats.push(m); return m;
+}
+const _pc1 = new THREE.Color(0x1d4ed8), _pc2 = new THREE.Color(0xffffff);
+function animPaints(now) { for (const a of ANIM_PAINT) { if (a.k === 'rainbow' || a.k === 'flame') a.m.color.setHSL((now / 2600 + (a.o || 0)) % 1, 0.9, a.k === 'flame' ? 0.6 : 0.55); else a.m.color.copy(_pc1).lerp(_pc2, 0.5 + 0.5 * Math.sin(now / 260)); } }
+const TRAIL = { blue: [0x2f6bff, 0xbfe9ff], green: [0x16a34a, 0xbbf7d0], purple: [0x8b5cf6, 0xf5d0fe] };
+
 function makeKart(o, parent, ki = 0) {
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
-  const mats = []; const toon = c => { const m = new THREE.MeshToonMaterial({ color: c }); mats.push(m); return m; };
+  const mats = []; const toon = c => (typeof c === 'string' ? paintMat(c, mats) : (() => { const m = new THREE.MeshToonMaterial({ color: c }); mats.push(m); return m; })());
   const main = toon(o.main), sec = toon(o.sec), dark = toon(0x222222), skin = toon(o.skin), white = toon(0xffffff);
   const add = (geo, mat, x, y, z, par = body) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); par.add(m); return m; };
   let kid = KARTS[ki] ? KARTS[ki].id : 'agala'; const gold = kid === 'gold'; if (gold) kid = 'agala';
@@ -1984,6 +2014,22 @@ function makeKart(o, parent, ki = 0) {
     add(new THREE.BoxGeometry(1.3, 1.0, 0.3), sec, 0, 1.25, -0.95);
     add(new THREE.BoxGeometry(2.3, 0.15, 0.6), main, 0, 1.55, -1.55);
     add(new THREE.BoxGeometry(0.15, 0.7, 0.2), dark, 0.7, 1.15, -1.5); add(new THREE.BoxGeometry(0.15, 0.7, 0.2), dark, -0.7, 1.15, -1.5);
+  } else if (kid === 'golf') {            // golf cart: white tub, canopy roof on 4 posts, golf bag at the back
+    const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col), grn = toon(0x15803d);
+    add(new THREE.BoxGeometry(2.0, 0.55, 3.2), km, 0, 0.62, 0.05); add(new THREE.BoxGeometry(1.8, 0.35, 0.9), km, 0, 0.95, 1.2);
+    add(new THREE.BoxGeometry(2.1, 0.1, 2.6), grn, 0, 2.85, -0.1);
+    for (const [x, z] of [[0.95, 1.05], [-0.95, 1.05], [0.95, -1.2], [-0.95, -1.2]]) add(new THREE.CylinderGeometry(0.05, 0.05, 2.0, 6), dark, x, 1.85, z);
+    const bag = add(new THREE.CylinderGeometry(0.28, 0.28, 1.0, 10), toon(0xe11d48), 0.55, 1.35, -1.6); bag.rotation.x = -0.25;
+    for (const s of [1, -1]) add(new THREE.SphereGeometry(0.15, 8, 6), toon(0xfffbe0), s * 0.6, 0.85, 1.68);
+    dec.hood = [1.14, 1.2, 0.9]; dec.side = [1.02, 0.65, 0.1, 0.8];
+  } else if (kid === 'ice') {             // ice-cream truck: tall pink box, serving window, giant cone on the roof
+    const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col), cone = toon(0xd9a066), scoop = toon(0xfff1f5);
+    add(new THREE.BoxGeometry(2.2, 1.0, 2.2), km, 0, 1.0, -0.55); add(new THREE.BoxGeometry(2.1, 0.6, 1.3), white, 0, 0.75, 1.25);
+    add(new THREE.BoxGeometry(0.05, 0.45, 1.2), dark, 1.11, 1.2, -0.55); add(new THREE.BoxGeometry(2.3, 0.12, 0.35), toon(0xffd23f), 0, 1.55, -0.55);
+    const c1 = add(new THREE.ConeGeometry(0.35, 0.9, 10), cone, 0, 1.95, -0.7); c1.rotation.x = Math.PI;
+    add(new THREE.SphereGeometry(0.42, 12, 10), scoop, 0, 2.55, -0.7); add(new THREE.SphereGeometry(0.1, 6, 5), toon(0xe11d48), 0, 2.98, -0.7);
+    for (const s of [1, -1]) add(new THREE.SphereGeometry(0.15, 8, 6), toon(0xfffbe0), s * 0.65, 0.85, 1.9);
+    dec.hood = [1.06, 1.3, 0.9]; dec.side = [1.12, 1.0, -0.55, 0.9];
   } else if (kid === 'susita') {          // rounded retro Susita
     const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col), chrome = toon(0xdddddd);
     const sh0 = add(new THREE.SphereGeometry(1, 20, 12), km, 0, 0.72, 0.15); sh0.scale.set(1.1, 0.45, 1.85);
@@ -2064,7 +2110,7 @@ function makeKart(o, parent, ki = 0) {
     add(new THREE.BoxGeometry(0.92, 1.05, 0.22), hm, 0, -0.42, -0.3, head);              // straight back hair
     for (const s of [1, -1]) add(new THREE.BoxGeometry(0.14, 0.95, 0.42), hm, s * 0.43, -0.35, -0.02, head); // side strands
     add(new THREE.BoxGeometry(0.66, 0.1, 0.12), hm, 0, 0.33, 0.33, head);               // bangs
-    if (o.shades) { const sh = add(new THREE.BoxGeometry(0.66, 0.12, 0.1), toon(0x111111), 0, 0.43, 0.25, head); sh.rotation.x = -0.4; add(new THREE.BoxGeometry(0.7, 0.03, 0.1), toon(o.nails), 0, 0.5, 0.22, head); }
+    if (o.shades) { const sh = add(new THREE.BoxGeometry(0.66, 0.12, 0.1), toon(0x111111), 0, 0.43, 0.25, head); sh.rotation.x = -0.4; add(new THREE.BoxGeometry(0.7, 0.03, 0.1), toon(o.nails || 0xffffff), 0, 0.5, 0.22, head); }
     if (o.earrings) { const gm = toon(0xffcc33); for (const s of [1, -1]) add(new THREE.TorusGeometry(0.1, 0.025, 6, 12), gm, s * 0.45, -0.22, 0.05, head); }
     for (const s of [1, -1]) add(new THREE.BoxGeometry(0.16, 0.05, 0.04), toon(0x3a7bff), s * 0.16, 0.19, 0.42, head); // eye shadow
   } else if (o.hair === 'tembel') {
@@ -2078,6 +2124,10 @@ function makeKart(o, parent, ki = 0) {
     add(new THREE.SphereGeometry(0.24, 12, 10), hm, 0, 0.42, -0.25, head);
     if (o.granny) { const gm = toon(0xb8860b); for (const s of [1, -1]) { const r = add(new THREE.TorusGeometry(0.11, 0.025, 6, 14), gm, s * 0.16, 0.09, 0.45, head); } add(new THREE.BoxGeometry(0.1, 0.02, 0.02), gm, 0, 0.09, 0.46, head); }
     if (o.earrings) for (const s of [1, -1]) add(new THREE.SphereGeometry(0.06, 6, 5), toon(0xffd23f), s * 0.44, -0.12, 0, head);
+  } else if (o.hair === 'kippa') {
+    add(new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.4), toon(o.hairCol), 0, 0.04, -0.03, head);
+    const kp = add(new THREE.SphereGeometry(0.3, 14, 6, 0, Math.PI * 2, 0, Math.PI / 5), toon(o.kippaCol || 0x1d4ed8), 0, 0.12, -0.06, head); kp.rotation.x = -0.25;
+    if (o.beard) { const b = add(new THREE.SphereGeometry(0.3, 10, 8), toon(o.hairCol), 0, -0.33, 0.17, head); b.scale.set(1.15, 0.55, 0.8); }
   } else if (o.hair === 'short') {
     add(new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.4), toon(o.hairCol), 0, 0.04, -0.03, head);
     if (o.beard) { const b = add(new THREE.SphereGeometry(0.3, 10, 8), toon(o.hairCol), 0, -0.33, 0.17, head); b.scale.set(1.15, 0.55, 0.8); }
@@ -2088,9 +2138,18 @@ function makeKart(o, parent, ki = 0) {
     if (o.accHat === 'crown') { hA(new THREE.CylinderGeometry(0.36, 0.34, 0.22, 10, 1, true), 0xffc400, 0, 0.12, 0).material.side = THREE.DoubleSide; for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; hA(new THREE.ConeGeometry(0.08, 0.2, 5), 0xffc400, Math.sin(a) * 0.33, 0.32, Math.cos(a) * 0.33); } hA(new THREE.SphereGeometry(0.06, 6, 5), 0xe11d48, 0, 0.14, 0.36); }
     else if (o.accHat === 'chef') { hA(new THREE.CylinderGeometry(0.32, 0.3, 0.35, 12), 0xffffff, 0, 0.17, 0); hA(new THREE.SphereGeometry(0.42, 12, 8), 0xffffff, 0, 0.48, 0).scale.y = 0.6; }
     else if (o.accHat === 'party') { hA(new THREE.ConeGeometry(0.25, 0.7, 12), 0xff5fa2, 0, 0.35, 0); hA(new THREE.SphereGeometry(0.08, 6, 5), 0xffd23f, 0, 0.72, 0); }
+    else if (o.accHat === 'kippa') { const kp = hA(new THREE.SphereGeometry(0.3, 14, 6, 0, Math.PI * 2, 0, Math.PI / 5), 0x1d4ed8, 0, -0.27, -0.05); kp.rotation.x = -0.25; hA(new THREE.TorusGeometry(0.22, 0.025, 4, 18), 0xffffff, 0, -0.17, -0.07).rotation.x = Math.PI / 2 - 0.25; }
+    else if (o.accHat === 'tembel') { hA(new THREE.CylinderGeometry(0.36, 0.47, 0.42, 16), 0x8fc3ff, 0, 0.0, -0.02); }
+    else if (o.accHat === 'beanie') { const b = hA(new THREE.SphereGeometry(0.48, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0xe11d48, 0, -0.1, 0); b.scale.y = 1.1; hA(new THREE.TorusGeometry(0.46, 0.07, 6, 18), 0xffffff, 0, -0.1, 0).rotation.x = Math.PI / 2; hA(new THREE.SphereGeometry(0.13, 8, 6), 0xffffff, 0, 0.45, 0); }
+    else if (o.accHat === 'cowboy') { hA(new THREE.CylinderGeometry(0.85, 0.85, 0.05, 20), 0x8b5a2b, 0, 0.0, 0); hA(new THREE.CylinderGeometry(0.3, 0.38, 0.42, 14), 0x8b5a2b, 0, 0.22, 0); hA(new THREE.CylinderGeometry(0.385, 0.385, 0.07, 14), 0x3b2a1a, 0, 0.06, 0); }
     else if (o.accHat === 'straw') { hA(new THREE.CylinderGeometry(0.75, 0.75, 0.05, 18), 0xe9c46a, 0, 0.02, 0); hA(new THREE.CylinderGeometry(0.33, 0.36, 0.3, 14), 0xe9c46a, 0, 0.17, 0); hA(new THREE.CylinderGeometry(0.365, 0.365, 0.08, 14), 0xe11d48, 0, 0.06, 0); }
   }
-  if (o.accGlass) {
+  if (o.accGlass === 'ski') {
+    const gg = add(new THREE.BoxGeometry(0.62, 0.2, 0.08), new THREE.MeshPhongMaterial({ color: 0xffa31a, specular: 0xffffff, shininess: 90, emissive: 0x331a00 }), 0, 0.1, 0.48, head);
+    add(new THREE.TorusGeometry(0.47, 0.03, 4, 20), toon(0x111111), 0, 0.1, 0, head).rotation.x = Math.PI / 2; void gg;
+  } else if (o.accGlass === 'round') {
+    const gm = toon(0x3b2a1a); for (const s of [1, -1]) add(new THREE.TorusGeometry(0.11, 0.022, 4, 16), gm, s * 0.16, 0.09, 0.48, head); add(new THREE.BoxGeometry(0.1, 0.02, 0.02), gm, 0, 0.1, 0.48, head);
+  } else if (o.accGlass) {
     const c = o.accGlass === 'heart' ? 0xff2e88 : o.accGlass === 'star' ? 0xffc400 : 0x111111, gm = toon(c);
     for (const s of [1, -1]) { const lens = o.accGlass === 'sun' ? new THREE.BoxGeometry(0.22, 0.14, 0.06) : new THREE.CylinderGeometry(0.13, 0.13, 0.05, o.accGlass === 'star' ? 5 : 3); const m = add(lens, gm, s * 0.16, 0.09, 0.48, head); if (o.accGlass !== 'sun') { m.rotation.x = Math.PI / 2; if (o.accGlass === 'heart') m.rotation.y = Math.PI; } }
     add(new THREE.BoxGeometry(0.12, 0.03, 0.03), gm, 0, 0.1, 0.48, head);
@@ -2115,6 +2174,9 @@ function makeKart(o, parent, ki = 0) {
   for (const s of [1, -1]) { const sp = add(new THREE.SphereGeometry(0.28, 8, 6), new THREE.MeshBasicMaterial({ color: 0x4fc3ff }), s * 1.2, 0.25, -1.6); sp.visible = false; sparks.push(sp); }
   const flame = add(new THREE.ConeGeometry(0.3, 1.4, 8), new THREE.MeshBasicMaterial({ color: 0xffa020 }), 0.45, 0.8, -2.5); flame.rotation.x = -Math.PI / 2; flame.visible = false;
   const flameIn = add(new THREE.ConeGeometry(0.16, 0.9, 8), new THREE.MeshBasicMaterial({ color: 0xfff3a0 }), 0, 0, 0, flame); flameIn.position.y = 0.15;
+  if (o.trail && TRAIL[o.trail]) { flame.material.color.setHex(TRAIL[o.trail][0]); flameIn.material.color.setHex(TRAIL[o.trail][1]); }
+  else if (o.trail === 'rainbow') { ANIM_PAINT.push({ m: flame.material, k: 'flame' }, { m: flameIn.material, k: 'flame', o: 0.5 }); }
+  if (o.showFlame) flame.visible = true;
   (parent || scene).add(root); applyShadowFlags(root);
   return { root, body, wheels, sparks, flame, head, flag, mats, blob: sh };
 }
@@ -2123,6 +2185,10 @@ const decalCache = {};
 function decalTex(kind) {
   return decalCache[kind] || (decalCache[kind] = canvasTex(256, 64, (g, w, h) => {
     if (kind === 'flames') { for (let i = 0; i < 5; i++) { const x = 20 + i * 46; const gr = g.createLinearGradient(x, h, x + 40, 0); gr.addColorStop(0, '#ffd23f'); gr.addColorStop(.5, '#ff7a00'); gr.addColorStop(1, '#e11d48'); g.fillStyle = gr; g.beginPath(); g.moveTo(x, h - 6); g.quadraticCurveTo(x + 10, 10, x + 44, 6); g.quadraticCurveTo(x + 26, 30, x + 40, h - 6); g.closePath(); g.fill(); } }
+    else if (kind === 'flag') { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#1d4ed8'; g.fillRect(0, 6, w, 9); g.fillRect(0, h - 15, w, 9); g.strokeStyle = '#1d4ed8'; g.lineWidth = 3.5; for (const s of [1, -1]) { g.beginPath(); for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 * s + i * 2.094; g[i ? 'lineTo' : 'moveTo'](w / 2 + Math.cos(a) * 15, h / 2 + Math.sin(a) * 15); } g.closePath(); g.stroke(); } }
+    else if (kind === 'falafel') { for (let i = 0; i < 6; i++) { const x = 22 + i * 42; g.fillStyle = '#7a4a12'; g.beginPath(); g.arc(x, 32, 15, 0, 7); g.fill(); g.fillStyle = '#b8792a'; g.beginPath(); g.arc(x - 4, 27, 7, 0, 7); g.fill(); g.fillStyle = '#4caf50'; g.fillRect(x - 2, 30, 4, 4); } }
+    else if (kind === 'wave') { g.lineWidth = 7; g.lineCap = 'round'; for (const [y, c] of [[22, '#38bdf8'], [40, '#1d4ed8']]) { g.strokeStyle = c; g.beginPath(); for (let x = 0; x <= w; x += 4) g.lineTo(x, y + Math.sin(x / 16) * 8); g.stroke(); } }
+    else if (kind === 'lightning') { g.fillStyle = '#ffd23f'; g.strokeStyle = '#0b1e5a'; g.lineWidth = 3; for (let i = 0; i < 4; i++) { const x = 18 + i * 62; g.beginPath(); g.moveTo(x + 18, 4); g.lineTo(x + 4, 34); g.lineTo(x + 16, 34); g.lineTo(x + 8, 60); g.lineTo(x + 32, 26); g.lineTo(x + 20, 26); g.lineTo(x + 30, 4); g.closePath(); g.fill(); g.stroke(); } }
     else if (kind === 'stars') { for (let i = 0; i < 6; i++) drawStar(g, 22 + i * 42, 32, 15, 4, i % 2 ? '#ffd23f' : '#ffffff'); }
     else { g.fillStyle = '#ffffff'; g.fillRect(0, 14, w, 12); g.fillStyle = '#e11d48'; g.fillRect(0, 34, w, 12); for (let x = 0; x < w; x += 16) { g.fillStyle = (x / 16) % 2 ? '#000' : '#fff'; g.fillRect(x, 50, 16, 10); } }
   }));
@@ -2501,9 +2567,15 @@ function clearBubbles() { bubbles.forEach(b => b.el.remove()); bubbles.length = 
 const PROF_KEY = 'shimon-agalot-profile-v1';
 const PROFILE = (() => { try { return Object.assign({ name: '', uid: '', xp: 0, races: 0, wins: 0 }, JSON.parse(localStorage.getItem(PROF_KEY) || '{}')); } catch (_) { return { name: '', uid: '', xp: 0, races: 0, wins: 0 }; } })();
 if (!PROFILE.uid) PROFILE.uid = Math.random().toString(36).slice(2, 10);
+try {   // migrate to the v2 XP curve without ever demoting a player
+  if (PROFILE.cv !== 2) { const x = +PROFILE.xp || 0; let Lo = 1; while (x >= xpForOld(Lo + 1)) Lo++; let Ln = 1; while (x >= xpFor(Ln + 1)) Ln++; if (Ln < Lo) PROFILE.xp = xpFor(Lo); PROFILE.cv = 2; }
+} catch (_) {}
 function saveProfile() { try { localStorage.setItem(PROF_KEY, JSON.stringify(PROFILE)); } catch (_) {} }
 // level curve: level L needs xpFor(L) total XP. L2 = 150, L3 = 375, L4 = 675 ...
-function xpFor(L) { let t = 0; for (let i = 1; i < L; i++) t += 150 + (i - 1) * 75; return t; }
+// v2 curve: quick early levels (~2-3 races each), slower later. L2 = 200, L3 = 460, L4 = 780, L5 = 1160, L6 = 1600, L8 ≈ 2800, L10 ≈ 4600
+function xpStep(i) { return 200 + (i - 1) * 60 + Math.max(0, i - 5) * 50; }
+function xpFor(L) { let t = 0; for (let i = 1; i < L; i++) t += xpStep(i); return t; }
+function xpForOld(L) { let t = 0; for (let i = 1; i < L; i++) t += 150 + (i - 1) * 75; return t; }
 function levelOf(xp) { let L = 1; while (xp >= xpFor(L + 1)) L++; return L; }
 function levelProgress(xp) { const L = levelOf(xp), a = xpFor(L), b = xpFor(L + 1); return { L, cur: xp - a, need: b - a, frac: (xp - a) / (b - a) }; }
 // Unlock table – add more rows here later (type: 'kart' | 'char' | 'track', i = index in KARTS/CHARS/TRACKS)
@@ -2563,7 +2635,7 @@ function confettiBurst() {
 }
 function renderBadge() {
   const lp = levelProgress(PROFILE.xp);
-  $('pbName').textContent = PROFILE.name || 'שחקן/ית חדש/ה'; $('pbLvl').textContent = lp.L; $('pbXp').textContent = `${lp.cur}/${lp.need} XP`;
+  $('pbName').textContent = PROFILE.name || 'שחקן/ית חדש/ה'; $('pbLvl').textContent = lp.L; $('pbXp').textContent = `${lp.cur}/${lp.need} XP`; { const nu = nextUnlock(lp.L); $('pbNext').textContent = nu ? `ברמה ${nu.lv}: ${nu.name}` : ''; }
   $('pbBar').style.width = (lp.frac * 100).toFixed(1) + '%';
 }
 let nameNext = null;   // screen to continue to after the name is saved
@@ -2577,6 +2649,15 @@ function saveName() {
 }
 // gate: run fn now if we have a name, otherwise ask first
 function needName(fn) { if (PROFILE.name) fn(); else askName(fn); }
+
+// next thing that unlocks with level (track/kart unlocks + level-gated shop items)
+function nextUnlock(L) {
+  const c = [];
+  for (const u of UNLOCKS) if (u.level > L) c.push({ lv: u.level, name: unlockName(u) });
+  if (typeof SHOP !== 'undefined') for (const s of SHOP) if ((s.lv || 1) > L) c.push({ lv: s.lv, name: s.name });
+  c.sort((a, b) => a.lv - b.lv); if (!c.length) return null;
+  const same = c.filter(x => x.lv === c[0].lv); return { lv: c[0].lv, name: same[0].name + (same.length > 1 ? ` +${same.length - 1}` : '') };
+}
 // ================= META: coins (₪), daily login streak, daily + weekly challenges, cosmetics shop =================
 // Everything is local (localStorage via PROFILE). Dates use Israel time; days reset at 00:00, weeks on Sunday 00:00.
 const ilParts = (d = new Date()) => { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d).split('-').map(Number); return p; };
@@ -2621,13 +2702,46 @@ const SHOP = [
   { id: 'horn_duck', cat: 'horn', name: 'ברווז', price: 80, val: 'duck', icon: '🦆' },
   { id: 'kart_jeep', cat: 'kart', name: 'ג\'יפ סופה', price: 600, kart: 'jeep', icon: '🚙' },
   { id: 'char_mazal', cat: 'char', name: 'מזל', price: 800, char: 'mazal', icon: '👵' },
+  // ---- expansion (lv = required level; locked items can be previewed but not bought) ----
+  { id: 'paint_pearl', cat: 'paint', name: 'לבן פנינה', price: 120, val: 0xf4f1ea, sw: 'linear-gradient(135deg,#fff,#e8e2d4)', lv: 2 },
+  { id: 'paint_mblue', cat: 'paint', name: 'כחול מטאלי', price: 180, val: 'm_blue', sw: 'linear-gradient(135deg,#9cc4ff,#1d4ed8 55%,#0b1e5a)', lv: 3 },
+  { id: 'paint_mgold', cat: 'paint', name: 'זהב מטאלי', price: 260, val: 'm_gold', sw: 'linear-gradient(135deg,#fff3a6,#ffc400 50%,#a86b00)', lv: 4 },
+  { id: 'paint_chrome', cat: 'paint', name: 'כרום', price: 340, val: 'chrome', sw: 'linear-gradient(135deg,#fff,#9aa3b2 45%,#f4f6fa 60%,#5b6475)', lv: 6 },
+  { id: 'paint_pulse', cat: 'paint', name: 'כחול-לבן מהבהב', price: 380, val: 'pulse', sw: 'linear-gradient(90deg,#1d4ed8 50%,#fff 50%)', lv: 7 },
+  { id: 'paint_rainbow', cat: 'paint', name: 'קשת מונפשת', price: 480, val: 'rainbow', sw: 'linear-gradient(90deg,#ff4d4d,#ffd23f,#34d058,#38bdf8,#a78bfa)', lv: 9 },
+  { id: 'dc_flag', cat: 'decal', name: 'דגל ישראל', price: 160, val: 'flag', icon: '🇮🇱', lv: 2 },
+  { id: 'dc_falafel', cat: 'decal', name: 'פלאפל', price: 180, val: 'falafel', icon: '🧆', lv: 4 },
+  { id: 'dc_wave', cat: 'decal', name: 'גלים', price: 200, val: 'wave', icon: '🌊', lv: 5 },
+  { id: 'dc_lightning', cat: 'decal', name: 'ברקים', price: 240, val: 'lightning', icon: '⚡', lv: 7 },
+  { id: 'hat_kippa', cat: 'hat', name: 'כיפה סרוגה', price: 110, val: 'kippa', icon: '🧶', lv: 2 },
+  { id: 'hat_tembel', cat: 'hat', name: 'כובע טמבל', price: 130, val: 'tembel', icon: '👒', lv: 3 },
+  { id: 'hat_beanie', cat: 'hat', name: 'כובע גרב חרמון', price: 160, val: 'beanie', icon: '🧢', lv: 4 },
+  { id: 'hat_cowboy', cat: 'hat', name: 'כובע בוקרים', price: 220, val: 'cowboy', icon: '🤠', lv: 6 },
+  { id: 'gl_round', cat: 'glasses', name: 'משקפיים עגולים', price: 120, val: 'round', icon: '👓', lv: 3 },
+  { id: 'gl_ski', cat: 'glasses', name: 'משקפי סקי', price: 200, val: 'ski', icon: '🥽', lv: 5 },
+  { id: 'tr_blue', cat: 'trail', name: 'להבה כחולה', price: 150, val: 'blue', sw: 'linear-gradient(0deg,#1d4ed8,#7fd8ff)', lv: 3 },
+  { id: 'tr_green', cat: 'trail', name: 'להבה ירוקה', price: 180, val: 'green', sw: 'linear-gradient(0deg,#15803d,#86efac)', lv: 5 },
+  { id: 'tr_purple', cat: 'trail', name: 'להבה סגולה', price: 220, val: 'purple', sw: 'linear-gradient(0deg,#6d28d9,#f0abfc)', lv: 7 },
+  { id: 'tr_rainbow', cat: 'trail', name: 'להבת קשת', price: 400, val: 'rainbow', sw: 'linear-gradient(0deg,#ff4d4d,#ffd23f,#34d058,#38bdf8)', lv: 10 },
+  { id: 'horn_clown', cat: 'horn', name: 'צופר ליצן', price: 110, val: 'clown', icon: '🤡', lv: 3 },
+  { id: 'horn_shofar', cat: 'horn', name: 'תקיעת שופר', price: 180, val: 'shofar', icon: '📯', lv: 4 },
+  { id: 'horn_hava', cat: 'horn', name: 'הבה נגילה', price: 260, val: 'hava', icon: '🎵', lv: 6 },
+  { id: 'win_confetti', cat: 'win', name: 'מטר קונפטי', price: 150, val: 'confetti', icon: '🎊', lv: 2 },
+  { id: 'win_fireworks', cat: 'win', name: 'זיקוקים', price: 280, val: 'fireworks', icon: '🎆', lv: 5 },
+  { id: 'win_spin', cat: 'win', name: 'סיבובי ניצחון', price: 220, val: 'spin', icon: '🌀', lv: 4 },
+  { id: 'win_stars', cat: 'win', name: 'גשם מגני דוד', price: 360, val: 'stars', icon: '✡️', lv: 8 },
+  { id: 'kart_golf', cat: 'kart', name: 'רכב גולף', price: 750, kart: 'golf', icon: '⛳', lv: 4 },
+  { id: 'kart_ice', cat: 'kart', name: 'משאית גלידה', price: 1100, kart: 'ice', icon: '🍦', lv: 8 },
+  { id: 'char_tali', cat: 'char', name: 'טלי', price: 900, char: 'tali', icon: '🏄‍♀️', lv: 3 },
+  { id: 'char_beni', cat: 'char', name: 'בני', price: 1200, char: 'beni', icon: '🧔', lv: 7 },
 ];
-const SHOP_CATS = [['paint', '🎨 צבעים'], ['decal', '🔥 מדבקות'], ['hat', '🎩 כובעים'], ['glasses', '😎 משקפיים'], ['horn', '📯 צופרים'], ['kart', '🚙 רכבים'], ['char', '🧑 דמויות']];
+const SHOP_CATS = [['paint', '🎨 צבעים'], ['decal', '🔥 מדבקות'], ['hat', '🎩 כובעים'], ['glasses', '😎 משקפיים'], ['horn', '📯 צופרים'], ['trail', '🚀 להבות בוסט'], ['win', '🎉 חגיגות'], ['kart', '🚙 רכבים'], ['char', '🧑 דמויות']];
 const owns = id => PROFILE.owned.includes(id);
-function myCos() { const e = PROFILE.eq, v = id => { const it = SHOP.find(s => s.id === id); return it && owns(id) ? it.val : undefined; }; return { paint: v(e.paint), accHat: v(e.hat), accGlass: v(e.glasses), decal: v(e.decal), horn: v(e.horn) || 'tit' }; }
+function myCos() { const e = PROFILE.eq, v = id => { const it = SHOP.find(s => s.id === id); return it && owns(id) ? it.val : undefined; }; return { paint: v(e.paint), accHat: v(e.hat), accGlass: v(e.glasses), decal: v(e.decal), horn: v(e.horn) || 'tit', trail: v(e.trail), win: v(e.win) }; }
+const lvLocked = s => s && (s.lv || 1) > levelOf(PROFILE.xp);
 function shopLockOf(type, i) {   // purchasable karts/characters + the golden kart reward
   const d = type === 'kart' ? KARTS[i] : type === 'char' ? CHARS[i] : null; if (!d) return null;
-  if (d.shop && !owns(d.shop)) return `🛒 ${SHOP.find(s => s.id === d.shop).price} ₪ בחנות`;
+  if (d.shop && !owns(d.shop)) { const s = SHOP.find(s => s.id === d.shop); return lvLocked(s) ? `🔒 נפתח ברמה ${s.lv} · 🛒 בחנות` : `🛒 ${s.price} ₪ בחנות`; }
   if (d.gold && !PROFILE.goldKart) return '🏆 זהב באליפות קשה';
   return null;
 }
@@ -2748,19 +2862,20 @@ function renderChallenges() {
 
 // ---------- shop UI ----------
 let shopCat = 'paint';
+const SLOTS = { paint: 'paint', hat: 'hat', glasses: 'glasses', decal: 'decal', horn: 'horn', trail: 'trail', win: 'win' };
 function renderShop() {
   $('shopCoins').textContent = PROFILE.coins + ' ₪';
   $('shopTabs').innerHTML = SHOP_CATS.map(([c, n]) => `<button class="tab ${c === shopCat ? 'sel' : ''}" data-c="${c}">${n}</button>`).join('');
   $('shopTabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); shopCat = b.dataset.c; shopPrevId = null; renderShop(); });
-  const slot = { paint: 'paint', hat: 'hat', glasses: 'glasses', decal: 'decal', horn: 'horn' }[shopCat];
+  const slot = SLOTS[shopCat];
   const items = SHOP.filter(s => s.cat === shopCat);
-  const card = s => { const own = owns(s.id), eq = slot && PROFILE.eq[slot] === s.id, afford = PROFILE.coins >= s.price;
-    const label = !own ? `${s.price} ₪` : slot ? (eq ? '✓ בשימוש' : 'השתמש') : '✓ שלך';
-    return `<div class="shopItem ${own ? 'own' : ''} ${eq ? 'eq' : ''} ${shopPrevId === s.id ? 'prev' : ''}" data-pid="${s.id}"><div class="si">${s.sw ? `<span class="sw" style="background:${s.sw}"></span>` : s.icon}</div><div class="sn">${s.name}</div>
-      <button class="btn sb ${!own && !afford ? 'poor' : ''}" data-id="${s.id}" ${own && !slot ? 'disabled' : ''}>${label}</button></div>`; };
+  const card = s => { const own = owns(s.id), eq = slot && PROFILE.eq[slot] === s.id, afford = PROFILE.coins >= s.price, lk = !own && lvLocked(s);
+    const label = lk ? `🔒 רמה ${s.lv}` : !own ? `${s.price} ₪` : slot ? (eq ? '✓ בשימוש' : 'השתמש') : '✓ שלך';
+    return `<div class="shopItem ${own ? 'own' : ''} ${eq ? 'eq' : ''} ${lk ? 'lvlock' : ''} ${shopPrevId === s.id ? 'prev' : ''}" data-pid="${s.id}"><div class="si">${s.sw ? `<span class="sw" style="background:${s.sw}"></span>` : s.icon}</div><div class="sn">${s.name}</div>
+      <button class="btn sb ${!own && (!afford || lk) ? 'poor' : ''}" data-id="${s.id}" ${own && !slot ? 'disabled' : ''}>${label}</button></div>`; };
   const none = slot ? `<div class="shopItem ${!PROFILE.eq[slot] ? 'eq' : ''}"><div class="si">🚫</div><div class="sn">${slot === 'horn' ? 'טיט-טיט (רגיל)' : slot === 'paint' ? 'צבע מקורי' : 'בלי'}</div><button class="btn sb" data-id="" ${!PROFILE.eq[slot] ? 'disabled' : ''}>${!PROFILE.eq[slot] ? '✓ בשימוש' : 'השתמש'}</button></div>` : '';
   $('shopGrid').innerHTML = none + items.map(card).join('');
-  $('shopGrid').querySelectorAll('.sb').forEach(b => b.onclick = e => { e.stopPropagation(); const s = SHOP.find(x => x.id === b.dataset.id); if (s && !owns(s.id) && PROFILE.coins < s.price) { previewItem(s.id); return; } shopAct(b.dataset.id, slot); });
+  $('shopGrid').querySelectorAll('.sb').forEach(b => b.onclick = e => { e.stopPropagation(); const s = SHOP.find(x => x.id === b.dataset.id); if (s && !owns(s.id) && (PROFILE.coins < s.price || lvLocked(s))) { previewItem(s.id); return; } shopAct(b.dataset.id, slot); });
   $('shopGrid').querySelectorAll('.shopItem[data-pid]').forEach(d => d.onclick = () => previewItem(d.dataset.pid));
   $('shopPrev').src = shopPreview(); renderPrevInfo();
 }
@@ -2768,6 +2883,7 @@ function shopAct(id, slot) {
   if (!id) { delete PROFILE.eq[slot]; saveProfile(); SND.tink(false); for (const q in kartUrlCache) delete kartUrlCache[q]; renderShop(); return; }
   const s = SHOP.find(x => x.id === id);
   if (!owns(id)) {
+    if (lvLocked(s)) { SND.wall(0.3); coinToast(`נפתח ברמה ${s.lv} 🔒`); return; }
     if (PROFILE.coins < s.price) { SND.wall(0.3); coinToast(`חסרים ${s.price - PROFILE.coins} ₪ 😅`); return; }
     PROFILE.coins -= s.price; PROFILE.owned.push(id); SND.gotItem(); coinToast(`נקנה: ${s.name}!`);
     if (s.cat === 'char' || s.cat === 'kart') { buildMenus(); }
@@ -2780,13 +2896,14 @@ let shopPrevId = null;
 function previewItem(id) {
   shopPrevId = shopPrevId === id ? null : id; const s = SHOP.find(x => x.id === id);
   if (shopPrevId && s && s.cat === 'horn') SND.horn(s.val); else SND.tink(false);
+  if (shopPrevId && s && s.cat === 'win') coinToast(`${s.icon} ${s.name} – תופיע כשתסיימו מרוץ בפודיום`);
   renderShop();
 }
 function shopPreview() {
   const s = SHOP.find(x => x.id === shopPrevId), ci = selChar < CHARS.length ? selChar : 0, cos = myCos();
   let kartI = selKart, charO = CHARS[ci];
   if (s) {
-    const key = { paint: 'paint', hat: 'accHat', glasses: 'accGlass', decal: 'decal' }[s.cat]; if (key) cos[key] = s.val;
+    const key = { paint: 'paint', hat: 'accHat', glasses: 'accGlass', decal: 'decal', trail: 'trail' }[s.cat]; if (key) cos[key] = s.val; if (s.cat === 'trail') cos.showFlame = true;
     if (s.cat === 'kart') kartI = Math.max(0, KARTS.findIndex(k => k.id === s.kart)); if (s.cat === 'char') charO = CHARS.find(c => c.id === s.char) || charO;
   } else if (shopCat === 'kart' && !owns('kart_jeep')) kartI = selKart;
   return portraits([[{ ...charO, ...cos }, kartI]])[0];
@@ -2794,9 +2911,9 @@ function shopPreview() {
 function renderPrevInfo() {
   const box = $('shopPrevInfo'), s = SHOP.find(x => x.id === shopPrevId); $('shopPrevBadge').style.display = s ? '' : 'none';
   if (!s) { box.innerHTML = ''; return; }
-  const own = owns(s.id), miss = Math.max(0, s.price - PROFILE.coins);
-  box.innerHTML = `<b>${s.name}</b>` + (own ? `<div class="pOwn">✓ שלך</div>` : `<div class="pPrice">${s.price} ₪</div>${miss ? `<div class="pMiss">חסרים ${miss} ₪</div>` : ''}<button class="btn sb" id="prevBuy" ${miss ? 'disabled' : ''}>קנה</button>`);
-  const pb = $('prevBuy'); if (pb) pb.onclick = () => { const slot = { paint: 'paint', hat: 'hat', glasses: 'glasses', decal: 'decal', horn: 'horn' }[s.cat]; shopPrevId = null; shopAct(s.id, slot); };
+  const own = owns(s.id), miss = Math.max(0, s.price - PROFILE.coins), lk = !own && lvLocked(s);
+  box.innerHTML = `<b>${s.name}</b>` + (own ? `<div class="pOwn">✓ שלך</div>` : `<div class="pPrice">${s.price} ₪</div>${lk ? `<div class="pMiss">🔒 נפתח ברמה ${s.lv}</div>` : miss ? `<div class="pMiss">חסרים ${miss} ₪</div>` : ''}<button class="btn sb" id="prevBuy" ${miss || lk ? 'disabled' : ''}>קנה</button>`);
+  const pb = $('prevBuy'); if (pb) pb.onclick = () => { const slot = SLOTS[s.cat]; shopPrevId = null; shopAct(s.id, slot); };
 }
 
 // ---------- title-screen badges ----------
@@ -3146,7 +3263,7 @@ function collideKarts() {
   }
 }
 function onPlayerFinish() {
-  state = 'finished'; SND.stopSong(); SND.starMode = false; react(player, player.place === 1 ? 'win' : player.place <= 3 ? 'good' : 'sad', true);
+  state = 'finished'; SND.stopSong(); SND.starMode = false; react(player, player.place === 1 ? 'win' : player.place <= 3 ? 'good' : 'sad', true); if (player.place <= 3) celebrate(player, myCos().win);
   const place = player.place; SND.fanfare(place); const xpRes = awardXP(player, place, netOn());
   const coinGain = Math.round([40, 25, 15, 10][place - 1] * (netOn() ? 1.25 : 1)); addCoins(coinGain);
   const P = player, chNew = chUpdate({ place, track: curTrack, kart: selKart, char: P.def ? P.def.id : '', items: P.itemsBy || {}, used: P.itemsUsed || 0, shortcuts: P.shortcuts || 0, clean: P.cleanLaps || 0, pads: P.padBoosts || 0, mp: netOn(), tricks: P.tricks || 0, jumps: P.jumps || 0, rams: P.rams || 0, blocks: P.blocks || 0, hits: P.hitsLanded || 0, hit: P.timesHit || 0, coins: coinGain, diff: GP ? GP.diff : -1, gp: !!GP, time: P.finishTime || 0 });
@@ -3447,7 +3564,7 @@ function render(dt, now) {
     const fov = (camera.aspect < 1 ? 82 : 70) + (player.boost > 0 || player.star > 0 ? 10 : 0) + Math.max(0, player.speed) * 0.1;
     camera.fov += (fov - camera.fov) * Math.min(1, dt * 4); camera.updateProjectionMatrix();
   }
-  if (titleMode) { updateTitle(dt, now); renderer.render(titleScene, titleCam); } else { fxUpdate(dt, now); bubblesUpdate(dt); applyShake(dt); renderer.render(scene, camera); }
+  if (titleMode) { animPaints(now); updateTitle(dt, now); renderer.render(titleScene, titleCam); } else { fxUpdate(dt, now); animPaints(now); bubblesUpdate(dt); applyShake(dt); renderer.render(scene, camera); }
   SND.update(player, state === 'race' || state === 'countdown');
   if (msgTimer > 0) { msgTimer -= dt; if (msgTimer <= 0) msg.textContent = ''; }
   if (state === 'finished' && (ffOn || netOn()) && $('endScreen').style.display !== 'none') { resT -= dt; if (resT <= 0) { resT = 0.25; renderResults(); } }
@@ -3507,6 +3624,18 @@ function showTut() {
 function syncVol() { for (const [id, v] of [['volMusic', SND.vol.m], ['volSfx', SND.vol.s]]) { const e = $(id); if (e) { e.value = Math.round(v * 100); e.style.setProperty('--p', Math.round(v * 100) + '%'); } } }
 for (const id of ['volMusic', 'volSfx']) $(id).addEventListener('input', e => { SND.init(); const m = +$('volMusic').value / 100, s = +$('volSfx').value / 100; SND.setVol(m, s); syncVol(); if (id === 'volSfx') SND.tink(true); });
 syncVol();
+
+// ---------- victory celebrations (shop cosmetic, played on a podium finish) ----------
+function celebrate(k, kind) {
+  if (!kind) return;
+  const burst = (n, fn) => { for (let i = 0; i < n; i++) fn(i); };
+  const at = (d, f) => finTimers.push(setTimeout(() => { if (k.root && karts.includes(k)) f(); }, d));
+  const P = () => k.pos, Y = () => (k.y || 0);
+  if (kind === 'confetti') for (let w = 0; w < 4; w++) at(w * 350, () => burst(60, () => { const a = Math.random() * 6.28, s = 3 + Math.random() * 6; emit(dust, P().x, Y() + 3, P().z, Math.cos(a) * s, 6 + Math.random() * 6, Math.sin(a) * s, [0xff4d4d, 0xffd23f, 0x34d058, 0x38bdf8, 0xff5fa2, 0xffffff][Math.random() * 6 | 0], 1.6); }));
+  else if (kind === 'fireworks') for (let w = 0; w < 5; w++) at(w * 450, () => { const ox = (Math.random() - 0.5) * 14, oz = (Math.random() - 0.5) * 14, c = [0xff4d4d, 0xffd23f, 0x38bdf8, 0xa78bfa, 0x34d058][w % 5]; SND.tone && SND.noise(SND.now(), 0.25, { gain: 0.12, type: 'lowpass', freq: 900 }); burst(70, () => { const a = Math.random() * 6.28, b = Math.random() * 3.14, s = 10 + Math.random() * 4; emit(sparksP, P().x + ox, Y() + 12, P().z + oz, Math.cos(a) * Math.sin(b) * s, Math.cos(b) * s, Math.sin(a) * Math.sin(b) * s, c, 0.9); }); });
+  else if (kind === 'spin') for (let w = 0; w < 3; w++) at(w * 520, () => { k.trick = 0.45; k.squash = 0.6; SND.trick && SND.trick(); });
+  else if (kind === 'stars') for (let w = 0; w < 10; w++) at(w * 200, () => burst(14, () => { emit(sparksP, P().x + (Math.random() - 0.5) * 10, Y() + 9 + Math.random() * 3, P().z + (Math.random() - 0.5) * 10, 0, -2 - Math.random() * 3, 0, Math.random() < 0.5 ? 0xffd23f : 0xffffff, 1.4); }));
+}
 // ================= CHAMPIONSHIPS (אליפות): 4 races, points 10/7/5/3, standings, 3D podium, trophies =================
 const CUPS = [
   { id: 'falafel', name: 'גביע הפלאפל', emoji: '🧆', tracks: [0, 1, 2, 0], level: 1, desc: 'החוף, ירושלים, איו"ש ושוב לחוף' },
@@ -3758,7 +3887,7 @@ function onHostConnection(c) {
 function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except && c.open) try { if (m.t === 'sn' && bufd(c) > 65536) return; c.send(m); } catch (_) {} }); }
 function bufd(c) { try { return (c.dataChannel && c.dataChannel.bufferedAmount) || 0; } catch (_) { return 0; } }
 // cosmetics from other players: only values that exist in the shop catalogue are accepted
-function cosOk(c) { const o = {}; if (!c || typeof c !== 'object') return o; for (const [k, cat] of [['paint', 'paint'], ['accHat', 'hat'], ['accGlass', 'glasses'], ['decal', 'decal'], ['horn', 'horn']]) if (SHOP.some(s => s.cat === cat && s.val === c[k])) o[k] = c[k]; return o; }
+function cosOk(c) { const o = {}; if (!c || typeof c !== 'object') return o; for (const [k, cat] of [['paint', 'paint'], ['accHat', 'hat'], ['accGlass', 'glasses'], ['decal', 'decal'], ['horn', 'horn'], ['trail', 'trail'], ['win', 'win']]) if (SHOP.some(s => s.cat === cat && s.val === c[k])) o[k] = c[k]; return o; }
 function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code, gp: NET.gp }; }
 function onHostData(c, d) {
   if (d.t === 'ready') { if (NET.ready) { NET.ready.add(c.peer); hostCheckGo(); } return; }
