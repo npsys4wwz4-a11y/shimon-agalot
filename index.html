@@ -454,7 +454,7 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010142746', busy = false;
+  var BUILD = '20261010144719', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -2690,7 +2690,9 @@ function showScreen(id) { hideScreens0(); $('tutOverlay').style.display = 'none'
 let finTimers = [];
 function clearFinTimers() { finTimers.forEach(clearTimeout); finTimers = []; }
 function startRaceMP(slots, ti, mySlot, isHost) {
-  curTrack = ti; buildTrack(curTrack); buildKartsMP(slots, mySlot, isHost); resetRace();
+  curTrack = ti; buildTrack(curTrack); buildKartsMP(slots, mySlot, isHost);
+  if (window.__slowBuild) { const t = performance.now() + window.__slowBuild; while (performance.now() < t); }   // test hook: emulate a slow phone
+  resetRace(); netLoaded();
 }
 function startRace(ci, ti) {
   if (ci !== undefined) selChar = ci;
@@ -3135,7 +3137,8 @@ function frame(now) {
 function step(dt, now) {
   if (state === 'paused') return;
   if (state === 'countdown') {
-    cd -= dt; const n = Math.ceil(cd);
+    if (NET.on && NET.hold) { if (msgTimer <= 0.2) flash('ממתינים לשאר השחקנים…', 0.5, '#bfe3ff'); }
+    else cd -= dt; const n = Math.ceil(cd);
     if (n !== lastCd && n > 0) { lastCd = n; flash(String(n), 0.9, n === 1 ? '#34d058' : '#ffe14d'); SND.beep(false); }
     if (cd <= 0) { state = 'race'; flash('יאללה!', 0.9, '#34d058'); SND.beep(true); if (playerInput().throttle > 0) { player.boost = 0.6; SND.boost(); } }
   }
@@ -3493,6 +3496,7 @@ function errText(err) {
     : 'שגיאת רשת (' + t + ') – נסו שוב.';
 }
 function netLeave() {
+  NET.hold = false; clearTimeout(NET.goT);
   if (!NET.on && !NET.peer) return;
   try { if (NET.host) NET.conns.forEach(c => { try { c.send({ t: 'bye' }); } catch (_) {} }); else if (NET.hostConn) NET.hostConn.send({ t: 'bye' }); } catch (_) {}
   const p = NET.peer; setTimeout(() => { try { p && p.destroy(); } catch (_) {} }, 150);
@@ -3508,11 +3512,14 @@ function onHostConnection(c) {
   c.on('close', () => hostDrop(c));
   c.on('error', () => hostDrop(c));
 }
-function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except && c.open) try { c.send(m); } catch (_) {} }); }
+function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except && c.open) try { if (m.t === 'sn' && bufd(c) > 65536) return; c.send(m); } catch (_) {} }); }
+function bufd(c) { try { return (c.dataChannel && c.dataChannel.bufferedAmount) || 0; } catch (_) { return 0; } }
 // cosmetics from other players: only values that exist in the shop catalogue are accepted
 function cosOk(c) { const o = {}; if (!c || typeof c !== 'object') return o; for (const [k, cat] of [['paint', 'paint'], ['accHat', 'hat'], ['accGlass', 'glasses'], ['decal', 'decal'], ['horn', 'horn']]) if (SHOP.some(s => s.cat === cat && s.val === c[k])) o[k] = c[k]; return o; }
 function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code, gp: NET.gp }; }
 function onHostData(c, d) {
+  if (d.t === 'ready') { if (NET.ready) { NET.ready.add(c.peer); hostCheckGo(); } return; }
+  if (d.t === 'ping') return;
   if (d.t === 'hello') {
     if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו' }); setTimeout(() => c.close(), 300); return; }
     if (NET.humans.length >= 4) { c.send({ t: 'deny', why: 'החדר מלא (4 שחקנים)' }); setTimeout(() => c.close(), 300); return; }
@@ -3541,6 +3548,7 @@ function broadcastLobby() { if (!NET.host) return; sendAll(lobbyState()); render
 function hostDrop(c) {
   if (!NET.conns.has(c.peer)) return;
   NET.conns.delete(c.peer); try { c.close(); } catch (_) {}
+  if (NET.hold && NET.host) setTimeout(hostCheckGo, 0);
   const hi = NET.humans.findIndex(h => h.id === c.peer), num = hi + 1;
   if (hi >= 0) NET.humans.splice(hi, 1);
   if (NET.inRace) {
@@ -3574,6 +3582,7 @@ function hostBackToLobby() {
 
 // ---------- client side ----------
 function onClientData(d) {
+  if (d.t === 'go') { if (state === 'countdown' && NET.hold) NET.hold = false; else NET.goEarly = true; NET.grace = performance.now() + 4000; return; }
   if (d.t === 'lobby') { NET.humans = d.humans; NET.track = d.track; NET.code = d.code; NET.gp = d.gp || { on: false, cup: 0, diff: 1 }; if (!NET.inRace && $('lobbyScreen').style.display === 'none' && state === 'menu') showLobby(); renderLobby(); return; }
   if (d.t === 'deny') { const why = d.why; netLeave(); showScreen('mpScreen'); mpMsg(why); return; }
   if (d.t === 'start') { NET.inRace = true; if (d.gp) { if (!GP || d.gp.i === 0) gpBegin(d.gp.cup, d.gp.diff, true); GP.i = d.gp.i; GP.scored = false; GP.last = {}; } else gpEndAbandon(); beginMPRace(d.slots, d.track); if (d.gp) flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f'); return; }
@@ -3597,7 +3606,17 @@ function onHostLost() {
 }
 
 // ---------- race sync ----------
+function netLoaded() {   // called right after the (blocking) track build
+  const now = performance.now(); NET.grace = now + 6000; NET.hostSeen = now; NET.conns.forEach(c => c.seen = now);
+  if (NET.host) {
+    NET.ready = new Set(); NET.need = (NET.raceSlots || []).filter(s => s.id && s.id !== NET.myId && NET.conns.has(s.id)).map(s => s.id);
+    NET.hold = NET.need.length > 0; clearTimeout(NET.goT); if (NET.hold) NET.goT = setTimeout(hostGo, 30000); hostCheckGo();
+  } else { NET.hold = true; if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'ready' }); if (NET.goEarly) { NET.goEarly = false; NET.hold = false; } }
+}
+function hostCheckGo() { if (NET.hold && NET.need.every(id => NET.ready.has(id) || !NET.conns.has(id))) hostGo(); }
+function hostGo() { clearTimeout(NET.goT); if (!NET.hold) return; NET.hold = false; const t = performance.now(); NET.conns.forEach(c => c.seen = Math.max(c.seen || 0, t)); sendAll({ t: 'go' }); }
 function beginMPRace(slots, track) {
+  NET.raceSlots = slots; NET.grace = performance.now() + 30000; NET.goEarly = false;
   const my = slots.findIndex(s => s.id === NET.myId);
   SND.init(); startRaceMP(slots, track, my < 0 ? 0 : my, NET.host);
 }
@@ -3655,12 +3674,13 @@ function startNetTimer() {
     const now = performance.now();
     if (NET.inRace && karts.length) {
       if (NET.host) sendAll({ t: 'sn', d: karts.map(k => k.remote ? k.last : kartState(k)).filter(Boolean) });
-      else if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'st', d: kartState(player) });
+      else if (NET.hostConn && NET.hostConn.open && bufd(NET.hostConn) < 65536) NET.hostConn.send({ t: 'st', d: kartState(player) });
     }
     if (++ping >= 40) {   // every 2s: keep-alive + timeout detection
       ping = 0;
-      if (NET.host) { if (!NET.inRace) sendAll(lobbyState()); NET.conns.forEach(c => { if (c.seen && now - c.seen > 9000) hostDrop(c); }); }
-      else { if (NET.hostConn && NET.hostConn.open && !NET.inRace) NET.hostConn.send({ t: 'ping' }); if (now - NET.hostSeen > 9000) onHostLost(); }
+      const grace = now < (NET.grace || 0);   // just loaded a track: the other side may still be building
+      if (NET.host) { if (!NET.inRace) sendAll(lobbyState()); else sendAll({ t: 'ping' }); if (!grace) NET.conns.forEach(c => { if (NET.hold && NET.ready && !NET.ready.has(c.peer)) return; if (c.seen && now - c.seen > 12000) hostDrop(c); }); }
+      else { if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'ping' }); if (!grace && now - NET.hostSeen > (NET.hold ? 30000 : 12000)) onHostLost(); }
     }
   }, 50);
 }
