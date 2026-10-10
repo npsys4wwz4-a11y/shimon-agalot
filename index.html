@@ -454,7 +454,7 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010145136', busy = false;
+  var BUILD = '20261010145834', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -966,6 +966,7 @@ const SND = {
   },
   // ---------- sfx ----------
   sip() { const t = this.now(); this.noise(t, 0.25, { gain: 0.25, type: 'bandpass', freq: 600, freqTo: 1800, q: 4 }); this.tone(300, t + 0.05, 0.12, { type: 'sine', gain: 0.2, slideTo: 520 }); },
+  bump(big) { const t = this.now(); if (t - (this.lastBump || 0) < 0.15) return; this.lastBump = t; this.noise(t, big ? 0.16 : 0.07, { gain: big ? 0.32 : 0.14, type: 'bandpass', freq: big ? 1400 : 2200 }); this.tone(big ? 180 : 260, t, big ? 0.14 : 0.06, { type: 'square', gain: big ? 0.14 : 0.06, slideTo: big ? 70 : 140 }); if (big) this.tone(1800, t + 0.02, 0.08, { type: 'triangle', gain: 0.06, slideTo: 900 }); },
   land() { const t = this.now(); this.noise(t, 0.12, { gain: 0.22, type: 'lowpass', freq: 500 }); this.tone(90, t, 0.12, { type: 'sine', gain: 0.25, slideTo: 50 }); },
   trick() { const t = this.now(); [660, 880, 1320].forEach((f, i) => this.tone(f, t + i * 0.05, 0.08, { type: 'square', gain: 0.09 })); },
   horn(h) {
@@ -2800,6 +2801,8 @@ function updateVertical(k, dt, inp) {
 function updateKart(k, dt, inp) {
   if (k.air && inp.throttle < 0) inp = Object.assign({}, inp, { throttle: 0 });
   if (k.shield > 0) k.shield = Math.max(0, k.shield - dt);
+  if (k.bumpCD > 0) k.bumpCD -= dt; if (k.bumpOut > 0) k.bumpOut -= dt; if (k.tapCD > 0) k.tapCD -= dt; if (k.wob > 0) k.wob = Math.max(0, k.wob - dt);
+  if (k.bvx || k.bvz) { k.pos.x += k.bvx * dt; k.pos.z += k.bvz * dt; const f = Math.pow(0.02, dt); k.bvx *= f; k.bvz *= f; if (Math.abs(k.bvx) + Math.abs(k.bvz) < 0.2) k.bvx = k.bvz = 0; }
   k.lastSteer = inp.steer; k.lastThrottle = inp.throttle;
   if (k.spin > 0) { k.spin -= dt; k.speed *= Math.pow(0.15, dt); inp = NOINPUT; k.drifting = false; }
   if (k.boost > 0) k.boost -= dt;
@@ -2905,15 +2908,52 @@ function aiInput(k, dt) {
   }
   return { throttle: Math.abs(dAng) > 0.6 ? 0 : 1, steer: clamp(dAng * 3.2, -1, 1), drift: false };
 }
+// kart-kart contact rules:
+//  star beats everything (victim spins out) · a drifting kart rams a non-drifting one: victim is shoved sideways, wobbles and
+//  loses ~25% speed (scaled by weight ratio), attacker loses ~4% · otherwise a mild mutual push.
+//  Each device only applies effects to its own (non-remote) karts, so in multiplayer the victim decides on its own kart.
+const BUMP_LOSS = 0.25;
+function bumpFx(x, y, z, big) {
+  const n = big ? 16 : 6;
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, s = big ? 9 : 5; emit(sparksP, x, y + 0.6, z, Math.cos(a) * s, 2 + Math.random() * 4, Math.sin(a) * s, Math.random() < 0.5 ? 0xffd23f : 0xfff3b0, 0.35 + Math.random() * 0.25); }
+}
+function ramKart(att, vic, nx, nz) {   // n = unit vector from attacker to victim
+  if (vic.remote || (vic.bumpCD || 0) > 0 || vic.star > 0) return false;
+  const r = clamp((att.weight || 1) / (vic.weight || 1), 0.55, 1.7), loss = clamp(BUMP_LOSS * r, 0.12, 0.42);
+  vic.speed *= 1 - loss; vic.bumpCD = 0.7; vic.wob = 0.5;
+  const fx = Math.sin(att.heading), fz = Math.cos(att.heading), side = Math.sign(nx * fz - nz * fx) || 1;   // shove sideways away from the attacker's line
+  const sx = fz * side, sz = -fx * side, push = 9 * r;
+  vic.bvx = (vic.bvx || 0) + sx * push * 0.8 + nx * push * 0.4; vic.bvz = (vic.bvz || 0) + sz * push * 0.8 + nz * push * 0.4;
+  if (vic.drifting) { vic.drifting = false; vic.charge = 0; }
+  return true;
+}
 function collideKarts() {
   for (let i = 0; i < karts.length; i++) for (let j = i + 1; j < karts.length; j++) {
     const a = karts[i], b = karts[j]; const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d2 = dx * dx + dz * dz;
     if (d2 < 5.8 && d2 > 1e-4 && Math.abs((a.y || 0) - (b.y || 0)) < 2.5) {
       if (a.remote && b.remote) continue;
-      if (a.star > 0 && b.star <= 0) { if (!b.remote) spinKart(b, 1, a.isPlayer); } else if (b.star > 0 && a.star <= 0) { if (!a.remote) spinKart(a, 1, b.isPlayer); }
-      const d = Math.sqrt(d2), nx = dx / d, nz = dz / d, wa = a.weight || 1, wb = b.weight || 1; let pa = (2.4 - d) * wb / (wa + wb), pb = (2.4 - d) * wa / (wa + wb);
+      const d = Math.sqrt(d2), nx = dx / d, nz = dz / d, wa = a.weight || 1, wb = b.weight || 1;
+      const cx = (a.pos.x + b.pos.x) / 2, cz = (a.pos.z + b.pos.z) / 2, cy = ((a.y || 0) + (b.y || 0)) / 2, near = a.isPlayer || b.isPlayer;
+      let pa = (2.4 - d) * wb / (wa + wb), pb = (2.4 - d) * wa / (wa + wb);
       if (a.remote) { pa = 0; pb *= 2; } if (b.remote) { pb = 0; pa *= 2; }
-      a.pos.x -= nx * pa; a.pos.z -= nz * pa; b.pos.x += nx * pb; b.pos.z += nz * pb; if (!a.remote) a.speed *= 0.985; if (!b.remote) b.speed *= 0.985;
+      a.pos.x -= nx * pa; a.pos.z -= nz * pa; b.pos.x += nx * pb; b.pos.z += nz * pb;
+      if (a.star > 0 || b.star > 0) {
+        if (a.star > 0 && b.star <= 0) { if (!b.remote) spinKart(b, 1, a.isPlayer); } else if (b.star > 0 && a.star <= 0) { if (!a.remote) spinKart(a, 1, b.isPlayer); }
+        continue;
+      }
+      const ad = a.drifting && !b.drifting, bd = b.drifting && !a.drifting;
+      if (ad || bd) {
+        const att = ad ? a : b, vic = ad ? b : a, s = ad ? 1 : -1;
+        const hit = ramKart(att, vic, nx * s, nz * s);
+        if (hit || (vic.remote && (att.bumpOut || 0) <= 0)) {
+          if (!att.remote) att.speed *= 1 - 0.04 * clamp((vic.weight || 1) / (att.weight || 1), 0.5, 1.8);
+          att.bumpOut = 0.7; bumpFx(cx, cy, cz, true);
+          if (near) { SND.bump(true); if (vic.isPlayer) { shakeCam(0.25); flash('בום! נדחפת', 0.6, '#ff9a2f'); } }
+        }
+      } else {
+        if (!a.remote) a.speed *= 0.985; if (!b.remote) b.speed *= 0.985;
+        if ((a.tapCD || 0) <= 0 && Math.abs(a.speed - b.speed) + Math.max(a.speed, b.speed) * 0.2 > 6) { a.tapCD = 0.5; bumpFx(cx, cy, cz, false); if (near) SND.bump(false); }
+      }
     }
   }
 }
@@ -3191,7 +3231,7 @@ function render(dt, now) {
     const targetYaw = k.drifting ? k.driftDir * 0.42 : 0; k.visYaw += (targetYaw - k.visYaw) * Math.min(1, dt * 10);
     k.body.rotation.y = k.visYaw + (k.spin > 0 ? (1 - k.spin / 1.1) * Math.PI * 4 : 0);
     if (k.hop > 0) k.hop -= dt; k.body.position.y = k.hop > 0 ? Math.sin((0.3 - k.hop) / 0.3 * Math.PI) * 0.5 : 0; k.body.scale.set(1 + (k.squash || 0) * 0.12, 1 - (k.squash || 0) * 0.2, 1 + (k.squash || 0) * 0.12);
-    k.body.rotation.z = k.trick > 0 ? (1 - k.trick / 0.45) * Math.PI * 2 : k.drifting ? -k.driftDir * 0.06 : 0;
+    k.body.rotation.z = (k.trick > 0 ? (1 - k.trick / 0.45) * Math.PI * 2 : k.drifting ? -k.driftDir * 0.06 : 0) + (k.wob > 0 ? Math.sin(k.wob * 38) * 0.22 * k.wob * 2 : 0);
     k.wheelRot += k.speed * dt / 0.45; k.wheels.forEach(w => w.rotation.x = k.wheelRot);
     const sparkOn = k.drifting && k.charge > 0.25;
     k.sparks.forEach(s => { s.visible = sparkOn; if (sparkOn) { s.material.color.set(k.charge > 1.6 ? 0xff8a1f : k.charge > 0.75 ? 0x4fc3ff : 0xdddddd); s.scale.setScalar(0.6 + Math.random() * 0.8); } });
@@ -3240,7 +3280,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { setDiff: d => { dbgDiff = d; }, get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
