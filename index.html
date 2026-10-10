@@ -38,6 +38,38 @@
   body:not(.inmenu) #muteBtn{display:none}
   #pauseBtn{position:fixed;z-index:30;-webkit-appearance:none;appearance:none;top:calc(env(safe-area-inset-top) + 14px);left:calc(50% - 98px);width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:rgba(29,78,216,.8);color:#fff;font-size:20px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 #1b2a6b;touch-action:manipulation}
   #pauseBtn:active{transform:scale(.92)}
+  #hornBtn{position:fixed;z-index:30;-webkit-appearance:none;appearance:none;top:calc(env(safe-area-inset-top) + 14px);left:calc(50% + 52px);width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:rgba(255,138,0,.85);color:#fff;font-size:22px;padding:0;touch-action:manipulation}
+  #hornBtn:active{transform:scale(.92)} body.inmenu #hornBtn{display:none}
+  .metaRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .metaBtn{position:relative;-webkit-appearance:none;appearance:none;border:3px solid #fff;border-radius:999px;background:linear-gradient(#ffd23f,#ff9f1c);color:#0b1e5a;font:900 15px/1 Arial,sans-serif;padding:9px 14px;box-shadow:0 4px 0 #b86b00;touch-action:manipulation}
+  .metaBtn .dot{position:absolute;top:-8px;left:-6px;min-width:20px;height:20px;border-radius:10px;background:#e11d48;color:#fff;font:900 12px/20px Arial;font-style:normal;border:2px solid #fff}
+  .metaBtn .dot:empty{min-width:12px;height:12px;top:-4px;left:-2px}
+  #coinBadge{position:fixed;z-index:25;top:calc(env(safe-area-inset-top) + 10px);left:calc(env(safe-area-inset-left) + 10px);-webkit-appearance:none;appearance:none;border:3px solid #fff;border-radius:999px;background:rgba(11,30,90,.85);color:#ffd23f;font:900 16px/1 Arial;padding:8px 12px;display:none}
+  body.inmenu.titlemode #coinBadge{display:block}
+  .metaCard{max-width:min(620px,94vw);max-height:92vh;overflow:auto;-webkit-overflow-scrolling:touch}
+  .chHead{display:flex;justify-content:space-between;align-items:baseline;margin:10px 2px 4px;color:#0b1e5a} .chHead small{color:#5b6b9a}
+  .chRow{display:flex;align-items:center;gap:10px;background:#eef4ff;border-radius:14px;padding:8px 10px;margin:6px 0;text-align:right}
+  .chRow.done{background:#fff6d6} .chRow.claimed{opacity:.55} .chTxt{flex:1;font-weight:800;color:#0b1e5a} .chTxt small{font-weight:600;color:#5b6b9a}
+  .chTxt .xpbar{margin:5px 0 3px} .chBtn{min-width:76px;padding:8px 10px;font-size:15px}
+  .note{font-size:13px;color:#5b6b9a;margin:8px 0 4px}
+  #streakDays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0}
+  .sday{position:relative;background:#eef4ff;border-radius:12px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#0b1e5a;font-size:12px}
+  .sday span{font-size:22px} .sday.got{background:#d9f7dd} .sday.now{background:#fff1b8;outline:3px solid #ffb300;animation:sdayP .8s infinite alternate}@keyframes sdayP{to{transform:scale(1.07)}}
+  .sday i{position:absolute;top:2px;left:4px;color:#16a34a;font-style:normal;font-weight:900}
+  #shopTabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+  #shopTabs .tab{-webkit-appearance:none;appearance:none;border:2px solid #1d4ed8;background:#fff;color:#1d4ed8;border-radius:999px;font:800 14px Arial;padding:6px 10px}
+  #shopTabs .tab.sel{background:#1d4ed8;color:#fff}
+  .shopBody{display:flex;gap:10px;align-items:flex-start} #shopPrev{width:min(30vw,170px);border-radius:14px;background:#dbe8ff;flex:none}
+  #shopGrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+  .shopItem{background:#eef4ff;border-radius:14px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;border:3px solid transparent}
+  .shopItem.eq{border-color:#16a34a;background:#e7f9ea} .shopItem .si{font-size:30px;height:36px;display:flex;align-items:center}
+  .shopItem .sw{display:inline-block;width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #0b1e5a33}
+  .shopItem .sn{font-weight:800;font-size:13px;color:#0b1e5a;text-align:center} .shopItem .sb{padding:6px 8px;font-size:13px;min-width:84px} .shopItem .sb.poor{opacity:.6}
+  .coins{color:#b86b00;font-size:.8em}
+  .coinToast{position:fixed;z-index:80;left:50%;top:22%;transform:translateX(-50%);background:#0b1e5a;color:#ffd23f;font:900 22px Arial;padding:12px 20px;border-radius:999px;border:3px solid #fff;animation:toastUp 2.3s ease forwards;pointer-events:none}
+  @keyframes toastUp{0%{opacity:0;transform:translate(-50%,20px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
+  @media (max-width:480px){.shopBody{flex-direction:column;align-items:center}#shopPrev{width:42vw}#shopGrid{width:100%;grid-template-columns:repeat(3,1fr)}.metaBtn{font-size:13px;padding:8px 10px}#streakDays{gap:3px}.sday{font-size:10px}.sday span{font-size:17px}}
+  @media (max-height:520px){.metaRow{margin-top:4px}.metaBtn{font-size:13px;padding:6px 10px}}
   body.inmenu #pauseBtn{display:none}
   .btnRow{display:flex;flex-wrap:wrap;justify-content:center;gap:0 4px}
   .btnCol{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:min(78vw,340px)}
@@ -179,7 +211,7 @@
   #kartPicks .stat b{min-width:3.6em}
   @media (max-height:520px){#profBadge{min-width:120px;padding:4px 10px 6px}#profBadge b{font-size:14px}#xpBox{margin:4px auto}#xpGain{font-size:18px}#xpDetail{display:none}}
   @media (max-width:480px){#kartPicks{gap:8px}#kartPicks .pick{width:calc(50% - 6px);padding:5px}#kartPicks .pick .tg{font-size:11px;min-height:0}}
-  @media (max-aspect-ratio:1/1){#profBadge{top:auto;bottom:calc(200px + env(safe-area-inset-bottom));right:50%;transform:translateX(50%);min-width:170px}}
+  @media (max-aspect-ratio:1/1){#profBadge{top:auto;bottom:calc(248px + env(safe-area-inset-bottom));right:50%;transform:translateX(50%);min-width:170px}}
   #diagOut{text-align:right;max-width:460px;margin:6px auto 0;font-size:14px}#diagOut .dr{padding:2px 0}#diagOut .dsum{margin-top:6px;padding:8px 10px;border-radius:12px;background:#eef3ff;font-weight:900;color:#13306e}
   #mpRetryBtn{margin-top:6px}
   .mpCard{max-height:calc(100vh - 20px);overflow-y:auto}
@@ -198,7 +230,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261009222733', busy = false;
+  var BUILD = '20261010080123', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -254,7 +286,40 @@
       <button class="playBtn" id="startBtn">▶ שחקן יחיד</button>
       <button class="playBtn mp" id="mpBtn">🌐 מרובה משתתפים</button>
     </div>
-    <button class="helpBtn" id="helpBtn">❓ איך משחקים</button>
+    <div class="metaRow">
+      <button class="metaBtn" id="chBtn">🎯 אתגרים<i class="dot" id="chDot"></i></button>
+      <button class="metaBtn" id="streakBtn">📅 בונוס יומי<i class="dot" id="stDot"></i></button>
+      <button class="metaBtn" id="shopBtn">🛒 חנות</button>
+      <button class="helpBtn" id="helpBtn">❓ איך משחקים</button>
+    </div>
+  </div>
+</div>
+<button id="coinBadge" aria-label="מטבעות">🪙 0 ₪</button>
+<div id="chScreen" class="screen" style="display:none">
+  <div class="card metaCard">
+    <button class="backBtn" data-back>→ חזרה</button>
+    <h2>🎯 אתגרים</h2>
+    <div class="chHead"><b>☀️ אתגרי היום</b><small id="chDayLeft"></small></div><div id="chDaily"></div>
+    <div class="chHead"><b>🗓️ אתגרי השבוע</b><small id="chWeekLeft"></small></div><div id="chWeekly"></div>
+    <p class="note">אותם אתגרים לכל השחקנים · לפי שעון ישראל</p>
+  </div>
+</div>
+<div id="streakScreen" class="screen" style="display:none">
+  <div class="card metaCard">
+    <button class="backBtn" data-back>→ חזרה</button>
+    <h2>📅 בונוס כניסה יומי</h2>
+    <div id="streakDays"></div>
+    <p id="streakInfo" class="note"></p>
+    <button class="btn" id="streakClaim">🎁 אסוף</button>
+  </div>
+</div>
+<div id="shopScreen" class="screen" style="display:none">
+  <div class="card metaCard shopCard">
+    <button class="backBtn" data-back>→ חזרה</button>
+    <h2>🛒 החנות <span id="shopCoins" class="coins"></span></h2>
+    <div id="shopTabs"></div>
+    <div class="shopBody"><img id="shopPrev" alt="תצוגה מקדימה"><div id="shopGrid"></div></div>
+    <p class="note">רק מטבעות מהמשחק – בלי כסף אמיתי. מרוויחים ₪ במרוצים, אתגרים ובונוס יומי.</p>
   </div>
 </div>
 <div id="helpScreen" class="screen" style="display:none">
@@ -341,7 +406,7 @@
     <h2 id="endSub"></h2>
     <div class="resWrap"><table class="res" id="resTable"></table></div>
     <div id="resNote"></div>
-    <div id="xpBox"><div class="xpLine"><b id="xpGain">+0 XP</b><span id="xpLvl"></span></div><div class="xpbar big"><u id="xpBar"></u></div><div id="xpDetail"></div><div id="lvlUp"></div></div>
+    <div id="xpBox"><div class="xpLine"><b id="xpGain">+0 XP</b><b id="xpCoins" class="coins"></b><span id="xpLvl"></span></div><div class="xpbar big"><u id="xpBar"></u></div><div id="xpDetail"></div><div id="lvlUp"></div><div id="xpCh"></div></div>
     <div class="btnRow">
       <button class="btn hostOnly" id="endLobbyBtn">🔁 מרוץ נוסף (לובי)</button>
       <button class="btn" id="restartBtn">שחק שוב 🔄</button>
@@ -362,7 +427,7 @@
     </div>
   </div>
 </div>
-<button id="pauseBtn" aria-label="הפסקה">⏸</button>
+<button id="pauseBtn" aria-label="הפסקה">⏸</button><button id="hornBtn" aria-label="צופר">📣</button>
 
 <div id="touchLayer"></div>
 <div id="touch">
@@ -464,6 +529,14 @@ const SND = {
   },
   // ---------- sfx ----------
   sip() { const t = this.now(); this.noise(t, 0.25, { gain: 0.25, type: 'bandpass', freq: 600, freqTo: 1800, q: 4 }); this.tone(300, t + 0.05, 0.12, { type: 'sine', gain: 0.2, slideTo: 520 }); },
+  horn(h) {
+    const t = this.now(), T = (f, d, l, o) => this.tone(f, t + d, l, Object.assign({ type: 'square', gain: 0.16 }, o || {}));
+    if (h === 'cuca') [392, 392, 392, 523, 659, 392, 392, 392, 523, 659].slice(0, 5).forEach((f, i) => T(f, i * 0.11, i === 4 ? 0.3 : 0.09, { type: 'sawtooth', gain: 0.12 }));
+    else if (h === 'mizrahi') { T(660, 0, 0.6, { type: 'sine', gain: 0.18, slideTo: 880 }); [0.15, 0.22, 0.29, 0.36, 0.43].forEach((d, i) => T(i % 2 ? 880 : 830, d, 0.07, { type: 'triangle', gain: 0.1 })); T(740, 0.5, 0.35, { type: 'sine', gain: 0.16, slideTo: 660 }); }
+    else if (h === 'train') { for (const f of [311, 370, 466]) T(f, 0, 0.75, { type: 'sawtooth', gain: 0.07 }); }
+    else if (h === 'duck') { [0, 0.2].forEach(d => { T(520, d, 0.14, { type: 'sawtooth', gain: 0.12, slideTo: 300 }); this.noise(t + d, 0.12, { gain: 0.06, type: 'bandpass', freq: 1200, q: 3 }); }); }
+    else { T(440, 0, 0.13); T(554, 0, 0.13); T(440, 0.19, 0.18); T(554, 0.19, 0.18); }   // classic "tit-tit"
+  },
   shield() { const t = this.now(); [523, 784, 1047, 1568].forEach((f, i) => this.tone(f, t + i * 0.06, 0.18, { type: 'triangle', gain: 0.14 })); this.noise(t, 0.4, { gain: 0.08, type: 'highpass', freq: 3000 }); },
   block() { const t = this.now(); this.tone(1400, t, 0.25, { type: 'square', gain: 0.12, slideTo: 2200 }); this.tone(700, t, 0.3, { type: 'triangle', gain: 0.16 }); this.noise(t, 0.15, { gain: 0.2, type: 'bandpass', freq: 4000, q: 2 }); },
   nom() { const t = this.now(); [0, 0.11].forEach(d => this.tone(260, t + d, 0.08, { type: 'square', gain: 0.12, slideTo: 180 })); },
@@ -1193,12 +1266,14 @@ const KARTS = [
   { id: 'susita', name: 'סוסיתא', tag: 'קלה, זריזה ונוסטלגית. תאוצה והיגוי!', mod: { speed: -1.2, accel: 4, turn: 0.18, weight: 0.75 }, bars: [2, 5, 4, 1], col: 0x9fd8ff },
   { id: 'sherut', name: 'מונית', tag: 'עוצרת איפה שבא לה. מהירות שיא גבוהה.', mod: { speed: 1.6, accel: -1.5, turn: -0.06, weight: 1.3 }, bars: [5, 2, 3, 4], col: 0xffd000 },
   { id: 'tractor', name: 'טרקטור', tag: 'כבד ובלתי ניתן לעצירה. דוחף את כולם!', mod: { speed: 0.6, accel: -2.5, turn: -0.14, weight: 1.9 }, bars: [4, 1, 2, 5], col: 0x2e9b45 },
+  { id: 'jeep', name: 'ג\'יפ סופה', tag: 'ג\'יפ שטח מהחנות. אחיזה מעולה וכבד – לא נבהל מבוץ וחול.', mod: { speed: 0.8, accel: 0.5, turn: 0.04, weight: 1.6, offroad: 0.6 }, bars: [4, 3, 3, 4], col: 0xc2b280, shop: 'kart_jeep' },
+  { id: 'gold', name: 'עגלת הזהב', tag: 'פרס לאלופים: זהב באליפות קשה. הכל קצת יותר טוב.', mod: { speed: 1.2, accel: 2, turn: 0.1, weight: 1.1 }, bars: [5, 4, 4, 3], col: 0xffc400, gold: true },
 ];
-const AI_KART = [0, 1, 2, 3];   // AI drivers' vehicles (by character index)
+const AI_KART = [0, 1, 2, 3, 1];   // AI drivers' vehicles (by character index)
 function kartStats(o, ki, human) {
   const m = KARTS[ki].mod;
-  return human ? { base: o.stats.speed + m.speed, accel: o.stats.accel + m.accel, turn: o.stats.turn + m.turn, driftMul: o.stats.drift || 1, weight: m.weight }
-    : { base: o.aiBase + m.speed * 0.5, accel: 32 + m.accel * 0.5, turn: 2.45 + m.turn * 0.5, driftMul: 1, weight: m.weight };
+  return human ? { base: o.stats.speed + m.speed, accel: o.stats.accel + m.accel, turn: o.stats.turn + m.turn, driftMul: o.stats.drift || 1, weight: m.weight, offroad: m.offroad || 0 }
+    : { base: o.aiBase + m.speed * 0.5, accel: 32 + m.accel * 0.5, turn: 2.45 + m.turn * 0.5, driftMul: 1, weight: m.weight, offroad: m.offroad || 0 };
 }
 // combined bars (speed, accel, handling, weight) for the UI, 1..5
 function comboBars(ci, ki) { const c = CHARS[ci].bars, k = KARTS[ki].bars; return [(c[0] + k[0]) / 2, (c[1] + k[1]) / 2, (c[2] + k[2]) / 2, k[3]]; }
@@ -1218,16 +1293,22 @@ const CHARS = [
 CHARS.push({ id: 'rafi', name: 'רפי', tag: 'כובע טמבל, משקפי שמש וסנדלים. מלך הדריפטים – היגוי והחלקה הכי טובים!',
   stats: { speed: 42.8, accel: 31, turn: 2.75, drift: 1.3 }, bars: [3, 3, 5],
   main: 0x2f6bff, sec: 0xffffff, hub: 0xffd23f, shirt: 0xffffff, stripe: 0x2f6bff, skin: 0xe8b48a, hair: 'tembel', hat: 0x8fc3ff, sunglasses: true, mustache: true, grin: true, dot: '#ff3b3b', aiBase: 40.9 });
+// purchasable characters (shop) – appended so the 4 classic drivers keep their indices
+CHARS.push({ id: 'mazal', name: 'מזל', tag: 'סבתא הכי מהירה בשכונה. פריטים טובים יותר ממה שחשבתם – תאוצה והיגוי!', shop: 'char_mazal',
+  stats: { speed: 43.0, accel: 35, turn: 2.6 }, bars: [3, 4, 4],
+  main: 0x7c3aed, sec: 0xffffff, hub: 0xffd23f, shirt: 0x7c3aed, stripe: 0xffffff, skin: 0xf1c7a3, hair: 'bun', hairCol: 0xd9d9de, lips: 0xd6336c, earrings: true, granny: true, smile: true, dot: '#a78bfa', aiBase: 41.0 });
 
 function makeKart(o, parent, ki = 0) {
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
   const mats = []; const toon = c => { const m = new THREE.MeshToonMaterial({ color: c }); mats.push(m); return m; };
   const main = toon(o.main), sec = toon(o.sec), dark = toon(0x222222), skin = toon(o.skin), white = toon(0xffffff);
   const add = (geo, mat, x, y, z, par = body) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); par.add(m); return m; };
-  const kid = KARTS[ki] ? KARTS[ki].id : 'agala', dec = { hood: [0.79, 1.6, 1.3], side: [1.38, 0.62, 0, 1.0] };
+  let kid = KARTS[ki] ? KARTS[ki].id : 'agala'; const gold = kid === 'gold'; if (gold) kid = 'agala';
+  const paint = o.paint !== undefined ? o.paint : gold ? 0xffc400 : undefined, bodyM = paint !== undefined ? (gold ? (() => { const m = new THREE.MeshToonMaterial({ color: 0xffc400, emissive: 0x3a2a00 }); mats.push(m); return m; })() : toon(paint)) : main;
+  const dec = { hood: [0.79, 1.6, 1.3], side: [1.38, 0.62, 0, 1.0] };
   let wl = [[1.15, 1.15, .42], [-1.15, 1.15, .42], [1.2, -1.05, .5], [-1.2, -1.05, .5]];
   if (kid === 'agala') {
-    add(new THREE.BoxGeometry(2.0, 0.5, 3.0), main, 0, 0.6, 0);
+    add(new THREE.BoxGeometry(2.0, 0.5, 3.0), bodyM, 0, 0.6, 0);
     add(new THREE.BoxGeometry(1.7, 0.45, 1.0), sec, 0, 0.55, 1.75);
     add(new THREE.BoxGeometry(2.3, 0.3, 0.5), sec, 0, 0.4, 2.2);
     add(new THREE.BoxGeometry(0.45, 0.5, 1.8), sec, 1.15, 0.6, 0); add(new THREE.BoxGeometry(0.45, 0.5, 1.8), sec, -1.15, 0.6, 0);
@@ -1235,7 +1316,7 @@ function makeKart(o, parent, ki = 0) {
     add(new THREE.BoxGeometry(2.3, 0.15, 0.6), main, 0, 1.55, -1.55);
     add(new THREE.BoxGeometry(0.15, 0.7, 0.2), dark, 0.7, 1.15, -1.5); add(new THREE.BoxGeometry(0.15, 0.7, 0.2), dark, -0.7, 1.15, -1.5);
   } else if (kid === 'susita') {          // rounded retro Susita
-    const km = toon(KARTS[ki].col), chrome = toon(0xdddddd);
+    const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col), chrome = toon(0xdddddd);
     const sh0 = add(new THREE.SphereGeometry(1, 20, 12), km, 0, 0.72, 0.15); sh0.scale.set(1.1, 0.45, 1.85);
     const hb = add(new THREE.SphereGeometry(1, 16, 10), km, 0, 0.82, 1.25); hb.scale.set(0.85, 0.32, 0.8);
     add(new THREE.BoxGeometry(2.0, 0.12, 0.25), chrome, 0, 0.5, 1.95); add(new THREE.BoxGeometry(2.0, 0.12, 0.25), chrome, 0, 0.5, -1.65);
@@ -1244,7 +1325,7 @@ function makeKart(o, parent, ki = 0) {
     dec.hood = [1.11, 1.25, 1.0]; dec.side = [1.12, 0.78, 0.2, 0.8];
     wl = [[1.05, 1.2, .4], [-1.05, 1.2, .4], [1.05, -1.1, .42], [-1.05, -1.1, .42]];
   } else if (kid === 'sherut') {          // yellow sherut taxi with roof sign
-    const km = toon(KARTS[ki].col);
+    const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col);
     add(new THREE.BoxGeometry(2.15, 0.7, 3.5), km, 0, 0.75, 0.1);
     add(new THREE.BoxGeometry(1.9, 0.35, 1.0), km, 0, 1.15, 1.35);
     for (const s of [1, -1]) add(new THREE.BoxGeometry(0.05, 0.22, 3.3), dark, s * 1.08, 0.8, 0.1);
@@ -1254,8 +1335,19 @@ function makeKart(o, parent, ki = 0) {
     const signM = new THREE.MeshBasicMaterial({ map: taxiTex }), sideM = toon(0xffd000);
     add(new THREE.BoxGeometry(1.5, 0.45, 0.35), [sideM, sideM, sideM, sideM, signM, signM], 0, 2.9, -1.15);
     dec.hood = [1.34, 1.35, 1.0]; dec.side = [1.1, 0.75, -0.3, 0.75];
+  } else if (kid === 'jeep') {            // boxy off-road jeep with roll bar & spare wheel
+    const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col), olv = toon(0x3f4a2a);
+    add(new THREE.BoxGeometry(2.2, 0.8, 3.4), km, 0, 0.85, 0.1);
+    add(new THREE.BoxGeometry(2.0, 0.25, 1.2), olv, 0, 1.38, 1.15);
+    add(new THREE.BoxGeometry(2.4, 0.3, 0.35), dark, 0, 0.55, 1.95); add(new THREE.BoxGeometry(2.4, 0.3, 0.35), dark, 0, 0.55, -1.75);
+    for (const s of [1, -1]) { add(new THREE.BoxGeometry(0.12, 1.3, 0.12), dark, s * 0.95, 1.9, -0.9); add(new THREE.BoxGeometry(0.4, 0.15, 3.0), olv, s * 1.2, 1.28, 0.1); }
+    add(new THREE.BoxGeometry(2.0, 0.12, 0.12), dark, 0, 2.55, -0.9);
+    for (const s of [1, -1]) add(new THREE.BoxGeometry(0.35, 0.3, 0.08), toon(0xfffbe0), s * 0.7, 1.05, 1.82);
+    const sp = add(new THREE.CylinderGeometry(0.55, 0.55, 0.3, 14), dark, 0, 1.15, -1.95); sp.rotation.x = Math.PI / 2;
+    dec.hood = [1.52, 1.15, 1.0]; dec.side = [1.12, 0.85, -0.2, 0.8];
+    wl = [[1.2, 1.2, .55], [-1.2, 1.2, .55], [1.2, -1.1, .55], [-1.2, -1.1, .55]];
   } else if (kid === 'tractor') {         // moshav tractor: big rear wheels, exhaust stack
-    const km = toon(KARTS[ki].col);
+    const km = paint !== undefined ? toon(paint) : toon(KARTS[ki].col);
     add(new THREE.BoxGeometry(1.3, 0.85, 2.0), km, 0, 1.0, 1.0);
     add(new THREE.BoxGeometry(1.4, 0.18, 0.2), dark, 0, 0.95, 2.02);
     add(new THREE.BoxGeometry(1.6, 0.35, 1.6), km, 0, 0.75, -0.6);
@@ -1312,9 +1404,31 @@ function makeKart(o, parent, ki = 0) {
     add(new THREE.SphereGeometry(0.36, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), hm, 0, 0.53, -0.02, head);
     add(new THREE.CylinderGeometry(0.47, 0.7, 0.16, 18, 1, true), hm, 0, 0.1, -0.02, head);           // floppy brim
     add(new THREE.CylinderGeometry(0.475, 0.475, 0.08, 16, 1, true), toon(0x2f6bff), 0, 0.17, -0.02, head); // band
+  } else if (o.hair === 'bun') {
+    const hm = toon(o.hairCol); add(new THREE.SphereGeometry(0.47, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), hm, 0, 0.03, -0.04, head);
+    add(new THREE.SphereGeometry(0.24, 12, 10), hm, 0, 0.42, -0.25, head);
+    if (o.granny) { const gm = toon(0xb8860b); for (const s of [1, -1]) { const r = add(new THREE.TorusGeometry(0.11, 0.025, 6, 14), gm, s * 0.16, 0.09, 0.45, head); } add(new THREE.BoxGeometry(0.1, 0.02, 0.02), gm, 0, 0.09, 0.46, head); }
+    if (o.earrings) for (const s of [1, -1]) add(new THREE.SphereGeometry(0.06, 6, 5), toon(0xffd23f), s * 0.44, -0.12, 0, head);
   } else if (o.hair === 'short') {
     add(new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.4), toon(o.hairCol), 0, 0.04, -0.03, head);
     if (o.beard) { const b = add(new THREE.SphereGeometry(0.3, 10, 8), toon(o.hairCol), 0, -0.33, 0.17, head); b.scale.set(1.15, 0.55, 0.8); }
+  }
+  // ---- shop cosmetics ----
+  if (o.accHat) {
+    const H = new THREE.Group(); H.position.y = 0.36; head.add(H); const hA = (g, c, x, y, z) => { const m = new THREE.Mesh(g, toon(c)); m.position.set(x, y, z); H.add(m); return m; };
+    if (o.accHat === 'crown') { hA(new THREE.CylinderGeometry(0.36, 0.34, 0.22, 10, 1, true), 0xffc400, 0, 0.12, 0).material.side = THREE.DoubleSide; for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; hA(new THREE.ConeGeometry(0.08, 0.2, 5), 0xffc400, Math.sin(a) * 0.33, 0.32, Math.cos(a) * 0.33); } hA(new THREE.SphereGeometry(0.06, 6, 5), 0xe11d48, 0, 0.14, 0.36); }
+    else if (o.accHat === 'chef') { hA(new THREE.CylinderGeometry(0.32, 0.3, 0.35, 12), 0xffffff, 0, 0.17, 0); hA(new THREE.SphereGeometry(0.42, 12, 8), 0xffffff, 0, 0.48, 0).scale.y = 0.6; }
+    else if (o.accHat === 'party') { hA(new THREE.ConeGeometry(0.25, 0.7, 12), 0xff5fa2, 0, 0.35, 0); hA(new THREE.SphereGeometry(0.08, 6, 5), 0xffd23f, 0, 0.72, 0); }
+    else if (o.accHat === 'straw') { hA(new THREE.CylinderGeometry(0.75, 0.75, 0.05, 18), 0xe9c46a, 0, 0.02, 0); hA(new THREE.CylinderGeometry(0.33, 0.36, 0.3, 14), 0xe9c46a, 0, 0.17, 0); hA(new THREE.CylinderGeometry(0.365, 0.365, 0.08, 14), 0xe11d48, 0, 0.06, 0); }
+  }
+  if (o.accGlass) {
+    const c = o.accGlass === 'heart' ? 0xff2e88 : o.accGlass === 'star' ? 0xffc400 : 0x111111, gm = toon(c);
+    for (const s of [1, -1]) { const lens = o.accGlass === 'sun' ? new THREE.BoxGeometry(0.22, 0.14, 0.06) : new THREE.CylinderGeometry(0.13, 0.13, 0.05, o.accGlass === 'star' ? 5 : 3); const m = add(lens, gm, s * 0.16, 0.09, 0.48, head); if (o.accGlass !== 'sun') { m.rotation.x = Math.PI / 2; if (o.accGlass === 'heart') m.rotation.y = Math.PI; } }
+    add(new THREE.BoxGeometry(0.12, 0.03, 0.03), gm, 0, 0.1, 0.48, head);
+  }
+  if (o.decal) {
+    const dt = decalTex(o.decal), dmm = new THREE.MeshBasicMaterial({ map: dt, transparent: true, depthWrite: false });
+    for (const s of [1, -1]) { const p = add(new THREE.PlaneGeometry(2.2, 0.55), dmm, s * (dec.side[0] + 0.02), dec.side[1] - 0.05, dec.side[2] + 0.1); p.rotation.y = s * Math.PI / 2; }
   }
   if (!o.noStar) {
     const dm = new THREE.MeshBasicMaterial({ map: starTex, transparent: true, depthWrite: false });
@@ -1336,6 +1450,14 @@ function makeKart(o, parent, ki = 0) {
   return { root, body, wheels, sparks, flame, head, flag, mats, blob: sh };
 }
 
+const decalCache = {};
+function decalTex(kind) {
+  return decalCache[kind] || (decalCache[kind] = canvasTex(256, 64, (g, w, h) => {
+    if (kind === 'flames') { for (let i = 0; i < 5; i++) { const x = 20 + i * 46; const gr = g.createLinearGradient(x, h, x + 40, 0); gr.addColorStop(0, '#ffd23f'); gr.addColorStop(.5, '#ff7a00'); gr.addColorStop(1, '#e11d48'); g.fillStyle = gr; g.beginPath(); g.moveTo(x, h - 6); g.quadraticCurveTo(x + 10, 10, x + 44, 6); g.quadraticCurveTo(x + 26, 30, x + 40, h - 6); g.closePath(); g.fill(); } }
+    else if (kind === 'stars') { for (let i = 0; i < 6; i++) drawStar(g, 22 + i * 42, 32, 15, 4, i % 2 ? '#ffd23f' : '#ffffff'); }
+    else { g.fillStyle = '#ffffff'; g.fillRect(0, 14, w, 12); g.fillStyle = '#e11d48'; g.fillRect(0, 34, w, 12); for (let x = 0; x < w; x += 16) { g.fillStyle = (x / 16) % 2 ? '#000' : '#fff'; g.fillRect(x, 50, 16, 10); } }
+  }));
+}
 function addNameTag(m, name, mine) {
   if (mine) return;
   const tex = canvasTex(256, 64, (g, w, h) => { g.fillStyle = 'rgba(10,25,80,.75)'; g.beginPath(); g.roundRect(4, 6, w - 8, h - 12, 22); g.fill(); g.fillStyle = '#fff'; g.font = '900 34px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(name, w / 2, h / 2 + 2); });
@@ -1346,9 +1468,9 @@ let karts = [], player = null, selChar = 0;
 let selKart = 0;
 function buildKarts(ci, ki = selKart) {
   karts.forEach(k => { scene.remove(k.root); disposeTree(k.root); });
-  const list = [ci, ...CHARS.map((_, i) => i).filter(i => i !== ci)];
+  const list = [ci, ...[0, 1, 2, 3].filter(i => i !== ci)].slice(0, 4);
   karts = list.map((c, i) => {
-    const o = CHARS[c], isP = i === 0, kk = isP ? ki : AI_KART[c], m = makeKart(o, undefined, kk);
+    const isP = i === 0, o = isP ? { ...CHARS[c], ...myCos() } : CHARS[c], kk = isP ? ki : AI_KART[c], m = makeKart(o, undefined, kk);
     return Object.assign(m, { def: o, name: isP && PROFILE.name ? PROFILE.name : o.name, cname: o.name, kartI: kk, isPlayer: isP, ...kartStats(o, kk, isP),
       dot: o.dot, idx: 0, pos: V(0, 0, 0), heading: 0, speed: 0, maxSpeed: 30, drifting: false, driftDir: 0, charge: 0, boost: 0, spin: 0, hop: 0,
       item: null, itemCount: 0, rolling: 0, pending: null, total: 0, finished: false, finishTime: 0, star: 0, shrink: 0, scale: 1,
@@ -1360,7 +1482,7 @@ function buildKarts(ci, ki = selKart) {
 function buildKartsMP(slots, mySlot, isHost) {
   karts.forEach(k => { scene.remove(k.root); disposeTree(k.root); });
   karts = slots.map((s, i) => {
-    const o = CHARS[s.char], isP = i === mySlot, human = !!s.id, local = isP || (isHost && !human), kk = human ? (s.kart || 0) : AI_KART[s.char], m = makeKart(o, undefined, kk);
+    const o = { ...CHARS[s.char], ...(i === mySlot ? myCos() : cosOk(s.cos)) }, isP = i === mySlot, human = !!s.id, local = isP || (isHost && !human), kk = human ? (s.kart || 0) : AI_KART[s.char], m = makeKart(o, undefined, kk);
     if (human && s.name) addNameTag(m, s.name, isP);
     return Object.assign(m, { def: o, name: human && s.name ? s.name : o.name, cname: o.name, kartI: kk, isPlayer: isP, ...kartStats(o, kk, human),
       dot: o.dot, idx: 0, pos: V(0, 0, 0), heading: 0, speed: 0, maxSpeed: 30, drifting: false, driftDir: 0, charge: 0, boost: 0, spin: 0, hop: 0,
@@ -1634,7 +1756,7 @@ const UNLOCKS = [
   { type: 'track', i: 3, level: 5 },  // חרמון
 ];
 function unlockLevel(type, i) { const u = UNLOCKS.find(u => u.type === type && u.i === i); return u ? u.level : 1; }
-function isUnlocked(type, i) { return levelOf(PROFILE.xp) >= unlockLevel(type, i) || /[?&]unlockall/.test(location.search); }
+function isUnlocked(type, i) { if (/[?&]unlockall/.test(location.search)) return true; if (typeof shopLockOf === 'function' && shopLockOf(type, i)) return false; return levelOf(PROFILE.xp) >= unlockLevel(type, i); }
 function unlockName(u) { return u.type === 'kart' ? KARTS[u.i].name : u.type === 'char' ? CHARS[u.i].name : TRACKS[u.i].name; }
 // name validation: 2–14 chars, Hebrew/English letters, digits, space, - _ ' ; must differ from the built-in drivers
 function validName(raw) {
@@ -1661,6 +1783,7 @@ function awardXP(k, place, mp) {
   return { parts, gain, before, after: PROFILE.xp, Lb, La, unlocked };
 }
 function showXP(res) {
+  $('xpCoins').textContent = res.coins ? `+${res.coins} ₪` : ''; $('xpCh').textContent = res.chNew ? `🎯 השלמת ${res.chNew > 1 ? res.chNew + ' אתגרים' : 'אתגר'}! אסוף בתפריט` : '';
   $('xpDetail').innerHTML = res.parts.map(([l, v]) => `<span>${l} <b>+${v}</b></span>`).join('');
   $('lvlUp').innerHTML = ''; $('lvlUp').classList.remove('show');
   const t0 = performance.now(), dur = 1600; cancelAnimationFrame(xpAnim);
@@ -1697,6 +1820,178 @@ function saveName() {
 }
 // gate: run fn now if we have a name, otherwise ask first
 function needName(fn) { if (PROFILE.name) fn(); else askName(fn); }
+// ================= META: coins (₪), daily login streak, daily + weekly challenges, cosmetics shop =================
+// Everything is local (localStorage via PROFILE). Dates use Israel time; days reset at 00:00, weeks on Sunday 00:00.
+const ilParts = (d = new Date()) => { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d).split('-').map(Number); return p; };
+const ilDate = (d = new Date()) => ilParts(d).map((n, i) => String(n).padStart(i ? 2 : 4, '0')).join('-');
+const dayShift = (key, n) => { const [y, m, d] = key.split('-').map(Number); const t = new Date(Date.UTC(y, m - 1, d + n)); return t.toISOString().slice(0, 10); };
+const ilWeek = (d = new Date()) => { const key = ilDate(d), [y, m, dd] = key.split('-').map(Number), dow = new Date(Date.UTC(y, m - 1, dd)).getUTCDay(); return dayShift(key, -dow); };  // Sunday of this week
+function seeded(str) { let h = 1779033703 ^ str.length; for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; }; }
+const msToMidnightIL = () => { const now = new Date(), [y, m, d] = ilParts(now); const off = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' })) - new Date(now.toLocaleString('en-US', { timeZone: 'UTC' })); return Date.UTC(y, m - 1, d + 1) - off - now.getTime(); };
+
+// ---------- wallet ----------
+PROFILE.coins = PROFILE.coins || 0; PROFILE.owned = PROFILE.owned || []; PROFILE.eq = PROFILE.eq || {}; PROFILE.tro = PROFILE.tro || {};
+function addCoins(n) { PROFILE.coins = Math.max(0, Math.round(PROFILE.coins + n)); saveProfile(); renderMetaBadges(); }
+function grantXP(n) { const Lb = levelOf(PROFILE.xp); PROFILE.xp += Math.round(n); saveProfile(); const La = levelOf(PROFILE.xp); renderBadge(); return { Lb, La, unlocked: UNLOCKS.filter(u => u.level > Lb && u.level <= La) }; }
+function coinToast(txt) { const t = document.createElement('div'); t.className = 'coinToast'; t.textContent = txt; document.body.appendChild(t); setTimeout(() => t.remove(), 2300); }
+
+// ---------- shop catalogue (data-driven: add rows to extend) ----------
+const SHOP = [
+  { id: 'paint_red', cat: 'paint', name: 'אדום פרארי', price: 80, val: 0xe11d48, sw: '#e11d48' },
+  { id: 'paint_pink', cat: 'paint', name: 'ורוד מסטיק', price: 80, val: 0xff5fa2, sw: '#ff5fa2' },
+  { id: 'paint_green', cat: 'paint', name: 'ירוק זית', price: 80, val: 0x4d7c0f, sw: '#4d7c0f' },
+  { id: 'paint_orange', cat: 'paint', name: 'כתום במבה', price: 80, val: 0xff8a00, sw: '#ff8a00' },
+  { id: 'paint_black', cat: 'paint', name: 'שחור מט', price: 120, val: 0x1f2937, sw: '#1f2937' },
+  { id: 'paint_sky', cat: 'paint', name: 'תכלת אילת', price: 100, val: 0x22d3ee, sw: '#22d3ee' },
+  { id: 'hat_crown', cat: 'hat', name: 'כתר', price: 220, val: 'crown', icon: '👑' },
+  { id: 'hat_chef', cat: 'hat', name: 'כובע שף', price: 150, val: 'chef', icon: '👨‍🍳' },
+  { id: 'hat_party', cat: 'hat', name: 'כובע מסיבה', price: 100, val: 'party', icon: '🎉' },
+  { id: 'hat_straw', cat: 'hat', name: 'כובע קש', price: 120, val: 'straw', icon: '👒' },
+  { id: 'gl_sun', cat: 'glasses', name: 'משקפי שמש', price: 100, val: 'sun', icon: '😎' },
+  { id: 'gl_heart', cat: 'glasses', name: 'משקפי לב', price: 120, val: 'heart', icon: '💖' },
+  { id: 'gl_star', cat: 'glasses', name: 'משקפי כוכב', price: 150, val: 'star', icon: '⭐' },
+  { id: 'dc_flames', cat: 'decal', name: 'להבות', price: 150, val: 'flames', icon: '🔥' },
+  { id: 'dc_stars', cat: 'decal', name: 'כוכבים', price: 120, val: 'stars', icon: '✨' },
+  { id: 'dc_race', cat: 'decal', name: 'פסי מרוץ', price: 100, val: 'race', icon: '🏁' },
+  { id: 'horn_cuca', cat: 'horn', name: 'לה קוקרצ\'ה', price: 120, val: 'cuca', icon: '🎺' },
+  { id: 'horn_mizrahi', cat: 'horn', name: 'סלסול מזרחי', price: 150, val: 'mizrahi', icon: '🎶' },
+  { id: 'horn_train', cat: 'horn', name: 'צפירת רכבת', price: 100, val: 'train', icon: '🚂' },
+  { id: 'horn_duck', cat: 'horn', name: 'ברווז', price: 80, val: 'duck', icon: '🦆' },
+  { id: 'kart_jeep', cat: 'kart', name: 'ג\'יפ סופה', price: 600, kart: 'jeep', icon: '🚙' },
+  { id: 'char_mazal', cat: 'char', name: 'מזל', price: 800, char: 'mazal', icon: '👵' },
+];
+const SHOP_CATS = [['paint', '🎨 צבעים'], ['decal', '🔥 מדבקות'], ['hat', '🎩 כובעים'], ['glasses', '😎 משקפיים'], ['horn', '📯 צופרים'], ['kart', '🚙 רכבים'], ['char', '🧑 דמויות']];
+const owns = id => PROFILE.owned.includes(id);
+function myCos() { const e = PROFILE.eq, v = id => { const it = SHOP.find(s => s.id === id); return it && owns(id) ? it.val : undefined; }; return { paint: v(e.paint), accHat: v(e.hat), accGlass: v(e.glasses), decal: v(e.decal), horn: v(e.horn) || 'tit' }; }
+function shopLockOf(type, i) {   // purchasable karts/characters + the golden kart reward
+  const d = type === 'kart' ? KARTS[i] : type === 'char' ? CHARS[i] : null; if (!d) return null;
+  if (d.shop && !owns(d.shop)) return `🛒 ${SHOP.find(s => s.id === d.shop).price} ₪ בחנות`;
+  if (d.gold && !PROFILE.goldKart) return '🏆 זהב באליפות קשה';
+  return null;
+}
+
+// ---------- daily login streak (7-day calendar) ----------
+const STREAK_R = [[30, 20], [40, 25], [50, 30], [70, 40], [90, 50], [120, 60], [250, 120]];   // [₪, XP] per day
+function streakState() {
+  const s = PROFILE.st || (PROFILE.st = { last: '', n: 0 }), today = ilDate();
+  const alive = s.last === today || s.last === dayShift(today, -1);
+  return { claimedToday: s.last === today, run: alive ? s.n : 0, day: ((alive ? s.n : 0) - (s.last === today ? 1 : 0)) % 7 + 1 };
+}
+function claimStreak() {
+  const st = streakState(); if (st.claimedToday) return;
+  const n = st.run + 1, [c, x] = STREAK_R[(n - 1) % 7]; PROFILE.st = { last: ilDate(), n }; saveProfile();
+  addCoins(c); grantXP(x); SND.gotItem(); coinToast(`+${c} ₪  +${x} XP`); renderStreak(); renderMetaBadges();
+}
+function renderStreak() {
+  const st = streakState(), done = st.claimedToday ? (st.run - 1) % 7 + 1 : st.run % 7;
+  $('streakDays').innerHTML = STREAK_R.map(([c, x], i) => `<div class="sday ${i < done ? 'got' : ''} ${!st.claimedToday && i === done ? 'now' : ''}"><b>יום ${i + 1}</b><span>${i === 6 ? '🎁' : '🪙'}</span><small>${c} ₪</small><small>${x} XP</small>${i < done ? '<i>✓</i>' : ''}</div>`).join('');
+  $('streakInfo').textContent = st.claimedToday ? `🔥 רצף של ${st.run} ימים! חזרו מחר ליום ${done % 7 + 1}` : st.run ? `🔥 רצף של ${st.run} ימים – אל תשברו אותו!` : 'כל יום שנכנסים – פרס גדול יותר. דילגתם על יום? הרצף מתאפס.';
+  $('streakClaim').disabled = st.claimedToday; $('streakClaim').textContent = st.claimedToday ? '✓ נאסף היום' : `🎁 אסוף פרס יום ${done + 1}`;
+}
+
+// ---------- challenges: 3 daily + 3 weekly, deterministic from the date (same for everyone) ----------
+const TRK = () => TRACKS.slice(0, 3);   // tracks everyone has
+const ITEM_NAMES = { mushroom: 'קפה שחור ☕', shield: 'כיפת ברזל 🛡️', banana: 'פיתה חומוס 🥙', shell: 'פלאפל 🧆', star: 'מגן דוד ✡️' };
+const CH_T = {
+  win:   { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => `נצחו במסלול ${TRACKS[c.a].emoji} ${TRACKS[c.a].name}`, ev: (c, R) => R.place === 1 && R.track === c.a ? 1 : 0 },
+  top2k: { gen: r => ({ a: Math.floor(r() * 2), g: 1 }), txt: c => `סיימו במקום 1-2 עם ${KARTS[c.a].name}`, ev: (c, R) => R.place <= 2 && R.kart === c.a ? 1 : 0 },
+  items: { gen: r => { const ks = Object.keys(ITEM_NAMES); return { a: ks[Math.floor(r() * ks.length)], g: 3 + Math.floor(r() * 3) }; }, txt: c => `השתמשו ב-${c.g} × ${ITEM_NAMES[c.a]}`, ev: (c, R) => R.items[c.a] || 0 },
+  short: { gen: r => ({ g: 3 + Math.floor(r() * 3) }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
+  clean: { gen: r => ({ g: 1 + Math.floor(r() * 2) }), txt: c => `${c.g === 1 ? 'הקפה' : c.g + ' הקפות'} בלי לפגוע בקיר`, ev: (c, R) => R.clean },
+  pads:  { gen: r => ({ g: 6 + Math.floor(r() * 5) }), txt: c => `עלו על ${c.g} משטחי בוסט ⚡`, ev: (c, R) => R.pads },
+  races: { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים`, ev: () => 1 },
+  podium:{ gen: r => ({ g: 2 + Math.floor(r() * 2) }), txt: c => `עלו לפודיום (1-3) ${c.g} פעמים`, ev: (c, R) => R.place <= 3 ? 1 : 0 },
+};
+const CH_W = {
+  wins:  { gen: () => ({ g: 5 }), txt: c => `נצחו ב-${c.g} מרוצים`, ev: (c, R) => R.place === 1 ? 1 : 0 },
+  cup:   { gen: () => ({ g: 1 }), txt: () => 'השלימו אליפות שלמה 🏆', ev: (c, R) => R.cupDone ? 1 : 0 },
+  cupTop:{ gen: () => ({ g: 1 }), txt: () => 'זכו בגביע (1-3) באליפות בינונית או קשה', ev: (c, R) => R.cupDone && R.cupPlace <= 3 && R.cupDiff >= 1 ? 1 : 0 },
+  items: { gen: r => ({ g: 25 + Math.floor(r() * 3) * 5 }), txt: c => `השתמשו ב-${c.g} פריטים`, ev: (c, R) => Object.values(R.items).reduce((a, b) => a + b, 0) },
+  short: { gen: () => ({ g: 15 }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
+  clean: { gen: () => ({ g: 8 }), txt: c => `${c.g} הקפות נקיות בלי קיר`, ev: (c, R) => R.clean },
+  mp:    { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים מרובי משתתפים 🌐`, ev: (c, R) => R.mp ? 1 : 0 },
+  tracks:{ gen: () => ({ g: 3 }), txt: () => 'סיימו בכל 3 המסלולים הבסיסיים', ev: (c, R) => R.track < 3 ? (1 << R.track) : 0, bits: true },
+};
+const CH_REWARD = { d: [50, 60], w: [220, 250] };   // [₪, XP]
+function genSet(kind) {
+  const key = kind === 'd' ? ilDate() : ilWeek(), r = seeded('shimon-' + kind + '-' + key), T = kind === 'd' ? CH_T : CH_W, keys = Object.keys(T).sort(() => 0), pool = [...keys], out = [];
+  while (out.length < 3) { const t = pool.splice(Math.floor(r() * pool.length), 1)[0]; out.push({ t, ...T[t].gen(r), p: 0, claimed: false }); }
+  return { key, list: out };
+}
+function chSets() {
+  const ch = PROFILE.ch || (PROFILE.ch = {});
+  if (!ch.d || ch.d.key !== ilDate()) ch.d = genSet('d');
+  if (!ch.w || ch.w.key !== ilWeek()) ch.w = genSet('w');
+  return ch;
+}
+const chDef = (kind, c) => (kind === 'd' ? CH_T : CH_W)[c.t];
+const chProg = (kind, c) => chDef(kind, c).bits ? [0, 1, 2].filter(b => c.p & (1 << b)).length : Math.min(c.p, c.g);
+const chGoal = (kind, c) => chDef(kind, c).bits ? 3 : c.g;
+const chDone = (kind, c) => chProg(kind, c) >= chGoal(kind, c);
+function chUpdate(R) {   // called after every race (and cup end) with a summary R
+  const ch = chSets(); let newly = 0;
+  for (const kind of ['d', 'w']) for (const c of ch[kind].list) { if (c.claimed || chDone(kind, c)) continue; const v = chDef(kind, c).ev(c, R); if (!v) continue; c.p = chDef(kind, c).bits ? c.p | v : c.p + v; if (chDone(kind, c)) newly++; }
+  saveProfile(); renderMetaBadges(); return newly;
+}
+function claimCh(kind, i) {
+  const c = chSets()[kind].list[i]; if (!c || c.claimed || !chDone(kind, c)) return;
+  c.claimed = true; const [m, x] = CH_REWARD[kind]; saveProfile(); addCoins(m); grantXP(x); SND.gotItem(); coinToast(`+${m} ₪  +${x} XP`); renderChallenges();
+}
+function chClaimable() { const ch = chSets(); return ['d', 'w'].reduce((n, k) => n + ch[k].list.filter(c => !c.claimed && chDone(k, c)).length, 0); }
+function fmtLeft(ms) { const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60; return h >= 24 ? `${Math.floor(h / 24)} ימים ו-${h % 24} שעות` : `${h}:${String(m).padStart(2, '0')} שעות`; }
+function renderChallenges() {
+  const ch = chSets(), toMid = msToMidnightIL(), [y, m, d] = ilParts(), dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  const row = (kind, c, i) => { const g = chGoal(kind, c), p = chProg(kind, c), done = p >= g, [mo, x] = CH_REWARD[kind];
+    return `<div class="chRow ${done ? 'done' : ''} ${c.claimed ? 'claimed' : ''}"><div class="chTxt">${chDef(kind, c).txt(c)}<div class="xpbar"><u style="width:${p / g * 100}%"></u></div><small>${p}/${g} · פרס: ${mo} ₪ + ${x} XP</small></div>
+      <button class="btn chBtn" data-k="${kind}" data-i="${i}" ${done && !c.claimed ? '' : 'disabled'}>${c.claimed ? '✓' : done ? 'אסוף!' : '🔒'}</button></div>`; };
+  $('chDaily').innerHTML = ch.d.list.map((c, i) => row('d', c, i)).join('');
+  $('chWeekly').innerHTML = ch.w.list.map((c, i) => row('w', c, i)).join('');
+  $('chDayLeft').textContent = `מתחדש בעוד ${fmtLeft(toMid)}`; $('chWeekLeft').textContent = `מתחדש ביום ראשון · בעוד ${fmtLeft(toMid + (6 - dow) * 86400000)}`;
+  document.querySelectorAll('.chBtn').forEach(b => b.onclick = e => { e.stopPropagation(); claimCh(b.dataset.k, +b.dataset.i); });
+  renderMetaBadges();
+}
+
+// ---------- shop UI ----------
+let shopCat = 'paint';
+function renderShop() {
+  $('shopCoins').textContent = PROFILE.coins + ' ₪';
+  $('shopTabs').innerHTML = SHOP_CATS.map(([c, n]) => `<button class="tab ${c === shopCat ? 'sel' : ''}" data-c="${c}">${n}</button>`).join('');
+  $('shopTabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); shopCat = b.dataset.c; renderShop(); });
+  const slot = { paint: 'paint', hat: 'hat', glasses: 'glasses', decal: 'decal', horn: 'horn' }[shopCat];
+  const items = SHOP.filter(s => s.cat === shopCat);
+  const card = s => { const own = owns(s.id), eq = slot && PROFILE.eq[slot] === s.id, afford = PROFILE.coins >= s.price;
+    const label = !own ? `${s.price} ₪` : slot ? (eq ? '✓ בשימוש' : 'השתמש') : '✓ שלך';
+    return `<div class="shopItem ${own ? 'own' : ''} ${eq ? 'eq' : ''}"><div class="si">${s.sw ? `<span class="sw" style="background:${s.sw}"></span>` : s.icon}</div><div class="sn">${s.name}</div>
+      <button class="btn sb ${!own && !afford ? 'poor' : ''}" data-id="${s.id}" ${own && !slot ? 'disabled' : ''}>${label}</button></div>`; };
+  const none = slot ? `<div class="shopItem ${!PROFILE.eq[slot] ? 'eq' : ''}"><div class="si">🚫</div><div class="sn">${slot === 'horn' ? 'טיט-טיט (רגיל)' : slot === 'paint' ? 'צבע מקורי' : 'בלי'}</div><button class="btn sb" data-id="" ${!PROFILE.eq[slot] ? 'disabled' : ''}>${!PROFILE.eq[slot] ? '✓ בשימוש' : 'השתמש'}</button></div>` : '';
+  $('shopGrid').innerHTML = none + items.map(card).join('');
+  $('shopGrid').querySelectorAll('.sb').forEach(b => b.onclick = e => { e.stopPropagation(); shopAct(b.dataset.id, slot); });
+  $('shopPrev').src = shopPreview();
+}
+function shopAct(id, slot) {
+  if (!id) { delete PROFILE.eq[slot]; saveProfile(); SND.tink(false); for (const q in kartUrlCache) delete kartUrlCache[q]; renderShop(); return; }
+  const s = SHOP.find(x => x.id === id);
+  if (!owns(id)) {
+    if (PROFILE.coins < s.price) { SND.wall(0.3); coinToast(`חסרים ${s.price - PROFILE.coins} ₪ 😅`); return; }
+    PROFILE.coins -= s.price; PROFILE.owned.push(id); SND.gotItem(); coinToast(`נקנה: ${s.name}!`);
+    if (s.cat === 'char' || s.cat === 'kart') { buildMenus(); }
+  }
+  if (slot) { PROFILE.eq[slot] = id; if (slot === 'horn') SND.horn(s.val); }
+  saveProfile(); for (const q in kartUrlCache) delete kartUrlCache[q]; renderShop(); renderMetaBadges();
+}
+function shopPreview() {
+  const it = SHOP.find(s => s.id === (PROFILE.eq.kartPrev || '')), ci = selChar < CHARS.length ? selChar : 0;
+  const kartI = shopCat === 'kart' ? KARTS.findIndex(k => k.id === 'jeep') : selKart, charO = shopCat === 'char' ? CHARS.find(c => c.id === 'mazal') : CHARS[ci];
+  return portraits([[{ ...charO, ...myCos() }, kartI]])[0];
+}
+
+// ---------- title-screen badges ----------
+function renderMetaBadges() {
+  if (!$('coinBadge')) return;
+  $('coinBadge').textContent = `🪙 ${PROFILE.coins} ₪`;
+  const n = chClaimable(); $('chDot').textContent = n || ''; $('chDot').style.display = n ? '' : 'none';
+  const st = streakState(); $('stDot').style.display = st.claimedToday ? 'none' : ''; $('stDot').textContent = '!';
+}
 // ---------- HUD ----------
 const $ = id => document.getElementById(id);
 const hudTop = $('hudTop'), hudTime = $('hudTime'), hudPos = $('hudPos'), itemBox = $('itemBox'), itemHint = $('itemHint'), msg = $('msg'), board = $('board');
@@ -1725,7 +2020,7 @@ function placeKarts() {
   const grid = [[N - 14, 3.5], [N - 14, -3.5], [N - 7, 3.5], [N - 7, -3.5]];
   karts.forEach((k, i) => {
     const [gi, lat] = grid[i];
-    k.idx = gi; k.progT = undefined; k.recovers = 0; k.itemsUsed = 0; k.padBoosts = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat);
+    k.idx = gi; k.progT = undefined; k.recovers = 0; k.itemsBy = {}; k.shortcuts = 0; k.cleanLaps = 0; k.lapDirty = false; k.brCounted = false; k.itemsUsed = 0; k.padBoosts = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat);
     k.heading = Math.atan2(T[gi].x, T[gi].z); k.speed = 0; k.total = gi - N; k.lap = 1;
     Object.assign(k, { est: false, drifting: false, charge: 0, boost: 0, spin: 0, item: null, itemCount: 0, rolling: 0, finished: false, finishTime: 0, useTimer: 0, visYaw: 0, star: 0, shrink: 0, scale: 1 });
     k.root.position.copy(k.pos); k.root.rotation.y = k.heading; k.root.scale.setScalar(1);
@@ -1742,7 +2037,7 @@ function syncHistory() {
 }
 function goBack() {
   switch (curScreen) {
-    case 'helpScreen': case 'charScreen': case 'nameScreen': showScreen('startScreen'); break;
+    case 'helpScreen': case 'charScreen': case 'nameScreen': case 'chScreen': case 'streakScreen': case 'shopScreen': showScreen('startScreen'); break;
     case 'kartScreen': showScreen('charScreen'); break;
     case 'trackScreen': showScreen('kartScreen'); break;
     case 'mpScreen': netLeave(); showScreen('startScreen'); break;
@@ -1754,9 +2049,9 @@ function goBack() {
 }
 addEventListener('popstate', () => { if (ignorePop) { ignorePop = false; return; } histTrap = false; goBack(); syncHistory(); });
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SND.init(); goBack(); }));
-function hideScreens0() { ['startScreen', 'helpScreen', 'charScreen', 'kartScreen', 'nameScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen'].forEach(id => $(id).style.display = 'none'); }
+function hideScreens0() { ['startScreen', 'helpScreen', 'charScreen', 'kartScreen', 'nameScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen'].forEach(id => $(id).style.display = 'none'); }
 let curScreen = 'startScreen';
-function showScreen(id) { hideScreens0(); curScreen = id; $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = ['startScreen', 'helpScreen', 'mpScreen', 'lobbyScreen'].includes(id); document.body.classList.toggle('inlobby', id === 'lobbyScreen'); syncHistory(); }
+function showScreen(id) { hideScreens0(); curScreen = id; $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = ['startScreen', 'helpScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen'].includes(id); document.body.classList.toggle('titlemode', id === 'startScreen'); if (id === 'startScreen') renderMetaBadges(); document.body.classList.toggle('inlobby', id === 'lobbyScreen'); syncHistory(); }
 let finTimers = [];
 function clearFinTimers() { finTimers.forEach(clearTimeout); finTimers = []; }
 function startRaceMP(slots, ti, mySlot, isHost) {
@@ -1778,7 +2073,7 @@ function resetRace() {
 }
 function useItem(k) {
   if (state !== 'race' || !k || !k.item || k.rolling > 0 || k.finished) return;
-  const it = k.item, me = k.isPlayer; k.itemsUsed = (k.itemsUsed || 0) + 1;
+  const it = k.item, me = k.isPlayer; k.itemsUsed = (k.itemsUsed || 0) + 1; (k.itemsBy || (k.itemsBy = {}))[it] = (k.itemsBy[it] || 0) + 1;
   if (it === 'shield') {
     k.shield = 10; if (me) { flash('כיפת ברזל! 🛡️ מוגן מפגיעה אחת', 1.1, '#7fd8ff'); SND.shield(); }
     netEv({ k: 'shield', s: k.slot });
@@ -1820,7 +2115,7 @@ function hitObstacle(k, x, z, r, slow, mover) {
   const d = Math.sqrt(d2), nx = dx / d, nz = dz / d; k.pos.x = x + nx * R; k.pos.z = z + nz * R;
   if (k.star > 0) return;
   if (mover) { spinKart(k, 0.8, false); k.speed *= 0.5; }
-  else { if (Math.abs(k.speed) > 8) { k.wallHit = 1; if (k.isPlayer) { SND.wall(0.6); shakeCam(0.25); } } k.speed *= slow; }
+  else { if (Math.abs(k.speed) > 8) { k.wallHit = 1; k.lapDirty = true; if (k.isPlayer) { SND.wall(0.6); shakeCam(0.25); } } k.speed *= slow; }
 }
 function updateKart(k, dt, inp) {
   if (k.shield > 0) k.shield = Math.max(0, k.shield - dt);
@@ -1861,7 +2156,7 @@ function updateKart(k, dt, inp) {
     k.pos.x -= l.x * over; k.pos.z -= l.z * over;
     const into = (fx * l.x + fz * l.z) * s * Math.sign(k.speed || 1);
     if (into > 0) {
-      if (into > 0.25 && Math.abs(k.speed) > 10) { k.wallHit = 1; if (k.isPlayer) { const f = Math.min(1, into * Math.abs(k.speed) / 33); SND.wall(f); shakeCam(f * 0.35); } }
+      if (into > 0.25 && Math.abs(k.speed) > 10) { k.wallHit = 1; k.lapDirty = true; if (k.isPlayer) { const f = Math.min(1, into * Math.abs(k.speed) / 33); SND.wall(f); shakeCam(f * 0.35); } }
       k.speed *= 1 - clamp(into * dt * 5, 0, 0.5); k.heading -= s * into * dt * 3.5 * Math.sign(k.speed || 1);
     }
   }
@@ -1881,6 +2176,7 @@ function updateKart(k, dt, inp) {
     for (const s of SURF) { const dx = k.pos.x - s.x, dz = k.pos.z - s.z; if (dx * dx + dz * dz < s.r * s.r * 0.8) { const K = SURF_KIND[s.kind]; sm = Math.min(sm, K.mul); if (K.grip) grip = Math.min(grip, K.grip); sk = s.kind; } }
     if (k.path === 1 && Math.abs(lat) > BR_HW + CURB - 0.3) { sm = Math.min(sm, 0.5); sk = sk || 'off'; }
     if (sk && !k.surf && k.isPlayer) flash(sk === 'off' ? 'יצאת מהכביש! 🪨' : SURF_KIND[sk].name + '! ' + (sk === 'ice' ? '🧊' : sk === 'puddle' ? '💦' : sk === 'sand' ? '🏜️' : '🟤'), .6, '#ffd23f');
+    if (sm < 1 && k.offroad) sm = sm + (1 - sm) * k.offroad;
     k.surfMul = sm; k.grip = grip; k.surf = sk;
     for (const o of OBST) hitObstacle(k, o.x, o.z, o.r, o.hard ? 0.45 : 0.75, false);
     for (const m of MOVERS) hitObstacle(k, m.x, m.z, m.r, 0.6, true);
@@ -1890,10 +2186,12 @@ function updateKart(k, dt, inp) {
   for (const b of BOOST) { const dx = k.pos.x - b.x, dz = k.pos.z - b.z, al = dx * b.tx + dz * b.tz, la = dx * b.lx + dz * b.lz; if (Math.abs(al) < 4 && Math.abs(la) < b.w / 2) { on = true; break; } }
   if (on && !k.onPad) { k.boost = Math.max(k.boost, 0.9); k.padBoosts = (k.padBoosts || 0) + 1; if (k.isPlayer) { SND.boost(); flash('בוסט! ⚡', .5, '#ff9a2f'); shakeCam(0.12); } }
   k.onPad = on;
+  if (k.path === 1 && BR && k.idx > BR.n * 0.5 && !k.brCounted) { k.brCounted = true; k.shortcuts = (k.shortcuts || 0) + 1; }
   const newLap = clamp(Math.floor(k.total / N) + 1, 1, LAPS);
+  if (newLap > k.lap) { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.lapDirty = false; k.brCounted = false; }
   if (k.isPlayer && newLap > k.lap && state === 'race') { const fin = newLap === LAPS; flash(fin ? 'הקפה אחרונה!' : `הקפה ${newLap}`, 1.3); SND.lap(fin); if (fin) SND.tempoMul = 1.12; }
   k.lap = Math.max(k.lap, newLap);
-  if (!k.finished && k.total >= LAPS * N && state !== 'countdown') { k.finished = true; k.finishTime = raceTime; finishCount++; k.place = finishCount; if (k.isPlayer) onPlayerFinish(); }
+  if (!k.finished && k.total >= LAPS * N && state !== 'countdown') { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.finished = true; k.finishTime = raceTime; finishCount++; k.place = finishCount; if (k.isPlayer) onPlayerFinish(); }
   if (k.rolling > 0) {
     k.rolling -= dt;
     if (k.isPlayer) { k.rollTick -= dt; if (k.rollTick <= 0) { k.rollTick = 0.07; SND.roll(); } }
@@ -1940,6 +2238,9 @@ function collideKarts() {
 function onPlayerFinish() {
   state = 'finished'; SND.stopSong(); SND.starMode = false;
   const place = player.place; SND.fanfare(place); const xpRes = awardXP(player, place, netOn());
+  const coinGain = Math.round([40, 25, 15, 10][place - 1] * (netOn() ? 1.25 : 1)); addCoins(coinGain);
+  const chNew = chUpdate({ place, track: curTrack, kart: selKart, items: player.itemsBy || {}, shortcuts: player.shortcuts || 0, clean: player.cleanLaps || 0, pads: player.padBoosts || 0, mp: netOn() });
+  xpRes.coins = coinGain; xpRes.chNew = chNew;
   finTimers.push(setTimeout(() => SND.playSong('menu'), 3500));
   finTimers.push(setTimeout(() => {
     const titles = ['🏆 ניצחת!', '🥈 מקום שני!', '🥉 מקום שלישי!', 'מקום רביעי...'];
@@ -2025,7 +2326,7 @@ function buildKartPicks() {
   if (!kartUrlCache[ci]) setTimeout(() => { kartUrlCache[ci] = portraits(KARTS.map((_, i) => [CHARS[ci], i])); if (selChar === ci) $('kartPicks').querySelectorAll('.pick').forEach((el, i) => { const u = kartUrlCache[ci][i]; const im = el.querySelector('img'); if (u && im) im.src = u; }); }, 60);
   $('kartPicks').innerHTML = KARTS.map((kt, i) => {
     const lock = !isUnlocked('kart', i), bars = comboBars(ci, i);
-    return `<div class="pick ${lock ? 'locked' : ''}" data-i="${i}" ${lock ? `data-lock="🔒 נפתח ברמה ${unlockLevel('kart', i)}"` : ''}><img src="${urls[i] || 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='}" alt="${kt.name}"><div class="nm">${kt.name}</div><div class="tg">${kt.tag}</div>
+    return `<div class="pick ${lock ? 'locked' : ''}" data-i="${i}" ${lock ? `data-lock="${shopLockOf('kart', i) || '🔒 נפתח ברמה ' + unlockLevel('kart', i)}"` : ''}><img src="${urls[i] || 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='}" alt="${kt.name}"><div class="nm">${kt.name}</div><div class="tg">${kt.tag}</div>
     ${STAT_L.map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${bars[j] * 20}%"></u></i></div>`).join('')}</div>`;
   }).join('');
   $('kartPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => {
@@ -2036,9 +2337,9 @@ function buildKartPicks() {
 }
 function buildMenus() {
   const urls = portraits(); portraitUrls = urls;
-  $('charPicks').innerHTML = CHARS.map((c, i) => `<div class="pick" data-i="${i}">${urls[i] ? `<img src="${urls[i]}" alt="${c.name}">` : ''}<div class="nm">${c.name}</div><div class="tg">${c.tag}</div>
+  $('charPicks').innerHTML = CHARS.map((c, i) => `<div class="pick ${isUnlocked('char', i) ? '' : 'locked'}" data-i="${i}" ${isUnlocked('char', i) ? '' : `data-lock="${shopLockOf('char', i)}"`}>${urls[i] ? `<img src="${urls[i]}" alt="${c.name}">` : ''}<div class="nm">${c.name}</div><div class="tg">${c.tag}</div>
     ${['מהירות', 'תאוצה', 'היגוי'].map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${c.bars[j] * 20}%"></u></i></div>`).join('')}</div>`).join('');
-  $('charPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => { SND.init(); SND.tink(true); selChar = +el.dataset.i; buildKartPicks(); showScreen('kartScreen'); }));
+  $('charPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => { SND.init(); if (!isUnlocked('char', +el.dataset.i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; } SND.tink(true); selChar = +el.dataset.i; buildKartPicks(); showScreen('kartScreen'); }));
   $('trackPicks').innerHTML = TRACKS.map((t, i) => `<div class="pick ${isUnlocked('track', i) ? '' : 'locked'}" data-i="${i}" ${isUnlocked('track', i) ? '' : `data-lock="🔒 נפתח ברמה ${unlockLevel('track', i)}"`}><canvas width="240" height="240"></canvas><div class="nm">${t.emoji} ${t.name}</div><div class="tg">${t.desc}</div></div>`).join('');
   $('trackPicks').querySelectorAll('.pick').forEach(el => {
     const t = TRACKS[+el.dataset.i], cv = el.querySelector('canvas'), g = cv.getContext('2d');
@@ -2056,6 +2357,18 @@ $('profBadge').addEventListener('click', () => { SND.init(); SND.tink(true); ask
 $('nameOk').addEventListener('click', () => { SND.init(); saveName(); });
 $('nameInput').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') saveName(); });
 $('nameInput').addEventListener('keyup', e => e.stopPropagation());
+$('chBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.tink(true); renderChallenges(); showScreen('chScreen'); });
+$('streakBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.tink(true); renderStreak(); showScreen('streakScreen'); });
+$('streakClaim').addEventListener('click', e => { e.stopPropagation(); claimStreak(); });
+const openShop = () => { SND.init(); SND.playSong('menu'); SND.tink(true); renderShop(); showScreen('shopScreen'); };
+$('shopBtn').addEventListener('click', openShop); $('coinBadge').addEventListener('click', openShop);
+// daily bonus pops up once per session on the title screen (not for automated tests)
+let streakPopped = false;
+addEventListener('pointerdown', () => { if (streakPopped || navigator.webdriver) return; streakPopped = true; setTimeout(() => { if (curScreen === 'startScreen' && PROFILE.name && !streakState().claimedToday) { renderStreak(); showScreen('streakScreen'); } }, 350); }, { capture: true });
+// horn (H key / 📣 button), heard by other players in multiplayer
+function honk(k) { if (!k || (k.hornT || 0) > performance.now()) return; k.hornT = performance.now() + 700; const h = k.isPlayer ? myCos().horn : (k.horn || 'tit'); SND.horn(h); if (k.isPlayer) netEv({ k: 'horn', s: k.slot, h }); }
+$('hornBtn').addEventListener('click', e => { e.stopPropagation(); SND.init(); if (state === 'race' || state === 'countdown') honk(player); });
+addEventListener('keydown', e => { if (e.code === 'KeyH' && (state === 'race' || state === 'countdown')) honk(player); });
 $('helpBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); showScreen('helpScreen'); });
 $('restartBtn').addEventListener('click', () => { SND.init(); resetRace(); });
 $('changeBtn').addEventListener('click', () => { clearFinTimers(); clearHazards(); state = 'menu'; showScreen('charScreen'); });
@@ -2084,7 +2397,7 @@ function buildTitle() {
     const tx = canvasTex(128, 128, (g) => { g.fillStyle = '#0b1e5a'; g.font = '900 104px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, 64, 72); });
     const lbl = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.6, h * .8), Math.min(1.6, h * .8)), new THREE.MeshBasicMaterial({ map: tx, transparent: true })); lbl.position.set(x, h / 2, 2.27); podium.add(lbl);
   });
-  CHARS.forEach((c, i) => { const k = makeKart(c, podium, AI_KART[i]); const [x, h] = tiers[i]; k.root.position.set(x, h, 0.2); k.root.rotation.y = x < -5 ? 0.35 : x > 5 ? -0.35 : x < 0 ? 0.12 : -0.12; titleKarts.push({ k, h, ph: i * 1.7 }); });
+  CHARS.slice(0, 4).forEach((c, i) => { const k = makeKart(c, podium, AI_KART[i]); const [x, h] = tiers[i]; k.root.position.set(x, h, 0.2); k.root.rotation.y = x < -5 ? 0.35 : x > 5 ? -0.35 : x < 0 ? 0.12 : -0.12; titleKarts.push({ k, h, ph: i * 1.7 }); });
   const wst = canvasTex(128, 128, (g) => drawStar(g, 64, 66, 48, 12, '#ffffff'));
   for (let i = 0; i < 9; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: wst, transparent: true, depthWrite: false, side: THREE.DoubleSide })); S.add(m); floaters.push({ m, a: i / 9 * Math.PI * 2, y: 3 + (i % 3) * 3.5, r: 15 + (i % 2) * 4 }); }
   const cols = [0x1d4ed8, 0xffffff, 0xffd23f, 0xff6bd6, 0x4fc3ff], n = 170;
@@ -2324,7 +2637,7 @@ async function createRoom(tries = 0) {
   const code = String(1000 + Math.floor(Math.random() * 9000));
   const peer = new Peer(PEER_PREFIX + code, await peerOpts());
   peer.on('open', id => {
-    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: 0, kart: selKart, name: PROFILE.name || 'מארח/ת' }], track: 0, inRace: false });
+    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: 0, kart: selKart, name: PROFILE.name || 'מארח/ת', cos: myCos() }], track: 0, inRace: false });
     peer.on('connection', onHostConnection);
     setMpBusy(false); document.body.classList.add('mp', 'mphost'); showLobby(); startNetTimer();
   });
@@ -2352,7 +2665,7 @@ async function joinRoom(code) {
     c.on('open', () => {
       opened = true; clearTimeout(to);
       Object.assign(NET, { on: true, host: false, peer, code, myId: id, hostConn: c, humans: [], inRace: false, hostSeen: performance.now() });
-      c.send({ t: 'hello', name: PROFILE.name, kart: selKart }); setMpBusy(false); document.body.classList.add('mp'); document.body.classList.remove('mphost'); startNetTimer();
+      c.send({ t: 'hello', name: PROFILE.name, kart: selKart, cos: myCos() }); setMpBusy(false); document.body.classList.add('mp'); document.body.classList.remove('mphost'); startNetTimer();
     });
     c.on('data', d => { NET.hostSeen = performance.now(); onClientData(d); });
     c.on('close', () => onHostLost());
@@ -2384,12 +2697,14 @@ function onHostConnection(c) {
   c.on('error', () => hostDrop(c));
 }
 function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except && c.open) try { c.send(m); } catch (_) {} }); }
+// cosmetics from other players: only values that exist in the shop catalogue are accepted
+function cosOk(c) { const o = {}; if (!c || typeof c !== 'object') return o; for (const [k, cat] of [['paint', 'paint'], ['accHat', 'hat'], ['accGlass', 'glasses'], ['decal', 'decal'], ['horn', 'horn']]) if (SHOP.some(s => s.cat === cat && s.val === c[k])) o[k] = c[k]; return o; }
 function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code }; }
 function onHostData(c, d) {
   if (d.t === 'hello') {
     if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו' }); setTimeout(() => c.close(), 300); return; }
     if (NET.humans.length >= 4) { c.send({ t: 'deny', why: 'החדר מלא (4 שחקנים)' }); setTimeout(() => c.close(), 300); return; }
-    NET.conns.set(c.peer, c); const free = CHARS.findIndex((_, i) => !NET.humans.some(h => h.char === i)); NET.humans.push({ id: c.peer, char: free < 0 ? null : free, kart: kartOk(d.kart) ? d.kart : 0, name: uniqueName(d.name) });
+    NET.conns.set(c.peer, c); const free = [0, 1, 2, 3].find(i => !NET.humans.some(h => h.char === i)); NET.humans.push({ id: c.peer, char: free === undefined ? null : free, kart: kartOk(d.kart) ? d.kart : 0, name: uniqueName(d.name), cos: cosOk(d.cos) });
     SND.tink(true); broadcastLobby(); return;
   }
   if (d.t === 'pick') { hostPick(c.peer, d.c); return; }
@@ -2424,8 +2739,8 @@ function hostDrop(c) {
 function hostStart() {
   if (!NET.host || NET.inRace) return;
   if (NET.humans.some(h => h.char === null)) { lobbyMsg('כל השחקנים צריכים לבחור דמות'); return; }
-  const used = NET.humans.map(h => h.char), slots = NET.humans.map(h => ({ id: h.id, char: h.char, kart: h.kart || 0, name: h.name }));
-  for (let c = 0; c < CHARS.length && slots.length < 4; c++) if (!used.includes(c)) slots.push({ id: null, char: c });
+  const used = NET.humans.map(h => h.char), slots = NET.humans.map(h => ({ id: h.id, char: h.char, kart: h.kart || 0, name: h.name, cos: h.cos || {} }));
+  for (let c = 0; c < 4 && slots.length < 4; c++) if (!used.includes(c)) slots.push({ id: null, char: c });
   // shuffle grid order a bit so the host is not always at the back
   for (let i = slots.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [slots[i], slots[j]] = [slots[j], slots[i]]; }
   NET.inRace = true; sendAll({ t: 'start', slots, track: NET.track });
@@ -2501,6 +2816,7 @@ function applyEv(e) {
   if (e.k === 'box') { const b = boxes[e.i]; if (b && b.active) { b.active = false; b.mesh.visible = false; b.t = 3; } }
   else if (e.k === 'shield' && k) { if (k.remote) k.shield = 10; }
   else if (e.k === 'block' && k) { if (k.remote) { k.shield = 0; k.shieldPop = 0.5; } }
+  else if (e.k === 'horn' && k) { if (k.remote) { const h = cosOk({ horn: e.h }).horn || 'tit'; if (k.pos.distanceTo(player.pos) < 70) SND.horn(h); } }
   else if (e.k === 'banana' && k) { if (!bananas.some(b => b.id === e.id)) dropBanana(k, e); }
   else if (e.k === 'shell' && k) { fireShell(k, e); if (k.pos.distanceTo(player.pos) < 40) SND.shell(); }
   else if (e.k === 'rm') removeBanana(e.id);
@@ -2541,7 +2857,7 @@ function renderLobby() {
   $('lobbyPlayers').innerHTML = ph;
   $('lobbyChars').innerHTML = CHARS.map((c, i) => {
     const owner = NET.humans.find(h => h.char === i), mine = owner && owner === me, taken = owner && !mine;
-    return `<button class="lc ${mine ? 'sel' : ''} ${taken ? 'taken' : ''}" data-i="${i}" ${taken ? 'disabled' : ''}>${portraitUrls[i] ? `<img src="${portraitUrls[i]}" alt="">` : ''}<span>${c.name}</span>${taken ? '<em>תפוס</em>' : ''}</button>`;
+    return `<button class="lc ${mine ? 'sel' : ''} ${taken ? 'taken' : ''}" data-i="${i}" ${taken || !isUnlocked('char', i) ? 'disabled' : ''}>${portraitUrls[i] ? `<img src="${portraitUrls[i]}" alt="">` : ''}<span>${c.name}</span>${taken ? '<em>תפוס</em>' : !isUnlocked('char', i) ? '<em>🛒 חנות</em>' : ''}</button>`;
   }).join('');
   $('lobbyChars').querySelectorAll('.lc').forEach(el => el.onclick = () => {
     SND.init(); SND.tink(true); const i = +el.dataset.i;
@@ -2581,6 +2897,10 @@ $('lobbyLeave').addEventListener('click', () => { netLeave(); showScreen('mpScre
 $('endLobbyBtn').addEventListener('click', () => hostBackToLobby());
 // invite link: ?room=1234 opens the join screen pre-filled (a tap is still needed – it also unlocks audio on iOS)
 { const rc = new URLSearchParams(location.search).get('room'); if (rc && /^\d{4}$/.test(rc)) { $('joinCode').value = rc; showScreen('mpScreen'); mpMsg('הוזמנת לחדר ' + rc + ' – לחצו "הצטרף"'); } }
+
+// meta badges on first load
+if (curScreen === "startScreen") document.body.classList.add("titlemode");
+renderMetaBadges();
 </script>
 </body>
 </html>
