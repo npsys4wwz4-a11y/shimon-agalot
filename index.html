@@ -40,6 +40,24 @@
   #pauseBtn:active{transform:scale(.92)}
   #hornBtn{position:fixed;z-index:30;-webkit-appearance:none;appearance:none;top:calc(env(safe-area-inset-top) + 14px);left:calc(50% + 52px);width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:rgba(255,138,0,.85);color:#fff;font-size:22px;padding:0;touch-action:manipulation}
   #hornBtn:active{transform:scale(.92)} body.inmenu #hornBtn{display:none}
+  .modePick{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+  .bigMode{-webkit-appearance:none;appearance:none;flex:1 1 200px;max-width:260px;border:4px solid #fff;border-radius:22px;background:linear-gradient(#3b82f6,#1d4ed8);color:#fff;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 6px 0 #0b1e5a;font-family:inherit;touch-action:manipulation}
+  .bigMode span{font-size:44px} .bigMode b{font-size:24px} .bigMode small{font-size:13px;opacity:.9} .bigMode.gold{background:linear-gradient(#ffd23f,#ff9f1c);color:#0b1e5a;box-shadow:0 6px 0 #b86b00}
+  #cupList{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .cupCard{position:relative;flex:1 1 180px;max-width:250px;background:#eef4ff;border:4px solid transparent;border-radius:18px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#0b1e5a;cursor:pointer}
+  .cupCard.sel{border-color:#1d4ed8;background:#dbe8ff} .cupCard .ce{font-size:38px} .cupCard .cn{font-weight:900;font-size:19px} .cupCard .ct{font-size:20px} .cupCard small{color:#5b6b9a}
+  .cupCard.locked{filter:grayscale(.8);opacity:.7} .cupCard.locked::after{content:attr(data-lock);position:absolute;top:40%;left:50%;transform:translateX(-50%);background:rgba(11,30,90,.85);color:#fff;font-weight:900;border-radius:12px;padding:4px 10px;white-space:nowrap}
+  #diffRow{display:flex;gap:6px;justify-content:center} #diffRow .tab,#lobbyMode .tab,#lobbyCup .tab{-webkit-appearance:none;appearance:none;border:2px solid #1d4ed8;background:#fff;color:#1d4ed8;border-radius:999px;font:800 15px Arial;padding:7px 14px}
+  #diffRow .tab.sel,#lobbyMode .tab.sel,#lobbyCup .tab.sel{background:#1d4ed8;color:#fff} #diffRow small{opacity:.75;font-size:11px}
+  #shelf{margin:4px auto;border-collapse:collapse;color:#0b1e5a} #shelf td,#shelf th{padding:4px 10px;font-weight:800} #shelf .tr{font-size:26px;text-align:center}
+  #gpBox{margin:8px auto 4px;background:#fff6d6;border-radius:14px;padding:6px 8px;max-width:420px} #gpHead{font-weight:900;color:#0b1e5a;margin-bottom:4px} #gpNextBtn{margin-top:6px}
+  body.ingp #restartBtn,body.ingp #changeBtn,body.ingp #endLobbyBtn{display:none}
+  #podiumScreen{align-items:flex-end;justify-content:center}
+  .podCard{position:relative;background:rgba(255,255,255,.93);border:4px solid #1d4ed8;border-radius:24px;padding:10px 16px 12px;margin:0 8px calc(10px + env(safe-area-inset-bottom));max-width:min(560px,96vw);max-height:56vh;overflow:auto;text-align:center;color:#0b1e5a}
+  .podCard h1{margin:4px 0;font-size:clamp(22px,5vw,32px)} .podCard h2{margin:2px 0;font-size:16px} #podRewards{font-weight:900;color:#b86b00;margin:4px 0}
+  @media (max-height:520px){.podCard{max-height:62vh;padding:6px 12px}.podCard h1{font-size:20px}#podTable td{padding:1px 6px}
+    .modePick,#cupList{flex-wrap:nowrap}.bigMode{padding:10px 8px}.bigMode span{font-size:32px}.cupCard{padding:6px}.cupCard .ce{font-size:28px}}
+  @media (min-aspect-ratio:4/3){#podiumScreen{align-items:center;justify-content:flex-start}.podCard{width:min(44vw,420px);max-height:90vh;margin:0 calc(12px + env(safe-area-inset-right)) 0 0}}
   .metaRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
   .metaBtn{position:relative;-webkit-appearance:none;appearance:none;border:3px solid #fff;border-radius:999px;background:linear-gradient(#ffd23f,#ff9f1c);color:#0b1e5a;font:900 15px/1 Arial,sans-serif;padding:9px 14px;box-shadow:0 4px 0 #b86b00;touch-action:manipulation}
   .metaBtn .dot{position:absolute;top:-8px;left:-6px;min-width:20px;height:20px;border-radius:10px;background:#e11d48;color:#fff;font:900 12px/20px Arial;font-style:normal;border:2px solid #fff}
@@ -230,7 +248,7 @@
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010080123', busy = false;
+  var BUILD = '20261010083116', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -295,6 +313,42 @@
   </div>
 </div>
 <button id="coinBadge" aria-label="מטבעות">🪙 0 ₪</button>
+<div id="modeScreen" class="screen" style="display:none">
+  <div class="card metaCard">
+    <button class="backBtn" data-back>→ חזרה</button>
+    <h2>שחקן יחיד</h2>
+    <div class="modePick">
+      <button class="bigMode" id="quickBtn"><span>⚡</span><b>משחק מהיר</b><small>מרוץ אחד במסלול לבחירה</small></button>
+      <button class="bigMode gold" id="cupBtn"><span>🏆</span><b>אליפות</b><small>4 מרוצים · ניקוד · גביע</small></button>
+    </div>
+  </div>
+</div>
+<div id="cupScreen" class="screen" style="display:none">
+  <div class="card metaCard">
+    <button class="backBtn" data-back>→ חזרה</button>
+    <h2>🏆 אליפות</h2>
+    <div id="cupList"></div>
+    <div class="lsec">רמת קושי:</div><div id="diffRow"></div>
+    <p id="cupReward" class="note"></p>
+    <button class="btn" id="cupGoBtn">בחר נהג ▶</button>
+    <div class="lsec">🏆 מדף הגביעים</div><table id="shelf"></table>
+    <p class="note">ניקוד: מקום 1 – 10 · מקום 2 – 7 · מקום 3 – 5 · מקום 4 – 3</p>
+  </div>
+</div>
+<div id="podiumScreen" class="screen" style="display:none">
+  <div class="podCard">
+    <button class="backBtn" data-back>→ חזרה</button>
+    <h1 id="podTitle"></h1><h2 id="podSub"></h2>
+    <div id="podRewards"></div>
+    <table class="res" id="podTable"></table>
+    <div class="btnRow">
+      <button class="btn" id="podAgainBtn">🏆 אליפות נוספת</button>
+      <button class="btn hostOnly" id="podLobbyBtn">🔁 חזרה ללובי</button>
+      <span id="podWait" class="note">⏳ המארח יחזיר את כולם ללובי</span>
+      <button class="btn blue" id="podMenuBtn">🏠 תפריט ראשי</button>
+    </div>
+  </div>
+</div>
 <div id="chScreen" class="screen" style="display:none">
   <div class="card metaCard">
     <button class="backBtn" data-back>→ חזרה</button>
@@ -389,7 +443,10 @@
     <div id="lobbyChars" class="lchars"></div>
     <div class="lsec">הרכב שלך:</div>
     <div id="lobbyKarts" class="ltracks"></div>
-    <div class="lsec">מסלול:</div>
+    <div class="lsec">מצב משחק:</div>
+    <div id="lobbyMode" class="ltracks"></div>
+    <div id="lobbyCup" class="ltracks"></div>
+    <div class="lsec lTrk">מסלול:</div>
     <div id="lobbyTracks" class="ltracks"></div>
     <div id="lobbyWait" class="note"></div>
     <div id="lobbyMsg" class="note warn"></div>
@@ -406,6 +463,7 @@
     <h2 id="endSub"></h2>
     <div class="resWrap"><table class="res" id="resTable"></table></div>
     <div id="resNote"></div>
+    <div id="gpBox" style="display:none"><div id="gpHead"></div><table class="res" id="gpTable"></table><button class="btn" id="gpNextBtn" disabled>המרוץ הבא ▶</button></div>
     <div id="xpBox"><div class="xpLine"><b id="xpGain">+0 XP</b><b id="xpCoins" class="coins"></b><span id="xpLvl"></span></div><div class="xpbar big"><u id="xpBar"></u></div><div id="xpDetail"></div><div id="lvlUp"></div><div id="xpCh"></div></div>
     <div class="btnRow">
       <button class="btn hostOnly" id="endLobbyBtn">🔁 מרוץ נוסף (לובי)</button>
@@ -1899,7 +1957,7 @@ const CH_T = {
   short: { gen: r => ({ g: 3 + Math.floor(r() * 3) }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
   clean: { gen: r => ({ g: 1 + Math.floor(r() * 2) }), txt: c => `${c.g === 1 ? 'הקפה' : c.g + ' הקפות'} בלי לפגוע בקיר`, ev: (c, R) => R.clean },
   pads:  { gen: r => ({ g: 6 + Math.floor(r() * 5) }), txt: c => `עלו על ${c.g} משטחי בוסט ⚡`, ev: (c, R) => R.pads },
-  races: { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים`, ev: () => 1 },
+  races: { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים`, ev: (c, R) => R.noRace ? 0 : 1 },
   podium:{ gen: r => ({ g: 2 + Math.floor(r() * 2) }), txt: c => `עלו לפודיום (1-3) ${c.g} פעמים`, ev: (c, R) => R.place <= 3 ? 1 : 0 },
 };
 const CH_W = {
@@ -2037,7 +2095,11 @@ function syncHistory() {
 }
 function goBack() {
   switch (curScreen) {
-    case 'helpScreen': case 'charScreen': case 'nameScreen': case 'chScreen': case 'streakScreen': case 'shopScreen': showScreen('startScreen'); break;
+    case 'charScreen': if (NET.on) showScreen('startScreen'); else { gpPending = false; showScreen(GP || cupScreenFrom ? 'cupScreen' : 'modeScreen'); } break;
+    case 'modeScreen': showScreen('startScreen'); break;
+    case 'cupScreen': cupScreenFrom = false; showScreen('modeScreen'); break;
+    case 'podiumScreen': leavePodium('menu'); break;
+    case 'helpScreen': case 'nameScreen': case 'chScreen': case 'streakScreen': case 'shopScreen': showScreen('startScreen'); break;
     case 'kartScreen': showScreen('charScreen'); break;
     case 'trackScreen': showScreen('kartScreen'); break;
     case 'mpScreen': netLeave(); showScreen('startScreen'); break;
@@ -2049,9 +2111,9 @@ function goBack() {
 }
 addEventListener('popstate', () => { if (ignorePop) { ignorePop = false; return; } histTrap = false; goBack(); syncHistory(); });
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SND.init(); goBack(); }));
-function hideScreens0() { ['startScreen', 'helpScreen', 'charScreen', 'kartScreen', 'nameScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen'].forEach(id => $(id).style.display = 'none'); }
+function hideScreens0() { ['startScreen', 'helpScreen', 'charScreen', 'kartScreen', 'nameScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen', 'modeScreen', 'cupScreen', 'podiumScreen'].forEach(id => $(id).style.display = 'none'); }
 let curScreen = 'startScreen';
-function showScreen(id) { hideScreens0(); curScreen = id; $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = ['startScreen', 'helpScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen'].includes(id); document.body.classList.toggle('titlemode', id === 'startScreen'); if (id === 'startScreen') renderMetaBadges(); document.body.classList.toggle('inlobby', id === 'lobbyScreen'); syncHistory(); }
+function showScreen(id) { hideScreens0(); curScreen = id; $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = ['startScreen', 'helpScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen', 'modeScreen', 'cupScreen', 'podiumScreen'].includes(id); document.body.classList.toggle('ingp', !!GP); document.body.classList.toggle('titlemode', id === 'startScreen'); if (id === 'startScreen') renderMetaBadges(); document.body.classList.toggle('inlobby', id === 'lobbyScreen'); syncHistory(); }
 let finTimers = [];
 function clearFinTimers() { finTimers.forEach(clearTimeout); finTimers = []; }
 function startRaceMP(slots, ti, mySlot, isHost) {
@@ -2214,7 +2276,7 @@ function aiInput(k, dt) {
   const ln = (k.path === 1 || (k.takeBr && BR && modD(k.idx, BR.a) < look)) ? clamp(lane + dodge, -4, 4) : lane + dodge; const tx = ra.p.x + ra.l.x * ln, tz = ra.p.z + ra.l.z * ln;
   const dAng = angDiff(Math.atan2(tx - k.pos.x, tz - k.pos.z), k.heading);
   const gap = rubberRef() - k.total;
-  if (!k.isPlayer) k.maxSpeed = k.base * clamp(1 + gap / N * 0.35, 0.9, 1.12);
+  if (!k.isPlayer) k.maxSpeed = k.base * clamp(1 + gap / N * 0.35, 0.9, 1.12) * AI_MUL;
   if (k.item && k.rolling <= 0 && !k.isPlayer) {
     k.useTimer -= dt; let use = k.useTimer <= 0;
     if (k.item === 'shell') { const t = targetAhead(k); use = use && ((t && t.pos.distanceTo(k.pos) < 70) || k.useTimer < -5); }
@@ -2247,7 +2309,8 @@ function onPlayerFinish() {
     $('endTitle').textContent = titles[place - 1];
     const nm = player.name;
     $('endSub').textContent = (place === 1 ? `${nm} – מלך/ת העגלות!` : place === 4 ? `לא נורא, ${nm}. עוד סיבוב?` : `כל הכבוד, ${nm}!`) + `  ⏱ ${fmt(player.finishTime)}`;
-    ffOn = !netOn(); lastResHTML = ''; renderResults(); showScreen('endScreen'); showXP(xpRes);
+    if (GP) $('endSub').textContent += `  ·  🏆 מרוץ ${GP.i + 1}/4`;
+    ffOn = !netOn(); lastResHTML = ''; renderResults(); renderStandings(); showScreen('endScreen'); showXP(xpRes);
   }, 1400));
   flash('סיום! 🏁', 1.6);
 }
@@ -2261,6 +2324,7 @@ function renderResults() {
     return `<tr class="${k.isPlayer ? 'me' : ''} ${k.finished ? '' : 'racing'}"><td>${medal}</td><td class="nm"><span class="dot" style="background:${k.dot}"></span>${k.name}${k.cname && k.cname !== k.name ? ` <small>· ${k.cname}</small>` : ''}${tag}</td><td class="tm">${tm}${gap ? `<span class="gap">${gap}</span>` : ''}</td></tr>`;
   }).join('');
   if (html !== lastResHTML) { $('resTable').innerHTML = html; lastResHTML = html; }
+  if (GP && !GP.scored) gpTryScore();
   const left = karts.filter(k => !k.finished).length;
   $('resNote').textContent = left && netOn() ? `⏳ עוד ${left} נהגים במסלול – התוצאות מתעדכנות בזמן אמת` : left ? `⏩ מריץ קדימה – עוד ${left} נהגים בדרך לקו הסיום…` : (karts.some(k => k.est) ? '~ זמן משוער' : '');
 }
@@ -2280,7 +2344,7 @@ function resumeGame() {
   SND.init(); SND.pause(false); last = performance.now(); requestAnimationFrame(measureButtons);
 }
 function goMainMenu() {
-  netLeave();
+  netLeave(); if (GP && curScreen !== 'podiumScreen') gpEndAbandon(); gpPending = false;
   clearFinTimers(); clearHazards(); pausedFrom = null; ffOn = false; state = 'menu';
   SND.init(); SND.pause(false); SND.starMode = false; SND.playSong('menu'); showScreen('startScreen');
 }
@@ -2332,7 +2396,9 @@ function buildKartPicks() {
   $('kartPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => {
     SND.init(); const i = +el.dataset.i;
     if (!isUnlocked('kart', i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; }
-    SND.tink(true); selKart = i; buildKarts(selChar, selKart); placeKarts(); showScreen('trackScreen');
+    SND.tink(true); selKart = i;
+    if (gpPending) { gpPending = false; gpBegin(cupSel, diffSel, false); gpStartLocal(); return; }
+    AI_MUL = 1; buildKarts(selChar, selKart); placeKarts(); showScreen('trackScreen');
   }));
 }
 function buildMenus() {
@@ -2352,7 +2418,15 @@ function buildMenus() {
     el.addEventListener('click', () => { SND.init(); if (!isUnlocked('track', +el.dataset.i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; } startRace(selChar, +el.dataset.i); });
   });
 }
-$('startBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.beep(true); needName(() => showScreen('charScreen')); });
+$('startBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.beep(true); needName(() => showScreen('modeScreen')); });
+let cupScreenFrom = false;
+$('quickBtn').addEventListener('click', () => { SND.init(); SND.tink(true); gpEndAbandon(); cupScreenFrom = false; showScreen('charScreen'); });
+$('cupBtn').addEventListener('click', () => { SND.init(); SND.tink(true); renderCups(); showScreen('cupScreen'); });
+$('cupGoBtn').addEventListener('click', () => { SND.init(); SND.beep(true); gpEndAbandon(); gpPending = true; cupScreenFrom = true; showScreen('charScreen'); });
+$('gpNextBtn').addEventListener('click', e => { e.stopPropagation(); SND.init(); gpNext(); });
+$('podAgainBtn').addEventListener('click', () => leavePodium('again'));
+$('podLobbyBtn').addEventListener('click', () => leavePodium('lobby'));
+$('podMenuBtn').addEventListener('click', () => leavePodium('menu'));
 $('profBadge').addEventListener('click', () => { SND.init(); SND.tink(true); askName(); });
 $('nameOk').addEventListener('click', () => { SND.init(); saveName(); });
 $('nameInput').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') saveName(); });
@@ -2376,6 +2450,7 @@ $('changeBtn').addEventListener('click', () => { clearFinTimers(); clearHazards(
 // ---------- title scene (live 3D podium) ----------
 const titleScene = new THREE.Scene();
 const titleCam = new THREE.PerspectiveCamera(36, innerWidth / innerHeight, 0.5, 500);
+let titleTiers = [];
 let podium, burst, confetti, confData = [], titleKarts = [], floaters = [];
 function buildTitle() {
   const S = titleScene;
@@ -2391,7 +2466,7 @@ function buildTitle() {
   const floor = new THREE.Mesh(new THREE.CircleGeometry(26, 48), new THREE.MeshLambertMaterial({ map: ft })); floor.rotation.x = -Math.PI / 2; S.add(floor);
   const ring = new THREE.Mesh(new THREE.RingGeometry(26, 28, 64), new THREE.MeshBasicMaterial({ color: 0xffd23f, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.02; S.add(ring);
   podium = new THREE.Group(); S.add(podium);
-  const tiers = [[-2.35, 2.2, 0xffd23f, '1'], [-7.05, 1.5, 0xffffff, '2'], [2.35, 1.0, 0x5b8dff, '3'], [7.05, 0.55, 0x9fd0ff, '4']];
+  const tiers = titleTiers = [[-2.35, 2.2, 0xffd23f, '1'], [-7.05, 1.5, 0xffffff, '2'], [2.35, 1.0, 0x5b8dff, '3'], [7.05, 0.55, 0x9fd0ff, '4']];
   tiers.forEach(([x, h, c, n]) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(4.5, h, 4.5), toonS(c)); m.position.set(x, h / 2, 0); podium.add(m);
     const tx = canvasTex(128, 128, (g) => { g.fillStyle = '#0b1e5a'; g.font = '900 104px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, 64, 72); });
@@ -2424,7 +2499,8 @@ function updateTitle(dt, now) {
   const th = Math.tan(THREE.MathUtils.degToRad(titleCam.fov / 2)), hh = th * asp;
   const dist = Math.max(asp < 1 ? 16.5 : (asp > 1.9 ? 21.5 : 18.5), (asp < 1 ? 9.9 : 11) / hh);
   const lookY = asp < 1 ? 2.6 : 2.7;
-  titleCam.position.set(Math.sin(t * 0.2) * 1.2, lookY + dist * 0.2, dist); titleCam.lookAt(0, lookY, 0); titleCam.updateProjectionMatrix();
+  const podX = curScreen === 'podiumScreen' && asp > 1.33 ? 7.5 : 0, podY = curScreen === 'podiumScreen' && asp <= 1.33 ? -3.5 : 0;
+  titleCam.position.set(Math.sin(t * 0.2) * 1.2 + podX, lookY + podY + dist * 0.2, dist); titleCam.lookAt(podX, lookY + podY, 0); titleCam.updateProjectionMatrix();
 }
 
 // ---------- main loop ----------
@@ -2541,6 +2617,96 @@ requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
   dbg: { get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+// ================= CHAMPIONSHIPS (אליפות): 4 races, points 10/7/5/3, standings, 3D podium, trophies =================
+const CUPS = [
+  { id: 'falafel', name: 'גביע הפלאפל', emoji: '🧆', tracks: [0, 1, 2, 0], level: 1, desc: 'החוף, ירושלים, איו"ש ושוב לחוף' },
+  { id: 'aretz', name: 'גביע הארץ', emoji: '🇮🇱', tracks: [0, 1, 2, 3], level: 5, desc: 'כל הארץ – מהים עד החרמון' },
+];
+const DIFFS = [{ name: 'קל', cc: '50cc', ai: 0.88, mul: 1 }, { name: 'בינוני', cc: '100cc', ai: 1.0, mul: 1.5 }, { name: 'קשה', cc: '150cc', ai: 1.09, mul: 2 }];
+const GP_PTS = [10, 7, 5, 3];
+let GP = null, AI_MUL = 1, cupSel = 0, diffSel = 1, gpPending = false;
+const cupOpen = i => levelOf(PROFILE.xp) >= CUPS[i].level || /[?&]unlockall/.test(location.search);
+const trophyIcon = p => p ? ['🥇', '🥈', '🥉'][p - 1] : '▫️';
+
+function renderCups() {
+  $('cupList').innerHTML = CUPS.map((c, i) => `<div class="cupCard ${i === cupSel ? 'sel' : ''} ${cupOpen(i) ? '' : 'locked'}" data-i="${i}" ${cupOpen(i) ? '' : `data-lock="🔒 נפתח ברמה ${c.level}"`}>
+    <div class="ce">${c.emoji}</div><div class="cn">${c.name}</div><div class="ct">${c.tracks.map(t => TRACKS[t].emoji).join(' ')}</div><small>${c.desc}</small></div>`).join('');
+  $('cupList').querySelectorAll('.cupCard').forEach(el => el.onclick = () => { const i = +el.dataset.i; if (!cupOpen(i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; } SND.tink(false); cupSel = i; renderCups(); });
+  $('diffRow').innerHTML = DIFFS.map((d, i) => `<button class="tab ${i === diffSel ? 'sel' : ''}" data-i="${i}">${d.name} <small>${d.cc}</small></button>`).join('');
+  $('diffRow').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); diffSel = +b.dataset.i; renderCups(); });
+  $('shelf').innerHTML = `<tr><th></th>${DIFFS.map(d => `<th>${d.name}</th>`).join('')}</tr>` + CUPS.map((c, i) => `<tr><td>${c.emoji} ${c.name}</td>${DIFFS.map((_, d) => `<td class="tr">${trophyIcon(PROFILE.tro[c.id + '_' + d])}</td>`).join('')}</tr>`).join('');
+  $('cupReward').textContent = `פרס: עד ${Math.round(400 * DIFFS[diffSel].mul)} XP ו-${Math.round(300 * DIFFS[diffSel].mul)} ₪${diffSel === 2 ? ' · 🥇 בקשה פותח את עגלת הזהב!' : ''}`;
+}
+function gpBegin(cup, diff, mp) { GP = { cup, diff, i: 0, pts: {}, last: {}, meta: {}, scored: false, mp: !!mp }; AI_MUL = DIFFS[diff].ai; }
+function gpTrack() { return CUPS[GP.cup].tracks[GP.i]; }
+function gpStartLocal() { startRace(selChar, gpTrack()); flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f'); }
+function gpEndAbandon() { GP = null; AI_MUL = 1; gpPending = false; }
+
+// scoring (single player locally; in multiplayer only the host scores and broadcasts)
+function gpTryScore() {
+  if (!GP || GP.scored || (GP.mp && !NET.host) || !karts.every(k => k.finished)) return;
+  rankList().forEach((k, i) => { GP.pts[k.slot] = (GP.pts[k.slot] || 0) + GP_PTS[i]; GP.last[k.slot] = GP_PTS[i]; });
+  gpMeta(); GP.scored = true;
+  if (GP.mp) sendAll({ t: 'gpst', pts: GP.pts, last: GP.last, i: GP.i, meta: GP.meta });
+  renderStandings();
+}
+function gpMeta() { for (const k of karts) GP.meta[k.slot] = { c: CHARS.indexOf(CHARS.find(c => c.id === k.def.id)), ki: k.kartI, name: k.name, cos: k.isPlayer ? myCos() : (GP.meta[k.slot] && GP.meta[k.slot].cos) || {} }; }
+function standings() { return Object.keys(GP.meta).map(Number).sort((a, b) => (GP.pts[b] || 0) - (GP.pts[a] || 0) || a - b); }
+function renderStandings() {
+  if (!GP) { $('gpBox').style.display = 'none'; return; }
+  $('gpBox').style.display = '';
+  const last = GP.i === 3;
+  if (!GP.scored) { $('gpTable').innerHTML = `<tr><td>⏳ מחכים שכולם יסיימו…</td></tr>`; $('gpNextBtn').disabled = true; }
+  else {
+    $('gpTable').innerHTML = standings().map((s, r) => { const m = GP.meta[s], me = karts[s] && karts[s].isPlayer; return `<tr class="${me ? 'me' : ''}"><td>${r + 1}</td><td class="nm">${esc(m.name)}</td><td><b>${GP.pts[s] || 0}</b> <small>(+${GP.last[s] || 0})</small></td></tr>`; }).join('');
+    const canNext = !GP.mp || NET.host; $('gpNextBtn').disabled = !canNext;
+    $('gpNextBtn').textContent = !canNext ? '⏳ ממתינים למארח…' : last ? '🏆 לטקס הסיום' : `המרוץ הבא ▶ (${GP.i + 2}/4 · ${TRACKS[CUPS[GP.cup].tracks[GP.i + 1]].name})`;
+  }
+  $('gpHead').textContent = `${CUPS[GP.cup].emoji} ${CUPS[GP.cup].name} · ${DIFFS[GP.diff].name} · אחרי מרוץ ${GP.i + 1}/4`;
+}
+function gpNext() {
+  if (!GP || !GP.scored) return;
+  if (GP.i === 3) { if (GP.mp) sendAll({ t: 'gpend', pts: GP.pts, meta: GP.meta }); showPodium(); return; }
+  GP.i++; GP.scored = false; GP.last = {};
+  if (GP.mp) hostGpNextRace(); else gpStartLocal();
+}
+
+// ---------- podium ceremony ----------
+let trophyMesh = null;
+function makeTrophy(place) {
+  const col = [0xffc400, 0xd9dde3, 0xcd7f32][place - 1], m = new THREE.MeshToonMaterial({ color: col, emissive: place === 1 ? 0x332200 : 0x111111 }), g = new THREE.Group();
+  const prof = [[0, 0], [1.1, 0], [1.1, 0.35], [0.45, 0.5], [0.3, 1.2], [0.5, 1.5], [1.15, 2.0], [1.4, 3.1], [1.25, 3.15], [0.0, 2.2]].map(([x, y]) => new THREE.Vector2(x, y));
+  g.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 24), m));
+  for (const s of [1, -1]) { const h = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.12, 8, 16, Math.PI * 1.2), m); h.position.set(s * 1.45, 2.45, 0); h.rotation.z = s > 0 ? -Math.PI * 0.6 : Math.PI * 1.6; g.add(h); }
+  const st = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.5, 1.9), toonS(0x0b1e5a)); st.position.y = -0.25; g.add(st);
+  g.scale.setScalar(0.85); return g;
+}
+function podiumKarts(list) {   // list: [{o, ki}] in finishing order (1st..4th)
+  for (const t of titleKarts) { podium.remove(t.k.root); disposeTree(t.k.root); } titleKarts = [];
+  if (trophyMesh) { podium.remove(trophyMesh); trophyMesh = null; }
+  list.forEach((e, i) => { const k = makeKart(e.o, podium, e.ki); const [x, h] = titleTiers[i]; k.root.position.set(x, h, 0.2); k.root.rotation.y = x < -5 ? 0.35 : x > 5 ? -0.35 : x < 0 ? 0.12 : -0.12; titleKarts.push({ k, h, ph: i * 1.7 }); });
+}
+function podiumDefault() { podiumKarts(CHARS.slice(0, 4).map((c, i) => ({ o: c, ki: AI_KART[i] }))); }
+function showPodium() {
+  const order = standings(), mySlot = karts.findIndex(k => k.isPlayer), place = order.indexOf(mySlot) + 1, cup = CUPS[GP.cup], d = GP.diff;
+  podiumKarts(order.map(s => { const m = GP.meta[s]; return { o: { ...CHARS[Math.max(0, m.c)], ...(karts[s] && karts[s].isPlayer ? myCos() : cosOk(m.cos)) }, ki: m.ki }; }));
+  if (place <= 3) { trophyMesh = makeTrophy(place); const [x, h] = titleTiers[place - 1]; trophyMesh.position.set(x, h + 4.4, 0.2); podium.add(trophyMesh); }
+  // rewards & trophy shelf
+  const xp = Math.round([400, 250, 150, 60][place - 1] * DIFFS[d].mul), coins = Math.round([300, 200, 100, 40][place - 1] * DIFFS[d].mul), key = cup.id + '_' + d;
+  const best = PROFILE.tro[key]; let note = '';
+  if (place <= 3 && (!best || place < best)) { PROFILE.tro[key] = place; note = '🆕 שיא חדש על המדף!'; }
+  if (place === 1 && d === 2 && !PROFILE.goldKart) { PROFILE.goldKart = true; note += ' ✨ נפתחה עגלת הזהב!'; }
+  saveProfile(); const lv = grantXP(xp); addCoins(coins);
+  chUpdate({ noRace: true, cupDone: true, cupPlace: place, cupDiff: d, place: 99, track: -1, kart: -1, items: {}, shortcuts: 0, clean: 0, pads: 0, mp: false });
+  $('podTitle').textContent = place <= 3 ? `${trophyIcon(place)} ${['זכית בגביע הזהב!', 'גביע כסף!', 'גביע ארד!'][place - 1]}` : 'מקום רביעי באליפות';
+  $('podSub').textContent = `${cup.emoji} ${cup.name} · ${DIFFS[d].name} (${DIFFS[d].cc})`;
+  $('podRewards').textContent = `+${xp} XP  ·  +${coins} ₪  ${note}` + (lv.La > lv.Lb ? `  ·  ⭐ עלית לרמה ${lv.La}!` : '');
+  $('podTable').innerHTML = order.map((s, r) => `<tr class="${karts[s] && karts[s].isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉', '4'][r]}</td><td class="nm">${esc(GP.meta[s].name)}</td><td><b>${GP.pts[s] || 0}</b> נק׳</td></tr>`).join('');
+  $('podLobbyBtn').style.display = GP.mp && NET.host ? '' : 'none'; $('podAgainBtn').style.display = GP.mp ? 'none' : ''; $('podWait').style.display = GP.mp && !NET.host ? '' : 'none';
+  clearFinTimers(); clearHazards(); state = 'menu'; SND.playSong('menu'); SND.fanfare(Math.min(place, 3));
+  showScreen('podiumScreen'); if (place <= 3) confettiBurst();
+}
+function leavePodium(to) { const mp = GP && GP.mp; podiumDefault(); gpEndAbandon(); if (to === 'lobby' && mp) hostBackToLobby(); else if (to === 'again') { showScreen('cupScreen'); renderCups(); } else goMainMenu(); }
 // ================= MULTIPLAYER (PeerJS / WebRTC, public broker, host-authoritative) =================
 const NET = { on: false, host: false, peer: null, conns: new Map(), hostConn: null, code: '', humans: [], track: 0, inRace: false, myId: '', timer: 0, hostSeen: 0, connecting: false };
 const PEER_PREFIX = 'shimon-agalot-v1-';
@@ -2637,7 +2803,7 @@ async function createRoom(tries = 0) {
   const code = String(1000 + Math.floor(Math.random() * 9000));
   const peer = new Peer(PEER_PREFIX + code, await peerOpts());
   peer.on('open', id => {
-    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: 0, kart: selKart, name: PROFILE.name || 'מארח/ת', cos: myCos() }], track: 0, inRace: false });
+    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: 0, kart: selKart, name: PROFILE.name || 'מארח/ת', cos: myCos() }], gp: { on: false, cup: 0, diff: 1 }, track: 0, inRace: false });
     peer.on('connection', onHostConnection);
     setMpBusy(false); document.body.classList.add('mp', 'mphost'); showLobby(); startNetTimer();
   });
@@ -2699,7 +2865,7 @@ function onHostConnection(c) {
 function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except && c.open) try { c.send(m); } catch (_) {} }); }
 // cosmetics from other players: only values that exist in the shop catalogue are accepted
 function cosOk(c) { const o = {}; if (!c || typeof c !== 'object') return o; for (const [k, cat] of [['paint', 'paint'], ['accHat', 'hat'], ['accGlass', 'glasses'], ['decal', 'decal'], ['horn', 'horn']]) if (SHOP.some(s => s.cat === cat && s.val === c[k])) o[k] = c[k]; return o; }
-function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code }; }
+function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code, gp: NET.gp }; }
 function onHostData(c, d) {
   if (d.t === 'hello') {
     if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו' }); setTimeout(() => c.close(), 300); return; }
@@ -2743,24 +2909,34 @@ function hostStart() {
   for (let c = 0; c < 4 && slots.length < 4; c++) if (!used.includes(c)) slots.push({ id: null, char: c });
   // shuffle grid order a bit so the host is not always at the back
   for (let i = slots.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [slots[i], slots[j]] = [slots[j], slots[i]]; }
-  NET.inRace = true; sendAll({ t: 'start', slots, track: NET.track });
-  beginMPRace(slots, NET.track);
+  let track = NET.track, gp;
+  if (NET.gp && NET.gp.on) { gpBegin(NET.gp.cup, NET.gp.diff, true); GP.slots = slots; slots.forEach((s, i) => GP.meta[i] = { c: s.char, ki: s.kart || AI_KART[s.char], name: s.name || CHARS[s.char].name, cos: s.cos || {} }); track = gpTrack(); gp = { cup: GP.cup, diff: GP.diff, i: 0 }; }
+  else { gpEndAbandon(); }
+  NET.inRace = true; sendAll({ t: 'start', slots, track, gp });
+  beginMPRace(slots, track);
+}
+function hostGpNextRace() {   // championship: next race with the same grid; dropped players become AI
+  const slots = GP.slots.map(s => s.id && s.id !== NET.myId && !NET.conns.has(s.id) ? { ...s, id: null } : s); GP.slots = slots;
+  NET.inRace = true; sendAll({ t: 'start', slots, track: gpTrack(), gp: { cup: GP.cup, diff: GP.diff, i: GP.i } }); beginMPRace(slots, gpTrack());
+  flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f');
 }
 function hostBackToLobby() {
-  if (!NET.host) return;
+  if (!NET.host) return; if (curScreen === 'podiumScreen' || GP) { podiumDefault(); gpEndAbandon(); }
   NET.inRace = false; clearHazards(); state = 'menu'; clearFinTimers();
   sendAll({ t: 'tolobby' }); broadcastLobby(); SND.playSong('menu'); showLobby();
 }
 
 // ---------- client side ----------
 function onClientData(d) {
-  if (d.t === 'lobby') { NET.humans = d.humans; NET.track = d.track; NET.code = d.code; if (!NET.inRace && $('lobbyScreen').style.display === 'none' && state === 'menu') showLobby(); renderLobby(); return; }
+  if (d.t === 'lobby') { NET.humans = d.humans; NET.track = d.track; NET.code = d.code; NET.gp = d.gp || { on: false, cup: 0, diff: 1 }; if (!NET.inRace && $('lobbyScreen').style.display === 'none' && state === 'menu') showLobby(); renderLobby(); return; }
   if (d.t === 'deny') { const why = d.why; netLeave(); showScreen('mpScreen'); mpMsg(why); return; }
-  if (d.t === 'start') { NET.inRace = true; beginMPRace(d.slots, d.track); return; }
+  if (d.t === 'start') { NET.inRace = true; if (d.gp) { if (!GP || d.gp.i === 0) gpBegin(d.gp.cup, d.gp.diff, true); GP.i = d.gp.i; GP.scored = false; GP.last = {}; } else gpEndAbandon(); beginMPRace(d.slots, d.track); if (d.gp) flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f'); return; }
+  if (d.t === 'gpst' && GP) { GP.pts = d.pts; GP.last = d.last; GP.meta = d.meta; GP.scored = true; renderStandings(); return; }
+  if (d.t === 'gpend' && GP) { GP.pts = d.pts; GP.meta = d.meta; showPodium(); return; }
   if (d.t === 'sn' && NET.inRace) { for (const e of d.d) { const k = karts[e[0]]; if (k && k.remote) applyState(k, e); } return; }
   if (d.t === 'ev' && NET.inRace) { applyEv(d.e); return; }
   if (d.t === 'left' && NET.inRace) { const k = karts[d.s]; if (k) { k.human = false; k.peerId = null; flash(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, 2.2, '#ffb84d'); } return; }
-  if (d.t === 'tolobby') { NET.inRace = false; clearHazards(); clearFinTimers(); state = 'menu'; SND.playSong('menu'); showLobby(); return; }
+  if (d.t === 'tolobby') { if (GP || curScreen === 'podiumScreen') { podiumDefault(); gpEndAbandon(); } NET.inRace = false; clearHazards(); clearFinTimers(); state = 'menu'; SND.playSong('menu'); showLobby(); return; }
   if (d.t === 'bye') { onHostLost(); }
 }
 function onHostLost() {
@@ -2868,6 +3044,14 @@ function renderLobby() {
     SND.init(); SND.tink(true); const i = +el.dataset.i; selKart = i;
     if (NET.host) { if (me) { me.kart = i; broadcastLobby(); } } else if (NET.hostConn) { NET.hostConn.send({ t: 'kart', k: i }); if (me) { me.kart = i; renderLobby(); } }
   });
+  const gp = NET.gp || { on: false, cup: 0, diff: 1 }, hd = NET.host ? '' : 'disabled';
+  $('lobbyMode').innerHTML = `<button class="tab ${gp.on ? '' : 'sel'}" data-m="0" ${hd}>⚡ משחק מהיר</button><button class="tab ${gp.on ? 'sel' : ''}" data-m="1" ${hd}>🏆 אליפות (4 מרוצים)</button>`;
+  $('lobbyCup').style.display = gp.on ? '' : 'none'; $('lobbyTracks').style.display = gp.on ? 'none' : ''; document.querySelector('#lobbyScreen .lTrk').textContent = gp.on ? '' : 'מסלול:';
+  $('lobbyCup').innerHTML = CUPS.map((c, i) => { const lk = NET.host && !cupOpen(i); return `<button class="tab ${gp.cup === i ? 'sel' : ''}" data-c="${i}" ${hd || (lk ? 'disabled' : '')}>${lk ? '🔒' : c.emoji} ${c.name}${lk ? ` (רמה ${c.level})` : ''}</button>`; }).join('') + DIFFS.map((d, i) => `<button class="tab ${gp.diff === i ? 'sel' : ''}" data-d="${i}" ${hd}>${d.name}</button>`).join('');
+  if (NET.host) {
+    $('lobbyMode').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); NET.gp = { ...gp, on: b.dataset.m === '1' }; broadcastLobby(); });
+    $('lobbyCup').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); NET.gp = { ...gp, ...(b.dataset.c !== undefined ? { cup: +b.dataset.c } : { diff: +b.dataset.d }) }; broadcastLobby(); });
+  }
   $('lobbyTracks').innerHTML = TRACKS.map((t, i) => { const lk = NET.host && !isUnlocked('track', i); return `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host && !lk ? '' : 'disabled'}>${lk ? '🔒 ' : t.emoji + ' '}${t.name}${lk ? ` (רמה ${unlockLevel('track', i)})` : ''}</button>`; }).join('');
   if (NET.host) $('lobbyTracks').querySelectorAll('.lt').forEach(el => el.onclick = () => { SND.tink(false); NET.track = +el.dataset.i; broadcastLobby(); });
   const ready = NET.humans.every(h => h.char !== null);
