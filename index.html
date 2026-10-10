@@ -465,7 +465,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010200712', busy = false;
+  var BUILD = '20261010202306', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -2202,13 +2202,13 @@ function fireShell(k, e) {
 function spinKart(k, dur, byPlayer) {
   if (k.star > 0 || k.spin > 0) return false;
   if (k.shield > 0) {   // Iron Dome absorbs exactly one hit
-    k.shield = 0; k.shieldPop = 0.5; react(k, 'cheer');
+    k.shield = 0; k.shieldPop = 0.5; k.blocks = (k.blocks || 0) + 1; react(k, 'cheer');
     if (k.isPlayer) { flash('כיפת ברזל יירטה! 🛡️', .9, '#7fd8ff'); SND.block(); } else if (k.pos.distanceTo(player.pos) < 35) SND.block();
     if (typeof netEv === 'function' && !k.remote) netEv({ k: 'block', s: k.slot });
     return 'blocked';
   }
   k.spin = dur; k.boost = 0; k.drifting = false;
-  react(k, 'angry'); if (byPlayer && !k.isPlayer) setTimeout(() => react(player, 'cheer'), 350);
+  k.timesHit = (k.timesHit || 0) + 1; react(k, 'angry'); if (byPlayer && !k.isPlayer) { player.hitsLanded = (player.hitsLanded || 0) + 1; setTimeout(() => react(player, 'cheer'), 350); }
   if (k.isPlayer) { flash('אופס! 😵', 1, '#ffe135'); SND.spin(); shakeCam(0.55); }
   else if (byPlayer || k.pos.distanceTo(player.pos) < 35) SND.spin();
   return true;
@@ -2654,25 +2654,55 @@ function renderStreak() {
 // ---------- challenges: 3 daily + 3 weekly, deterministic from the date (same for everyone) ----------
 const TRK = () => TRACKS.slice(0, 3);   // tracks everyone has
 const ITEM_NAMES = { mushroom: 'קפה שחור ☕', shield: 'כיפת ברזל 🛡️', banana: 'פיתה חומוס 🥙', shell: 'פלאפל 🧆', star: 'מגן דוד ✡️' };
-const CH_T = {
-  win:   { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => `נצחו במסלול ${TRACKS[c.a].emoji} ${TRACKS[c.a].name}`, ev: (c, R) => R.place === 1 && R.track === c.a ? 1 : 0 },
-  top2k: { gen: r => ({ a: Math.floor(r() * 2), g: 1 }), txt: c => `סיימו במקום 1-2 עם ${KARTS[c.a].name}`, ev: (c, R) => R.place <= 2 && R.kart === c.a ? 1 : 0 },
-  items: { gen: r => { const ks = Object.keys(ITEM_NAMES); return { a: ks[Math.floor(r() * ks.length)], g: 3 + Math.floor(r() * 3) }; }, txt: c => `השתמשו ב-${c.g} × ${ITEM_NAMES[c.a]}`, ev: (c, R) => R.items[c.a] || 0 },
-  short: { gen: r => ({ g: 3 + Math.floor(r() * 3) }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
-  clean: { gen: r => ({ g: 1 + Math.floor(r() * 2) }), txt: c => `${c.g === 1 ? 'הקפה' : c.g + ' הקפות'} בלי לפגוע בקיר`, ev: (c, R) => R.clean },
-  pads:  { gen: r => ({ g: 6 + Math.floor(r() * 5) }), txt: c => `עלו על ${c.g} משטחי בוסט ⚡`, ev: (c, R) => R.pads },
-  races: { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים`, ev: (c, R) => R.noRace ? 0 : 1 },
-  podium:{ gen: r => ({ g: 2 + Math.floor(r() * 2) }), txt: c => `עלו לפודיום (1-3) ${c.g} פעמים`, ev: (c, R) => R.place <= 3 ? 1 : 0 },
+const CHN = () => CHARS.filter(c => !c.shop).map((c, i) => [c.id, c.name]);   // base characters everyone has
+const R3 = (r, a, b, s = 1) => a + Math.floor(r() * ((b - a) / s + 1)) * s;
+const NRACE = R => !R.noRace;
+const CH_T = {   // daily pool (3 picked per day). x = reward multiplier
+  win:    { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => `נצחו במסלול ${TRACKS[c.a].emoji} ${TRACKS[c.a].name}`, ev: (c, R) => R.place === 1 && R.track === c.a ? 1 : 0, x: 1.2 },
+  top2k:  { gen: r => ({ a: Math.floor(r() * 2), g: 1 }), txt: c => `סיימו במקום 1-2 עם ${KARTS[c.a].name}`, ev: (c, R) => R.place <= 2 && R.kart === c.a ? 1 : 0 },
+  items:  { gen: r => { const ks = Object.keys(ITEM_NAMES); return { a: ks[Math.floor(r() * ks.length)], g: R3(r, 3, 5) }; }, txt: c => `השתמשו ב-${c.g} × ${ITEM_NAMES[c.a]}`, ev: (c, R) => R.items[c.a] || 0 },
+  short:  { gen: r => ({ g: R3(r, 3, 5) }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
+  clean:  { gen: r => ({ g: R3(r, 1, 2) }), txt: c => `${c.g === 1 ? 'הקפה' : c.g + ' הקפות'} בלי לפגוע בקיר`, ev: (c, R) => R.clean },
+  pads:   { gen: r => ({ g: R3(r, 6, 10) }), txt: c => `עלו על ${c.g} משטחי בוסט ⚡`, ev: (c, R) => R.pads },
+  races:  { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים`, ev: (c, R) => NRACE(R) ? 1 : 0, x: 0.8 },
+  podium: { gen: r => ({ g: R3(r, 2, 3) }), txt: c => `עלו לפודיום (1-3) ${c.g} פעמים`, ev: (c, R) => NRACE(R) && R.place <= 3 ? 1 : 0 },
+  tricks: { gen: r => ({ g: R3(r, 4, 8) }), txt: c => `בצעו ${c.g} טריקים באוויר 🤸`, ev: (c, R) => R.tricks },
+  jumps:  { gen: r => ({ g: R3(r, 5, 9) }), txt: c => `קפצו ${c.g} קפיצות גדולות`, ev: (c, R) => R.jumps },
+  rams:   { gen: r => ({ g: R3(r, 2, 4) }), txt: c => `דחפו יריבים בדריפט ${c.g} פעמים 💥`, ev: (c, R) => R.rams, x: 1.2 },
+  blocks: { gen: r => ({ g: R3(r, 1, 2) }), txt: c => `יירטו ${c.g} ${c.g === 1 ? 'פגיעה' : 'פגיעות'} עם כיפת ברזל 🛡️`, ev: (c, R) => R.blocks, x: 1.2 },
+  hits:   { gen: r => ({ g: R3(r, 3, 5) }), txt: c => `פגעו ביריבים ${c.g} פעמים`, ev: (c, R) => R.hits },
+  noItem: { gen: () => ({ g: 1 }), txt: () => 'סיימו במקום 1-3 בלי להשתמש באף פריט', ev: (c, R) => NRACE(R) && R.place <= 3 && R.used === 0 ? 1 : 0, x: 1.3 },
+  noHit:  { gen: () => ({ g: 1 }), txt: () => 'סיימו מרוץ בלי שאף אחד יפגע בכם', ev: (c, R) => NRACE(R) && R.hit === 0 ? 1 : 0, x: 1.3 },
+  char:   { gen: r => { const L = CHN(); return { a: L[Math.floor(r() * L.length)][0], g: 2 }; }, txt: c => `סיימו ${c.g} מרוצים עם ${(CHARS.find(x => x.id === c.a) || {}).name}`, ev: (c, R) => NRACE(R) && R.char === c.a ? 1 : 0 },
+  charWin:{ gen: r => { const L = CHN(); return { a: L[Math.floor(r() * L.length)][0], g: 1 }; }, txt: c => `סיימו במקום 1-2 עם ${(CHARS.find(x => x.id === c.a) || {}).name}`, ev: (c, R) => NRACE(R) && R.place <= 2 && R.char === c.a ? 1 : 0, x: 1.2 },
+  kart:   { gen: r => ({ a: Math.floor(r() * 4), g: 2 }), txt: c => `סיימו ${c.g} מרוצים עם ${KARTS[c.a].name}`, ev: (c, R) => NRACE(R) && R.kart === c.a ? 1 : 0 },
+  coins:  { gen: r => ({ g: R3(r, 60, 100, 20) }), txt: c => `הרוויחו ${c.g} ₪ ממרוצים`, ev: (c, R) => R.coins },
+  track:  { gen: r => ({ a: Math.floor(r() * 3), g: 2 }), txt: c => `סיימו ${c.g} מרוצים ב${TRACKS[c.a].name}`, ev: (c, R) => NRACE(R) && R.track === c.a ? 1 : 0, x: 0.8 },
+  fast:   { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => `סיימו ב${TRACKS[c.a].name} במקום 1-2`, ev: (c, R) => NRACE(R) && R.place <= 2 && R.track === c.a ? 1 : 0 },
+  gpRace: { gen: () => ({ g: 2 }), txt: c => `סיימו ${c.g} מרוצים בתוך אליפות 🏆`, ev: (c, R) => NRACE(R) && R.gp ? 1 : 0 },
+  mpRace: { gen: () => ({ g: 1 }), txt: () => 'סיימו מרוץ מרובה משתתפים 🌐', ev: (c, R) => NRACE(R) && R.mp ? 1 : 0, x: 1.2 },
+  hardPod:{ gen: () => ({ g: 1 }), txt: () => 'עלו לפודיום במרוץ אליפות ברמה קשה', ev: (c, R) => NRACE(R) && R.gp && R.diff === 2 && R.place <= 3 ? 1 : 0, x: 1.5 },
+  shellH: { gen: r => ({ g: R3(r, 2, 3) }), txt: c => `השתמשו ב-${c.g} × ${ITEM_NAMES.shell} או ${ITEM_NAMES.banana}`, ev: (c, R) => (R.items.shell || 0) + (R.items.banana || 0) },
+  combo:  { gen: r => ({ g: R3(r, 2, 3) }), txt: c => `טריק + קיצור דרך באותו מרוץ, ${c.g} פעמים`, ev: (c, R) => R.tricks > 0 && R.shortcuts > 0 ? 1 : 0, x: 1.2 },
 };
-const CH_W = {
-  wins:  { gen: () => ({ g: 5 }), txt: c => `נצחו ב-${c.g} מרוצים`, ev: (c, R) => R.place === 1 ? 1 : 0 },
-  cup:   { gen: () => ({ g: 1 }), txt: () => 'השלימו אליפות שלמה 🏆', ev: (c, R) => R.cupDone ? 1 : 0 },
-  cupTop:{ gen: () => ({ g: 1 }), txt: () => 'זכו בגביע (1-3) באליפות בינונית או קשה', ev: (c, R) => R.cupDone && R.cupPlace <= 3 && R.cupDiff >= 1 ? 1 : 0 },
-  items: { gen: r => ({ g: 25 + Math.floor(r() * 3) * 5 }), txt: c => `השתמשו ב-${c.g} פריטים`, ev: (c, R) => Object.values(R.items).reduce((a, b) => a + b, 0) },
-  short: { gen: () => ({ g: 15 }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
-  clean: { gen: () => ({ g: 8 }), txt: c => `${c.g} הקפות נקיות בלי קיר`, ev: (c, R) => R.clean },
-  mp:    { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים מרובי משתתפים 🌐`, ev: (c, R) => R.mp ? 1 : 0 },
-  tracks:{ gen: () => ({ g: 3 }), txt: () => 'סיימו בכל 3 המסלולים הבסיסיים', ev: (c, R) => R.track < 3 ? (1 << R.track) : 0, bits: true },
+const CH_W = {   // weekly pool (3 picked per week)
+  wins:   { gen: r => ({ g: R3(r, 4, 6) }), txt: c => `נצחו ב-${c.g} מרוצים`, ev: (c, R) => R.place === 1 ? 1 : 0 },
+  cup:    { gen: () => ({ g: 1 }), txt: () => 'השלימו אליפות שלמה 🏆', ev: (c, R) => R.cupDone ? 1 : 0 },
+  cupTop: { gen: () => ({ g: 1 }), txt: () => 'זכו בגביע (1-3) באליפות בינונית או קשה', ev: (c, R) => R.cupDone && R.cupPlace <= 3 && R.cupDiff >= 1 ? 1 : 0, x: 1.2 },
+  cupGold:{ gen: () => ({ g: 1 }), txt: () => 'זכו בגביע זהב באליפות קשה 🥇', ev: (c, R) => R.cupDone && R.cupPlace === 1 && R.cupDiff === 2 ? 1 : 0, x: 1.6 },
+  items:  { gen: r => ({ g: R3(r, 25, 35, 5) }), txt: c => `השתמשו ב-${c.g} פריטים`, ev: (c, R) => R.used || Object.values(R.items).reduce((a, b) => a + b, 0) },
+  short:  { gen: () => ({ g: 15 }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
+  clean:  { gen: () => ({ g: 8 }), txt: c => `${c.g} הקפות נקיות בלי קיר`, ev: (c, R) => R.clean },
+  mp:     { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים מרובי משתתפים 🌐`, ev: (c, R) => NRACE(R) && R.mp ? 1 : 0 },
+  mpCup:  { gen: () => ({ g: 1 }), txt: () => 'השלימו אליפות מרובת משתתפים 🌐🏆', ev: (c, R) => R.cupDone && R.cupMp ? 1 : 0, x: 1.3 },
+  tracks: { gen: () => ({ g: 3 }), txt: () => 'סיימו בכל 3 המסלולים הבסיסיים', ev: (c, R) => NRACE(R) && R.track < 3 ? (1 << R.track) : 0, bits: true },
+  tricks: { gen: r => ({ g: R3(r, 30, 50, 10) }), txt: c => `בצעו ${c.g} טריקים באוויר`, ev: (c, R) => R.tricks },
+  rams:   { gen: r => ({ g: R3(r, 12, 20, 4) }), txt: c => `דחפו יריבים בדריפט ${c.g} פעמים`, ev: (c, R) => R.rams },
+  hits:   { gen: r => ({ g: R3(r, 20, 30, 5) }), txt: c => `פגעו ביריבים ${c.g} פעמים`, ev: (c, R) => R.hits },
+  coins:  { gen: r => ({ g: R3(r, 500, 700, 100) }), txt: c => `הרוויחו ${c.g} ₪ ממרוצים`, ev: (c, R) => R.coins },
+  podium: { gen: r => ({ g: R3(r, 10, 14, 2) }), txt: c => `עלו לפודיום ${c.g} פעמים`, ev: (c, R) => NRACE(R) && R.place <= 3 ? 1 : 0 },
+  allChar:{ gen: () => ({ g: 4 }), txt: () => 'סיימו מרוץ עם כל 4 הדמויות הבסיסיות', ev: (c, R) => { const i = CHN().findIndex(x => x[0] === R.char); return NRACE(R) && i >= 0 && i < 4 ? (1 << i) : 0; }, bits: 4 },
+  noItem: { gen: () => ({ g: 3 }), txt: c => `${c.g} מרוצים בפודיום בלי להשתמש בפריטים`, ev: (c, R) => NRACE(R) && R.place <= 3 && R.used === 0 ? 1 : 0, x: 1.3 },
 };
 const CH_REWARD = { d: [50, 60], w: [220, 250] };   // [₪, XP]
 function genSet(kind) {
@@ -2682,28 +2712,31 @@ function genSet(kind) {
 }
 function chSets() {
   const ch = PROFILE.ch || (PROFILE.ch = {});
-  if (!ch.d || ch.d.key !== ilDate()) ch.d = genSet('d');
-  if (!ch.w || ch.w.key !== ilWeek()) ch.w = genSet('w');
+  const bad = (s, T) => !s || !Array.isArray(s.list) || s.list.some(c => !c || !T[c.t]);
+  if (bad(ch.d, CH_T) || ch.d.key !== ilDate()) ch.d = genSet('d');
+  if (bad(ch.w, CH_W) || ch.w.key !== ilWeek()) ch.w = genSet('w');
   return ch;
 }
 const chDef = (kind, c) => (kind === 'd' ? CH_T : CH_W)[c.t];
-const chProg = (kind, c) => chDef(kind, c).bits ? [0, 1, 2].filter(b => c.p & (1 << b)).length : Math.min(c.p, c.g);
-const chGoal = (kind, c) => chDef(kind, c).bits ? 3 : c.g;
+const chBits = d => d.bits === true ? 3 : d.bits || 0;
+const chProg = (kind, c) => { const d = chDef(kind, c); if (!d) return 0; const nb = chBits(d); return nb ? [...Array(nb).keys()].filter(b => c.p & (1 << b)).length : Math.min(c.p, c.g); };
+const chGoal = (kind, c) => { const d = chDef(kind, c); return d && chBits(d) ? chBits(d) : c.g; };
+const chRew = (kind, c) => { const d = chDef(kind, c) || {}, x = d.x || 1; return CH_REWARD[kind].map(v => Math.round(v * x / 5) * 5); };
 const chDone = (kind, c) => chProg(kind, c) >= chGoal(kind, c);
 function chUpdate(R) {   // called after every race (and cup end) with a summary R
   const ch = chSets(); let newly = 0;
-  for (const kind of ['d', 'w']) for (const c of ch[kind].list) { if (c.claimed || chDone(kind, c)) continue; const v = chDef(kind, c).ev(c, R); if (!v) continue; c.p = chDef(kind, c).bits ? c.p | v : c.p + v; if (chDone(kind, c)) newly++; }
+  for (const kind of ['d', 'w']) for (const c of ch[kind].list) { if (!chDef(kind, c) || c.claimed || chDone(kind, c)) continue; const v = chDef(kind, c).ev(c, R); if (!v) continue; c.p = chBits(chDef(kind, c)) ? c.p | v : c.p + v; if (chDone(kind, c)) newly++; }
   saveProfile(); renderMetaBadges(); return newly;
 }
 function claimCh(kind, i) {
   const c = chSets()[kind].list[i]; if (!c || c.claimed || !chDone(kind, c)) return;
-  c.claimed = true; const [m, x] = CH_REWARD[kind]; saveProfile(); addCoins(m); grantXP(x); SND.gotItem(); coinToast(`+${m} ₪  +${x} XP`); renderChallenges();
+  c.claimed = true; const [m, x] = chRew(kind, c); saveProfile(); addCoins(m); grantXP(x); SND.gotItem(); coinToast(`+${m} ₪  +${x} XP`); renderChallenges();
 }
 function chClaimable() { const ch = chSets(); return ['d', 'w'].reduce((n, k) => n + ch[k].list.filter(c => !c.claimed && chDone(k, c)).length, 0); }
 function fmtLeft(ms) { const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60; return h >= 24 ? `${Math.floor(h / 24)} ימים ו-${h % 24} שעות` : `${h}:${String(m).padStart(2, '0')} שעות`; }
 function renderChallenges() {
   const ch = chSets(), toMid = msToMidnightIL(), [y, m, d] = ilParts(), dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-  const row = (kind, c, i) => { const g = chGoal(kind, c), p = chProg(kind, c), done = p >= g, [mo, x] = CH_REWARD[kind];
+  const row = (kind, c, i) => { if (!chDef(kind, c)) return ''; const g = chGoal(kind, c), p = chProg(kind, c), done = p >= g, [mo, x] = chRew(kind, c);
     return `<div class="chRow ${done ? 'done' : ''} ${c.claimed ? 'claimed' : ''}"><div class="chTxt">${chDef(kind, c).txt(c)}<div class="xpbar"><u style="width:${p / g * 100}%"></u></div><small>${p}/${g} · פרס: ${mo} ₪ + ${x} XP</small></div>
       <button class="btn chBtn" data-k="${kind}" data-i="${i}" ${done && !c.claimed ? '' : 'disabled'}>${c.claimed ? '✓' : done ? 'אסוף!' : '🔒'}</button></div>`; };
   $('chDaily').innerHTML = ch.d.list.map((c, i) => row('d', c, i)).join('');
@@ -2803,7 +2836,7 @@ function placeKarts() {
   const grid = [[N - 14, 3.5], [N - 14, -3.5], [N - 7, 3.5], [N - 7, -3.5]];
   karts.forEach((k, i) => {
     const [gi, lat] = grid[i];
-    k.idx = gi; k.progT = undefined; k.recovers = 0; k.itemsBy = {}; k.shortcuts = 0; k.cleanLaps = 0; k.lapDirty = false; k.brCounted = false; k.itemsUsed = 0; k.padBoosts = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat); k.y = Y[gi]; k.vy = 0; k.air = 0; k.pitch = 0; k.trick = 0; k.squash = 0;
+    k.idx = gi; k.progT = undefined; k.recovers = 0; k.itemsBy = {}; k.shortcuts = 0; k.cleanLaps = 0; k.lapDirty = false; k.brCounted = false; k.itemsUsed = 0; k.padBoosts = 0; k.tricks = 0; k.jumps = 0; k.rams = 0; k.blocks = 0; k.hitsLanded = 0; k.timesHit = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat); k.y = Y[gi]; k.vy = 0; k.air = 0; k.pitch = 0; k.trick = 0; k.squash = 0;
     k.heading = Math.atan2(T[gi].x, T[gi].z); k.speed = 0; k.total = gi - N; k.lap = 1;
     Object.assign(k, { est: false, drifting: false, charge: 0, boost: 0, spin: 0, item: null, itemCount: 0, rolling: 0, finished: false, finishTime: 0, useTimer: 0, visYaw: 0, star: 0, shrink: 0, scale: 1 });
     k.root.position.copy(k.pos); k.root.rotation.y = k.heading; k.root.scale.setScalar(1);
@@ -2941,8 +2974,9 @@ function updateVertical(k, dt, inp) {
       if (gap || gy - k.y > 1.6) { k.fall = (k.fall || 0) + dt; k.y = Math.max(k.y, gy); k.speed *= 0.9; if (k.fall > 0.6) respawnKart(k, true); }
       else {
         const hard = k.air > 0.3; k.y = gy; k.vy = 0;
+        if (k.air > 0.55) k.jumps = (k.jumps || 0) + 1;
         if (hard) { k.squash = 1; k.landDust = 1; if (k.isPlayer) { shakeCam(Math.min(0.35, 0.1 + k.air * 0.25)); SND.land && SND.land(); } }
-        if (k.trickDone && k.trickOk) { k.boost = Math.max(k.boost, 0.8); if (k.isPlayer) { flash('טריק! בוסט', .6, '#ff9a2f'); SND.boost(); } }
+        if (k.trickDone && k.trickOk) { k.tricks = (k.tricks || 0) + 1; k.boost = Math.max(k.boost, 0.8); if (k.isPlayer) { flash('טריק! בוסט', .6, '#ff9a2f'); SND.boost(); } }
         k.air = 0; k.trickOk = false; k.fall = 0;
       }
     }
@@ -3078,7 +3112,7 @@ function ramKart(att, vic, nx, nz) {   // n = unit vector from attacker to victi
   const sx = fz * side, sz = -fx * side, push = 9 * r;
   vic.bvx = (vic.bvx || 0) + sx * push * 0.8 + nx * push * 0.4; vic.bvz = (vic.bvz || 0) + sz * push * 0.8 + nz * push * 0.4;
   if (vic.drifting) { vic.drifting = false; vic.charge = 0; }
-  react(vic, 'angry'); setTimeout(() => react(att, 'happy'), 300);
+  att.rams = (att.rams || 0) + 1; react(vic, 'angry'); setTimeout(() => react(att, 'happy'), 300);
   return true;
 }
 function collideKarts() {
@@ -3115,7 +3149,7 @@ function onPlayerFinish() {
   state = 'finished'; SND.stopSong(); SND.starMode = false; react(player, player.place === 1 ? 'win' : player.place <= 3 ? 'good' : 'sad', true);
   const place = player.place; SND.fanfare(place); const xpRes = awardXP(player, place, netOn());
   const coinGain = Math.round([40, 25, 15, 10][place - 1] * (netOn() ? 1.25 : 1)); addCoins(coinGain);
-  const chNew = chUpdate({ place, track: curTrack, kart: selKart, items: player.itemsBy || {}, shortcuts: player.shortcuts || 0, clean: player.cleanLaps || 0, pads: player.padBoosts || 0, mp: netOn() });
+  const P = player, chNew = chUpdate({ place, track: curTrack, kart: selKart, char: P.def ? P.def.id : '', items: P.itemsBy || {}, used: P.itemsUsed || 0, shortcuts: P.shortcuts || 0, clean: P.cleanLaps || 0, pads: P.padBoosts || 0, mp: netOn(), tricks: P.tricks || 0, jumps: P.jumps || 0, rams: P.rams || 0, blocks: P.blocks || 0, hits: P.hitsLanded || 0, hit: P.timesHit || 0, coins: coinGain, diff: GP ? GP.diff : -1, gp: !!GP, time: P.finishTime || 0 });
   xpRes.coins = coinGain; xpRes.chNew = chNew;
   finTimers.push(setTimeout(() => SND.playSong(GP ? 'gp' : 'menu'), 3500));
   finTimers.push(setTimeout(() => {
@@ -3439,7 +3473,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
@@ -3555,7 +3589,7 @@ function showPodium() {
   if (place <= 3 && (!best || place < best)) { PROFILE.tro[key] = place; note = '🆕 שיא חדש על המדף!'; }
   if (place === 1 && d === 2 && !PROFILE.goldKart) { PROFILE.goldKart = true; note += ' ✨ נפתחה עגלת הזהב!'; }
   saveProfile(); const lv = grantXP(xp); addCoins(coins);
-  chUpdate({ noRace: true, cupDone: true, cupPlace: place, cupDiff: d, place: 99, track: -1, kart: -1, items: {}, shortcuts: 0, clean: 0, pads: 0, mp: false });
+  chUpdate({ noRace: true, cupDone: true, cupPlace: place, cupDiff: d, cupMp: !!GP.mp, cupId: GP.cup, place: 99, track: -1, kart: -1, char: '', items: {}, used: 0, shortcuts: 0, clean: 0, pads: 0, mp: false, tricks: 0, jumps: 0, rams: 0, blocks: 0, hits: 0, hit: 0, coins: 0, diff: d, gp: true, time: 0 });
   $('podTitle').textContent = place <= 3 ? `${trophyIcon(place)} ${['זכית בגביע הזהב!', 'גביע כסף!', 'גביע ארד!'][place - 1]}` : 'מקום רביעי באליפות';
   $('podSub').textContent = `${cup.emoji} ${cup.name} · ${DIFFS[d].name} (${DIFFS[d].cc})`;
   $('podRewards').textContent = `+${xp} XP  ·  +${coins} ₪  ${note}` + (lv.La > lv.Lb ? `  ·  ⭐ עלית לרמה ${lv.La}!` : '');
