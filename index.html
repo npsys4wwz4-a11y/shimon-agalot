@@ -453,12 +453,19 @@ input.vol{direction:ltr;-webkit-appearance:none;appearance:none;width:min(200px,
 input.vol::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#bfe3ff 45%,#2f6bff);border:3px solid #0b1e5a;box-shadow:0 3px 0 #0b1e5a}
 input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#bfe3ff;border:3px solid #0b1e5a}
 
+#bubbles{position:fixed;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.bub{position:absolute;left:0;top:0;padding:5px 11px;border-radius:14px;background:#fff;color:#0b1e5a;font:900 15px Rubik,Arial,sans-serif;white-space:nowrap;border:3px solid #0b1e5a;box-shadow:0 3px 0 #0b1e5a;direction:rtl}
+.bub::after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-7px;border:7px solid transparent;border-top-color:#0b1e5a;border-bottom:0}
+.bub[data-m=angry]{background:#ffe1dc;color:#b3001b}.bub[data-m=cheer],.bub[data-m=win]{background:#fff3b0}.bub[data-m=yelp]{background:#d6f0ff}.bub[data-m=sad]{background:#e6e9f2;color:#4b5675}
+.bub.pop{animation:bubPop .28s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bubPop{0%{scale:.3}100%{scale:1}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010195046', busy = false;
+  var BUILD = '20261010200712', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -949,10 +956,34 @@ const SND = {
     s.connect(f); f.connect(g); g.connect(dest || this.sfx); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
   },
   // ---------- music ----------
-  playSong(name) { if (!this.ctx) { this.pending = name; return; } this.song = SONGS[name] || null; this.step = 0; this.nextTime = this.ctx.currentTime + 0.08; this.tempoMul = 1; },
+  playSong(name) { this.setAmbient(['beach', 'desert', 'hills', 'hermon'].includes(name) ? name : null); if (!this.ctx) { this.pending = name; return; } this.song = SONGS[name] || null; this.step = 0; this.nextTime = this.ctx.currentTime + 0.08; this.tempoMul = 1; },
   stopSong() { this.song = null; },
+  // ---------- ambient soundscapes per map: filtered noise bed + random events ----------
+  amb: null, ambNext: 0,
+  setAmbient(id) {
+    this.ambId = id; const c = this.ctx; if (!c) return;
+    if (this.amb) { const a = this.amb; a.g.gain.setTargetAtTime(0.0001, c.currentTime, 0.4); setTimeout(() => { try { a.src.stop(); } catch (_) {} }, 1600); this.amb = null; }
+    if (!id) return;
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+    src.buffer = this.noiseBuf; src.loop = true;
+    const cfg = { beach: ['lowpass', 520, 0.11, 0.09], desert: ['bandpass', 380, 0.07, 0.05], hills: ['lowpass', 300, 0.035, 0.015], hermon: ['bandpass', 700, 0.07, 0.05] }[id];
+    f.type = cfg[0]; f.frequency.value = cfg[1]; f.Q.value = id === 'hermon' ? 0.7 : 0.5;
+    g.gain.value = 0.0001; g.gain.setTargetAtTime(cfg[2], c.currentTime, 0.8);
+    lfo.frequency.value = id === 'beach' ? 0.13 : 0.07; lg.gain.value = cfg[3]; lfo.connect(lg); lg.connect(g.gain);   // waves / wind gusts
+    src.connect(f); f.connect(g); g.connect(this.sfx); src.start(); lfo.start();
+    this.amb = { src, g }; this.ambNext = c.currentTime + 2;
+  },
+  ambEvent(t) {
+    const id = this.ambId, A = { gain: 1 };
+    if (id === 'beach') { const f = 1500 + Math.random() * 500; for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) this.tone(f, t + i * 0.22, 0.18, { type: 'sine', gain: 0.025, slideTo: f * 0.62 }); }   // seagulls
+    else if (id === 'desert') this.noise(t, 2.2, { gain: 0.05, type: 'bandpass', freq: 500, freqTo: 1400, q: 3 });   // wind gust whistle
+    else if (id === 'hills') { if (Math.random() < 0.5) { for (let i = 0; i < 3; i++) { const f = 2600 + Math.random() * 1400; this.tone(f, t + i * 0.12, 0.08, { type: 'sine', gain: 0.02, slideTo: f * 1.3 }); } }   // birds
+      else for (let i = 0; i < 3; i++) { this.tone(820, t + i * 0.32, 0.5, { type: 'triangle', gain: 0.018 }); this.tone(820 * 2.4, t + i * 0.32, 0.25, { type: 'sine', gain: 0.008 }); } }   // goat bells
+    else if (id === 'hermon') this.noise(t, 2.6, { gain: 0.045, type: 'bandpass', freq: 900, freqTo: 400, q: 2 });   // snowy wind howl
+  },
   schedule() {
-    const c = this.ctx; if (!c || !this.song || c.state !== 'running') return;
+    const c = this.ctx; if (c && this.amb && c.state === 'running' && c.currentTime > this.ambNext) { this.ambEvent(c.currentTime + 0.05); this.ambNext = c.currentTime + 4 + Math.random() * 7; }
+    if (!c || !this.song || c.state !== 'running') return;
     if (this.nextTime < c.currentTime - 0.25) this.nextTime = c.currentTime + 0.02;
     const spb = 60 / (this.song.bpm * this.tempoMul * (this.starMode ? 1.18 : 1)) / 4;
     while (this.nextTime < c.currentTime + 0.12) { this.playStep(this.step, this.nextTime, spb); this.nextTime += spb; this.step = (this.step + 1) % (this.song.mel.length); }
@@ -2171,12 +2202,13 @@ function fireShell(k, e) {
 function spinKart(k, dur, byPlayer) {
   if (k.star > 0 || k.spin > 0) return false;
   if (k.shield > 0) {   // Iron Dome absorbs exactly one hit
-    k.shield = 0; k.shieldPop = 0.5;
+    k.shield = 0; k.shieldPop = 0.5; react(k, 'cheer');
     if (k.isPlayer) { flash('כיפת ברזל יירטה! 🛡️', .9, '#7fd8ff'); SND.block(); } else if (k.pos.distanceTo(player.pos) < 35) SND.block();
     if (typeof netEv === 'function' && !k.remote) netEv({ k: 'block', s: k.slot });
     return 'blocked';
   }
   k.spin = dur; k.boost = 0; k.drifting = false;
+  react(k, 'angry'); if (byPlayer && !k.isPlayer) setTimeout(() => react(player, 'cheer'), 350);
   if (k.isPlayer) { flash('אופס! 😵', 1, '#ffe135'); SND.spin(); shakeCam(0.55); }
   else if (byPlayer || k.pos.distanceTo(player.pos) < 35) SND.spin();
   return true;
@@ -2404,6 +2436,67 @@ function lowerQuality() {   // called by the adaptive-quality loop when fps stay
   if (FX.q === 0) return false;
   FX.q = 0; sun.castShadow = false; for (const k of karts) if (k.blob) k.blob.visible = true; return true;
 }
+// ---------- character voice reactions: gibberish blips (pitch per character) + short Hebrew speech bubbles ----------
+const VOICE = { shimon: { p: 1.0, f: 900 }, shantal: { p: 1.55, f: 1500 }, avraham: { p: 0.82, f: 750 }, rafi: { p: 1.18, f: 1100 }, mazal: { p: 1.38, f: 1350 } };
+const LINES = {
+  angry: ['נו באמת!', 'יא אללה!', 'מה זה?!', 'איזה באסה!', 'חלאס!', 'אוי ואבוי!'],
+  happy: ['ביי ביי!', 'יאללה!', 'תפוס אותי!', 'סבבה!', 'עוקף!'],
+  cheer: ['בול!', 'קיבלת!', 'אחלה!', 'וואלה!', 'בפנים!'],
+  yelp: ['ווהו!', 'הופה!', 'יששש!', 'ייייי!'],
+  win: ['אלוף!', 'יש!!!', 'מקום ראשון!', 'מי המלך?!'],
+  good: ['יש!', 'לא רע!', 'פודיום!'],
+  sad: ['אוף…', 'פעם הבאה…', 'חבל…'],
+};
+const MOOD = {   // syllables, pitch shape and speed per mood
+  angry: { n: 3, base: 0.85, slope: -0.35, dur: 0.07, wave: 'sawtooth' }, happy: { n: 3, base: 1.1, slope: 0.3, dur: 0.075, wave: 'square' },
+  cheer: { n: 4, base: 1.2, slope: 0.25, dur: 0.07, wave: 'square' }, yelp: { n: 1, base: 1.35, slope: 0.7, dur: 0.16, wave: 'square' },
+  win: { n: 5, base: 1.2, slope: 0.35, dur: 0.08, wave: 'square' }, good: { n: 3, base: 1.1, slope: 0.2, dur: 0.08, wave: 'square' }, sad: { n: 3, base: 0.95, slope: -0.4, dur: 0.12, wave: 'triangle' },
+};
+function voiceBlip(cid, mood, gain) {
+  const c = SND.ctx; if (!c || SND.muted || c.state !== 'running') return;
+  const v = VOICE[cid] || VOICE.shimon, m = MOOD[mood] || MOOD.happy, t0 = c.currentTime + 0.01, base = 220 * v.p * m.base;
+  for (let i = 0; i < m.n; i++) {
+    const t = t0 + i * m.dur * 1.25, f0 = base * (1 + m.slope * i / Math.max(1, m.n - 1)) * (0.92 + Math.random() * 0.16), d = m.dur * (0.8 + Math.random() * 0.4);
+    const o = c.createOscillator(), bp = c.createBiquadFilter(), g = c.createGain();
+    o.type = m.wave; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * (m.slope >= 0 ? 1.25 : 0.8), t + d);
+    bp.type = 'bandpass'; bp.frequency.setValueAtTime(v.f * (0.8 + Math.random() * 0.5), t); bp.Q.value = 2.5;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(bp); bp.connect(g); g.connect(SND.sfx); o.start(t); o.stop(t + d + 0.03);
+  }
+}
+let bubbleLayer = null, aiTalkT = 0;
+const bubbles = [];
+function react(k, mood, force) {
+  if (!k || !k.root || titleMode) return;
+  const now = performance.now() / 1000;
+  if (!force && now - (k.talkT || 0) < 2.6) return;
+  let gain = 0.16, show = true;
+  if (!k.isPlayer) {
+    const d = k.pos.distanceTo(camera.position); if (d > 32 && !force) return;
+    if (!force && now - aiTalkT < 1.1) return; aiTalkT = now; gain = 0.07 * Math.max(0.3, 1 - d / 40);
+  }
+  k.talkT = now;
+  voiceBlip(k.def && k.def.id, mood, gain);
+  if (show) bubble(k, LINES[mood][Math.floor(Math.random() * LINES[mood].length)], mood);
+}
+function bubble(k, text, mood) {
+  if (!bubbleLayer) { bubbleLayer = document.createElement('div'); bubbleLayer.id = 'bubbles'; document.body.appendChild(bubbleLayer); }
+  let b = bubbles.find(x => x.k === k); if (!b) { const el = document.createElement('div'); el.className = 'bub'; bubbleLayer.appendChild(el); b = { k, el }; bubbles.push(b); }
+  b.el.textContent = text; b.el.dataset.m = mood; b.t = 1.5; b.el.classList.remove('pop'); void b.el.offsetWidth; b.el.classList.add('pop');
+}
+const _bv = new THREE.Vector3();
+function bubblesUpdate(dt) {
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    const b = bubbles[i]; b.t -= dt;
+    if (b.t <= 0 || !b.k.root || !karts.includes(b.k) || state === 'menu') { b.el.remove(); bubbles.splice(i, 1); continue; }
+    _bv.set(b.k.pos.x, (b.k.y || 0) + (b.k.isPlayer ? 4.4 : 3.2), b.k.pos.z).project(camera);
+    const vis = _bv.z < 1 && Math.abs(_bv.x) < 1.1 && Math.abs(_bv.y) < 1.1;
+    b.el.style.display = vis ? '' : 'none';
+    if (vis) b.el.style.transform = `translate(${((_bv.x + 1) / 2 * innerWidth).toFixed(0)}px,${((1 - _bv.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%,-100%)`;
+    b.el.style.opacity = Math.min(1, b.t * 3).toFixed(2);
+  }
+}
+function clearBubbles() { bubbles.forEach(b => b.el.remove()); bubbles.length = 0; }
 // ================= PLAYER PROFILE, XP, LEVELS & UNLOCKS (localStorage only – no server) =================
 const PROF_KEY = 'shimon-agalot-profile-v1';
 const PROFILE = (() => { try { return Object.assign({ name: '', uid: '', xp: 0, races: 0, wins: 0 }, JSON.parse(localStorage.getItem(PROF_KEY) || '{}')); } catch (_) { return { name: '', uid: '', xp: 0, races: 0, wins: 0 }; } })();
@@ -2762,7 +2855,7 @@ function startRace(ci, ti) {
 function resetRace() {
   clearHazards(); boxes.forEach(b => { b.active = true; b.mesh.visible = true; });
   placeKarts(); raceTime = 0; finishCount = 0; cd = 3.999; state = 'countdown'; lastCd = 4; showTut();
-  clearFinTimers(); hideScreens(); document.body.classList.remove('inmenu'); titleMode = false; SND.pause(false); pausedFrom = null; hzSeq = 0; ffOn = false; postT = 0; lastResHTML = '';
+  clearFinTimers(); clearBubbles(); player && (player.lastRk = 0); hideScreens(); document.body.classList.remove('inmenu'); titleMode = false; SND.pause(false); pausedFrom = null; hzSeq = 0; ffOn = false; postT = 0; lastResHTML = '';
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   releaseAllTouch(); requestAnimationFrame(measureButtons); wrongT = 0; msgTimer = 0; msg.textContent = '';
   SND.starMode = false; SND.playSong(TRACKS[curTrack].song); SND.tempoMul = 1;
@@ -2780,6 +2873,7 @@ function useItem(k) {
   else if (it === 'shell') { fireShell(k); if (me) { SND.sizzle(); SND.shell(); flash('פלאפל מעופף! 🧆', .7); } }
   else if (it === 'star') { k.star = 6.5; k.spin = 0; if (me) { flash('מגן דוד זהוב! ✡️', 1, '#ffd23f'); SND.star(); SND.starMode = true; } }
   else if (it === 'lightning') {
+    react(k, 'cheer', k.isPlayer);
     for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { if (spinKart(o, 0.7, false) !== 'blocked') o.shrink = 3.2; }
     if (netOn()) netEv({ k: 'light', s: k.slot });
     screenFlash(); shakeCam(0.3); SND.lightning(); flash(me ? 'תקיעת שופר! 📯' : `${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
@@ -2825,7 +2919,7 @@ function respawnKart(k, fwd) {
   if (k.isPlayer) { flash('אופס! חוזרים למסלול', .8, '#ffd23f'); shakeCam(0.2); }
 }
 function updateVertical(k, dt, inp) {
-  if (k.isPlayer && inp && inp.trick && k.air > 0.03 && !k.trickDone) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; SND.trick && SND.trick(); flash('טריק!', .4, '#4fc3ff'); }
+  if (k.isPlayer && inp && inp.trick && k.air > 0.03 && !k.trickDone) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; react(k, 'yelp'); SND.trick && SND.trick(); flash('טריק!', .4, '#4fc3ff'); }
   trackProject(k); let gy = roadHAt(k); const gap = gy === null; if (gap) gy = ghAt(k.pos.x, k.pos.z);
   if (k.y === undefined || !isFinite(k.y)) { k.y = gy; k.vy = 0; k.air = 0; }
   if (!k.air) {
@@ -2842,7 +2936,7 @@ function updateVertical(k, dt, inp) {
   }
   if (k.air) {
     k.air += dt; k.vy -= GRAV * dt; k.y += k.vy * dt;
-    if (!k.isPlayer && k.aiTrick && !k.trickDone && k.air > 0.12) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; }
+    if (!k.isPlayer && k.aiTrick && !k.trickDone && k.air > 0.12) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; react(k, 'yelp'); }
     if (k.y <= gy) {
       if (gap || gy - k.y > 1.6) { k.fall = (k.fall || 0) + dt; k.y = Math.max(k.y, gy); k.speed *= 0.9; if (k.fall > 0.6) respawnKart(k, true); }
       else {
@@ -2984,6 +3078,7 @@ function ramKart(att, vic, nx, nz) {   // n = unit vector from attacker to victi
   const sx = fz * side, sz = -fx * side, push = 9 * r;
   vic.bvx = (vic.bvx || 0) + sx * push * 0.8 + nx * push * 0.4; vic.bvz = (vic.bvz || 0) + sz * push * 0.8 + nz * push * 0.4;
   if (vic.drifting) { vic.drifting = false; vic.charge = 0; }
+  react(vic, 'angry'); setTimeout(() => react(att, 'happy'), 300);
   return true;
 }
 function collideKarts() {
@@ -3017,7 +3112,7 @@ function collideKarts() {
   }
 }
 function onPlayerFinish() {
-  state = 'finished'; SND.stopSong(); SND.starMode = false;
+  state = 'finished'; SND.stopSong(); SND.starMode = false; react(player, player.place === 1 ? 'win' : player.place <= 3 ? 'good' : 'sad', true);
   const place = player.place; SND.fanfare(place); const xpRes = awardXP(player, place, netOn());
   const coinGain = Math.round([40, 25, 15, 10][place - 1] * (netOn() ? 1.25 : 1)); addCoins(coinGain);
   const chNew = chUpdate({ place, track: curTrack, kart: selKart, items: player.itemsBy || {}, shortcuts: player.shortcuts || 0, clean: player.cleanLaps || 0, pads: player.padBoosts || 0, mp: netOn() });
@@ -3244,6 +3339,11 @@ function step(dt, now) {
     if (n !== lastCd && n > 0) { lastCd = n; flash(String(n), 0.9, n === 1 ? '#34d058' : '#ffe14d'); SND.beep(false); }
     if (cd <= 0) { state = 'race'; flash('יאללה!', 0.9, '#34d058'); SND.beep(true); if (playerInput().throttle > 0) { player.boost = 0.6; SND.boost(); } }
   }
+  if (state === 'race' && !player.finished) {
+    const rk = rankOf(player);
+    if (player.lastRk && raceTime > 4) { if (rk < player.lastRk) react(player, 'happy'); else if (rk > player.lastRk) react(rankList()[rk - 2], 'happy'); }
+    player.lastRk = rk;
+  }
   if (state === 'race' || state === 'finished') {
     raceTime += dt;
     for (const k of karts) {
@@ -3313,7 +3413,7 @@ function render(dt, now) {
     const fov = (camera.aspect < 1 ? 82 : 70) + (player.boost > 0 || player.star > 0 ? 10 : 0) + Math.max(0, player.speed) * 0.1;
     camera.fov += (fov - camera.fov) * Math.min(1, dt * 4); camera.updateProjectionMatrix();
   }
-  if (titleMode) { updateTitle(dt, now); renderer.render(titleScene, titleCam); } else { fxUpdate(dt, now); applyShake(dt); renderer.render(scene, camera); }
+  if (titleMode) { updateTitle(dt, now); renderer.render(titleScene, titleCam); } else { fxUpdate(dt, now); bubblesUpdate(dt); applyShake(dt); renderer.render(scene, camera); }
   SND.update(player, state === 'race' || state === 'countdown');
   if (msgTimer > 0) { msgTimer -= dt; if (msgTimer <= 0) msg.textContent = ''; }
   if (state === 'finished' && (ffOn || netOn()) && $('endScreen').style.display !== 'none') { resT -= dt; if (resT <= 0) { resT = 0.25; renderResults(); } }
@@ -3339,7 +3439,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
