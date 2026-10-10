@@ -454,7 +454,7 @@ body.ctrl-autogas .tb[data-k=gas]{opacity:.55}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010144719', busy = false;
+  var BUILD = '20261010145136', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -2754,6 +2754,9 @@ function hitObstacle(k, x, z, r, slow, mover) {
   if (mover) { spinKart(k, 0.8, false); k.speed *= 0.5; }
   else { if (Math.abs(k.speed) > 8) { k.wallHit = 1; k.lapDirty = true; if (k.isPlayer) { SND.wall(0.6); shakeCam(0.25); } } k.speed *= slow; }
 }
+const AI_TRICK = [0.25, 0.55, 0.85];   // easy / medium / hard
+let dbgDiff = null;
+function aiTrickChance() { return AI_TRICK[dbgDiff ?? (GP ? GP.diff : 1)] ?? 0.55; }
 function respawnKart(k, fwd) {
   let i = k.path === 1 ? null : k.idx;
   if (i === null) { const p = pP(k), t = pT(k); k.pos.set(p.x, 0, p.z); k.heading = Math.atan2(t.x, t.z); }
@@ -2768,7 +2771,7 @@ function updateVertical(k, dt, inp) {
   if (!k.air) {
     const pred = k.y + k.vy * dt - GRAV * dt * dt;
     if (gap || (gy < pred - 0.05 && k.speed > 8)) {
-      k.air = 1e-3; k.trick = 0; k.trickDone = false;
+      k.air = 1e-3; k.trick = 0; k.trickDone = false; k.aiTrick = !k.isPlayer && Math.random() < aiTrickChance();
       if (gap && k.path !== 1) {   // ramp assist: anyone who hits a gap ramp clears it (arcade feel, no frustrating falls)
         const J = JUMPS.find(j => j.ng > 0 && modD(j.iL, k.idx) <= 2 || modD(k.idx, j.iL) <= 2);
         if (J && k.speed > 4) { const sp = Math.max(k.speed, 27), D = (J.ng + 4) * SEG; k.speed = sp; k.vy = Math.max(k.vy, GRAV * D / (2 * sp) * 1.25 + J.h * 0.4); }
@@ -2779,7 +2782,7 @@ function updateVertical(k, dt, inp) {
   }
   if (k.air) {
     k.air += dt; k.vy -= GRAV * dt; k.y += k.vy * dt;
-    if (!k.isPlayer && !k.trickDone && k.air > 0.12 && Math.random() < 0.6) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; }
+    if (!k.isPlayer && k.aiTrick && !k.trickDone && k.air > 0.12) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; }
     if (k.y <= gy) {
       if (gap || gy - k.y > 1.6) { k.fall = (k.fall || 0) + dt; k.y = Math.max(k.y, gy); k.speed *= 0.9; if (k.fall > 0.6) respawnKart(k, true); }
       else {
@@ -3237,7 +3240,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { setDiff: d => { dbgDiff = d; }, get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
