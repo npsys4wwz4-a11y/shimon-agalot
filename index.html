@@ -471,7 +471,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261010205123', busy = false;
+  var BUILD = '20261011040630', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -860,6 +860,28 @@ const I = {
   desert: P('M28 58V18a6 6 0 0 1 12 0v40z', 'green') + P('M28 38h-8a5 5 0 0 1-5-5V24a4 4 0 0 1 8 0v6h5M40 32h6v-10a4 4 0 0 1 8 0v12a5 5 0 0 1-5 5h-9', 'green') + P('M2 58c10-6 22-8 30-6s20 0 30 6z', 'tan'),
   mountain: P('M2 56l20-36 10 14 8-10 22 32z', 'green') + P('M22 20l6 11-4 4-4-4-4 3z', 'white', 'stroke-width="2"'),
   snowpeak: P('M2 56L30 8l32 48z', 'gray') + P('M30 8l9 16-5 4-4-4-4 5-5-4-3 3z', 'white', 'stroke-width="2.4"'),
+  wave: P('M4 40c6-10 14-14 22-10 6 3 6 10 0 12 8 2 14-2 16-10 4 6 12 8 18 4v20H4z', 'sky') + L('M10 50c6-3 12-3 18 0s12 3 18 0', 3, '#fff'),
+  kippa: P('M8 40c0-14 11-22 24-22s24 8 24 22c-8 3-16 4-24 4S16 43 8 40z', 'blue') + L('M10 36c7 3 15 4 22 4s15-1 22-4', 3.5, '#fff') + L('M18 28c4 2 9 3 14 3s10-1 14-3', 2.6, '#fff'),
+  beanie: P('M10 44c0-16 10-26 22-26s22 10 22 26z', 'red') + R(7, 40, 50, 12, 6, 'white') + C(32, 14, 7, 'white'),
+  cowboy: P('M2 44c4 6 16 8 30 8s26-2 30-8c-6 2-14 2-18 0l-2-20c-1-6-5-8-10-6-5-2-9 0-10 6l-2 20c-4 2-12 2-18 0z', 'brown') + P('M22 38c6 2 14 2 20 0v-4c-6 2-14 2-20 0z', 'dark', 'stroke-width="2.4"'),
+  glasses: C(18, 34, 11, 'sky') + C(46, 34, 11, 'sky') + L('M29 32c2-2 4-2 6 0M7 30L2 24M57 30l5-6', 3.6) + H('M12 30a6 6 0 0 1 8-4z') + H('M40 30a6 6 0 0 1 8-4z'),
+  goggles: R(4, 22, 56, 22, 11, 'orange') + R(9, 26, 46, 14, 7, 'sky', 'stroke-width="2.6"') + H('M14 30h18v4H14z') + L('M2 33h2M60 33h2', 4),
+  clown: C(32, 34, 22, 'white') + C(32, 38, 6, 'red') + C(24, 30, 3, '#10204f', 'stroke-width="0"') + C(40, 30, 3, '#10204f', 'stroke-width="0"') + P('M22 46c6 4 14 4 20 0', 'none') + C(10, 22, 8, 'orange') + C(54, 22, 8, 'orange'),
+  note: P('M24 50V14l28-6v34', 'none', 'stroke-width="5"') + C(18, 50, 8, 'purple') + C(46, 44, 8, 'purple') + P('M24 18l28-6v7l-28 6z', 'purple', 'stroke-width="2.6"'),
+  confetti: P('M10 58L24 22l18 18z', 'gold') + L('M30 14l4-8M44 18l8-4M48 30l8 2', 3.6, '#ef3b3b') + C(40, 8, 3, 'green', 'stroke-width="2"') + C(56, 22, 3, 'sky', 'stroke-width="2"') + C(54, 42, 3, 'pink', 'stroke-width="2"'),
+  fireworks: L('M32 32L32 6M32 32L54 18M32 32L54 46M32 32L32 58M32 32L10 46M32 32L10 18', 4, '#ffcf2e') + C(32, 32, 7, 'red') + C(32, 6, 3.5, 'sky', 'stroke-width="2"') + C(54, 18, 3.5, 'pink', 'stroke-width="2"') + C(54, 46, 3.5, 'green', 'stroke-width="2"') + C(10, 46, 3.5, 'gold', 'stroke-width="2"') + C(10, 18, 3.5, 'purple', 'stroke-width="2"') + C(32, 58, 3.5, 'orange', 'stroke-width="2"'),
+  swirl: P('M32 8a24 24 0 1 1-24 24c0-10 8-18 18-18s16 6 16 14-6 12-12 12-8-4-8-8 3-6 6-6', 'none', 'stroke-width="7"') + L('M32 8a24 24 0 1 1-24 24c0-10 8-18 18-18s16 6 16 14-6 12-12 12-8-4-8-8 3-6 6-6', 3.4, '#7fd0ff'),
+  golf: R(6, 30, 52, 16, 5, 'white') + R(8, 10, 48, 6, 3, 'green') + L('M12 16v14M52 16v14', 3.6) + C(18, 48, 7, 'dark') + C(46, 48, 7, 'dark') + P('M40 30l4-12 6 1-3 11z', 'red', 'stroke-width="2.4"'),
+  icecream: P('M20 30l12 30 12-30z', 'tan') + L('M24 38l14 6M22 32l18 8M28 50l6-12', 2.2, '#8e4f1f') + C(32, 22, 14, 'pink') + C(32, 8, 4, 'red', 'stroke-width="2.4"') + H('M24 16a8 8 0 0 1 8-6z'),
+  surfer: P('M6 52c10-10 30-14 52-10-8 8-30 14-52 10z', 'orange') + L('M12 50c12-4 26-6 40-6', 2.4, '#fff') + C(34, 12, 7, '#e9b88f') + P('M27 8c3-5 11-5 14 0-4-2-10-2-14 0z', 'gold', 'stroke-width="2.4"') + L('M34 20v14M34 26l-10-4M34 26l10-2M34 34l-8 8M34 34l8 8', 4),
+  grocer: C(32, 22, 13, '#e0ac7e') + P('M20 26c0 12 6 18 12 18s12-6 12-18c-3 4-8 6-12 6s-9-2-12-6z', 'brown', 'stroke-width="2.6"') + P('M22 12c2-6 18-6 20 0-6-2-14-2-20 0z', 'blue', 'stroke-width="2.4"') + P('M10 60c0-12 10-17 22-17s22 5 22 17z', 'blue'),
+  rocket: P('M32 4c10 8 14 20 12 34H20C18 24 22 12 32 4z', 'white') + C(32, 22, 6, 'sky', 'stroke-width="2.6"') + P('M20 30l-10 10v8l10-6zM44 30l10 10v8l-10-6z', 'red') + P('M24 40h16l-8 20z', 'orange', 'stroke-width="2.6"'),
+  acro: C(40, 12, 7, '#f1c7a3') + P('M38 20c-6 4-12 10-14 18M24 38l-10 2M24 38l4 12M34 26l12 8M34 26l-16-4', 'none', 'stroke-width="5"') + L('M8 56c10-12 30-16 48-8', 3, '#7fd0ff'),
+  boom: P('M32 4l6 14 14-6-4 14 14 6-14 6 4 14-14-6-6 14-6-14-14 6 4-14-14-6 14-6-4-14 14 6z', 'orange') + P('M32 18l3 8 8-3-2 8 8 3-8 3 2 8-8-3-3 8-3-8-8 3 2-8-8-3 8-3-2-8 8 3z', 'gold', 'stroke-width="2.4"'),
+  tri_l: P('M46 8L8 32l38 24z', 'white'),
+  arr_u: P('M32 6l22 24H42v26H22V30H10z', 'white'), arr_d: P('M32 58l22-24H42V8H22v26H10z', 'white'),
+  arr_l: P('M6 32l24-22v12h26v20H30v12z', 'white'), arr_r: P('M58 32L34 10v12H8v20h26v12z', 'white'),
+  slot_e: R(14, 14, 36, 36, 8, 'gray', 'opacity=".55"'),
   gear: '',
   dot_g: C(32, 32, 14, 'green'), dot_y: C(32, 32, 14, 'gold'), dot_o: C(32, 32, 14, 'orange'),
   face: C(32, 32, 26, 'gold') + C(23, 27, 3.5, '#10204f', 'stroke-width="0"') + C(41, 27, 3.5, '#10204f', 'stroke-width="0"') + P('M21 40c6 6 16 6 22 0', 'none'),
@@ -879,7 +901,9 @@ const MAP = { '🪙': 'coin', '₪coin': 'coin', '🏆': 'trophy', '🥇': 'meda
   '👑': 'crown', '🎉': 'party', '😎': 'shades', '💖': 'heart', '🚙': 'jeep', '👵': 'person', '🧑': 'person', '🎨': 'palette', '🎩': 'tophat', '👨‍🍳': 'chef', '👒': 'straw', '🎺': 'trumpet', '🎶': 'notes', '🚂': 'train', '🦆': 'duck',
   '🚫': 'noentry', '☀️': 'sun', '☀': 'sun', '❓': 'question', '📤': 'share', '📋': 'copy', '🚪': 'exit', '🩺': 'diag', '🔗': 'link', '➕': 'plus', '⚠️': 'warn', '⚠': 'warn', '🧊': 'ice', '💦': 'splash', '🪨': 'rock', '🟤': 'mud',
   '😵': 'dizzy', '⏱': 'timer', '⏱️': 'timer', '⏩': 'ffwd', '🆕': 'newb', '🇮🇱': 'ilflag', '🏖️': 'beach', '🏖': 'beach', '🏜️': 'desert', '🏜': 'desert', '⛰️': 'mountain', '⛰': 'mountain', '🏔️': 'snowpeak', '🏔': 'snowpeak',
-  '🟢': 'dot_g', '🟡': 'dot_y', '🟠': 'dot_o', '😅': 'face', '🙂': 'face', '🤔': 'face', '😕': 'facesad', '📵': 'nosignal', '↩️': 'undo', '🍩': 'gift', '🦺': 'shield', '▶': 'play', '▶️': 'play' };
+  '🟢': 'dot_g', '🟡': 'dot_y', '🟠': 'dot_o', '😅': 'face', '🙂': 'face', '🤔': 'face', '😕': 'facesad', '📵': 'nosignal', '↩️': 'undo', '🍩': 'gift', '🦺': 'shield', '▶': 'play', '▶️': 'play',
+  '🌊': 'wave', '🧶': 'kippa', '🧢': 'beanie', '🤠': 'cowboy', '👓': 'glasses', '🥽': 'goggles', '🤡': 'clown', '🎵': 'note', '🎊': 'confetti', '🎆': 'fireworks', '🌀': 'swirl',
+  '⛳': 'golf', '🍦': 'icecream', '🏄‍♀️': 'surfer', '🏄': 'surfer', '🧔': 'grocer', '🚀': 'rocket', '🤸': 'acro', '💥': 'boom', '◀': 'tri_l', '⬆': 'arr_u', '⬇': 'arr_d', '⬅': 'arr_l', '➡': 'arr_r', '⚙': 'gear', '⚙️': 'gear', '▫️': 'slot_e', '▫': 'slot_e' };
 const keys = Object.keys(MAP).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 const RX = new RegExp(`(${keys.join('|')})\uFE0F?`, 'u'), RXG = new RegExp(RX.source, 'gu');
 const STRIP = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{1F1E6}-\u{1F1FF}]\uFE0F?/gu;
@@ -3590,7 +3614,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
