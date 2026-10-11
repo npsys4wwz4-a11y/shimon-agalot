@@ -241,6 +241,7 @@
   body.inmenu #vig{display:none}
   body.inlobby #muteBtn{display:none}
   body:not(.mphost) .hostOnly{display:none !important}
+  body.mphost .guestOnly{display:none !important}
   body.mp #restartBtn, body.mp #changeBtn, body.mp #pauseRestartBtn{display:none}
   @media (max-height:520px){.lobbyCard{width:min(820px,98vw);padding:8px 12px}.lobbyPlayers{grid-template-columns:repeat(4,1fr)}.lp{min-height:38px;padding:2px 5px}.lp img,.lp .av{width:30px;height:30px;font-size:20px}.lp b{font-size:12px}.lp small{font-size:11px}.lc{max-width:78px;font-size:12px}.lsec{margin-top:4px;font-size:13px}.roomHead .code{font-size:30px}.note{margin-top:4px;font-size:13px}}
 </style>
@@ -483,12 +484,22 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 #chatPanel .chForm input{flex:1;min-width:0;font:700 16px Rubik,Arial;padding:10px 12px;border-radius:14px;border:3px solid #0b1e5a;direction:rtl;-webkit-user-select:text;user-select:text;touch-action:manipulation}
 #chatPanel .chForm .btn{padding:8px 16px;font-size:16px}
 
+.lp{position:relative}
+.lp .rdy{display:inline-block;margin-top:3px;font:900 12px/1 Rubik,Arial;font-style:normal;padding:4px 8px;border-radius:99px;border:2px solid #0b1e5a}
+.lp .rdy.on{background:linear-gradient(#7ee08a,#2fb34a);color:#fff;text-shadow:0 1px 0 #0b5a1e}
+.lp .rdy.off{background:#e3e8f2;color:#5a6680}
+.lp .rdy.host{background:linear-gradient(#fff3a6,#ffcf2e);color:#5a3a00}
+#lobbyReady.on{background:linear-gradient(#7ee08a,#2fb34a 60%,#1f8a35);color:#fff}
+#lobbyStart.waiting{filter:saturate(.45) brightness(.95)}
+#confirmBox{position:fixed;inset:0;z-index:40;background:rgba(5,15,45,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+#confirmBox .confCard{max-width:420px;text-align:center;font-size:17px;color:#0b1e5a}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261011042958', busy = false;
+  var BUILD = '20261011045223', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -721,6 +732,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
     <div id="lobbyWait" class="note"></div>
     <div id="lobbyMsg" class="note warn"></div>
     <div class="btnRow">
+      <button class="btn guestOnly" id="lobbyReady">מוכן/ה?</button>
       <button class="btn hostOnly" id="lobbyStart">🏁 התחל מרוץ</button>
       <button class="btn ghost sm" id="lobbyLeave">🚪 עזוב חדר</button>
     </div>
@@ -764,6 +776,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
   <form id="chatForm" class="chForm" autocomplete="off"><input id="chatInput" type="text" maxlength="80" enterkeyhint="send" placeholder="כתבו הודעה…"><button class="btn" id="chatSend" type="submit">שלח</button></form>
   <div id="chatWarn" class="note warn"></div>
 </div>
+<div id="confirmBox" style="display:none"><div class="card confCard"><p id="confirmText"></p><div class="btnRow"><button class="btn" id="confirmOk">אישור</button><button class="btn ghost" id="confirmNo">ביטול</button></div></div></div>
 <div id="tutOverlay" style="display:none"><div class="tutCard" id="tutBody"></div></div>
 <div id="pauseScreen" class="screen" style="display:none">
   <div class="card pauseCard">
@@ -3939,7 +3952,7 @@ function sendAll(m, except) { NET.conns.forEach((c, id) => { if (c !== except &&
 function bufd(c) { try { return (c.dataChannel && c.dataChannel.bufferedAmount) || 0; } catch (_) { return 0; } }
 // cosmetics from other players: only values that exist in the shop catalogue are accepted
 function cosOk(c) { const o = {}; if (!c || typeof c !== 'object') return o; for (const [k, cat] of [['paint', 'paint'], ['accHat', 'hat'], ['accGlass', 'glasses'], ['decal', 'decal'], ['horn', 'horn'], ['trail', 'trail'], ['win', 'win']]) if (SHOP.some(s => s.cat === cat && s.val === c[k])) o[k] = c[k]; return o; }
-function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.track, code: NET.code, gp: NET.gp }; }
+function lobbyState() { return { t: 'lobby', humans: NET.humans.map(({ chatT, ...h }) => h), track: NET.track, code: NET.code, gp: NET.gp }; }
 function onHostData(c, d) {
   if (d.t === 'ready') { if (NET.ready) { NET.ready.add(c.peer); hostCheckGo(); } return; }
   if (d.t === 'ping') return;
@@ -3950,8 +3963,9 @@ function onHostData(c, d) {
     NET.conns.set(c.peer, c); const free = [0, 1, 2, 3].find(i => !NET.humans.some(h => h.char === i)); NET.humans.push({ id: c.peer, char: free === undefined ? null : free, kart: kartOk(d.kart) ? d.kart : 0, name: uniqueName(d.name), cos: cosOk(d.cos) });
     SND.tink(true); broadcastLobby(); return;
   }
+  if (d.t === 'rdy') { const h = NET.humans.find(h => h.id === c.peer); if (h && !NET.inRace) { h.rdy = !!d.v; broadcastLobby(); } return; }
   if (d.t === 'pick') { hostPick(c.peer, d.c); return; }
-  if (d.t === 'kart') { const h = NET.humans.find(h => h.id === c.peer); if (h && kartOk(d.k)) { h.kart = d.k; broadcastLobby(); } return; }
+  if (d.t === 'kart') { const h = NET.humans.find(h => h.id === c.peer); if (h && kartOk(d.k)) { if (h.kart !== d.k) h.rdy = false; h.kart = d.k; broadcastLobby(); } return; }
   if (d.t === 'bye') { hostDrop(c); return; }
   if (d.t === 'st' && NET.inRace) { const k = karts.find(k => k.peerId === c.peer); if (k && k.remote) applyState(k, d.d); return; }
   if (d.t === 'ev' && NET.inRace) { applyEv(d.e); sendAll({ t: 'ev', e: d.e }, c); }
@@ -3966,7 +3980,7 @@ function uniqueName(raw) {
 function hostPick(id, ci) {
   const h = NET.humans.find(h => h.id === id); if (!h) return;
   if (ci !== null && NET.humans.some(o => o !== h && o.char === ci)) return;   // taken
-  h.char = ci; broadcastLobby();
+  if (h.char !== ci) h.rdy = false; h.char = ci; broadcastLobby();
 }
 function broadcastLobby() { if (!NET.host) return; sendAll(lobbyState()); renderLobby(); }
 function hostDrop(c) {
@@ -3980,9 +3994,13 @@ function hostDrop(c) {
     if (k && k.human) { makeAI(k); k.peerId = null; flash(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, 2.2, '#ffb84d'); sendAll({ t: 'left', s: k.slot }); }
   } else { broadcastLobby(); lobbyMsg(`שחקן ${num} עזב את החדר`); }
 }
-function hostStart() {
+const notReady = () => NET.humans.filter(h => h.id !== NET.myId && !h.rdy);
+function hostStart(force) {
   if (!NET.host || NET.inRace) return;
   if (NET.humans.some(h => h.char === null)) { lobbyMsg('כל השחקנים צריכים לבחור דמות'); return; }
+  const nr = notReady();
+  if (nr.length && !force) { askConfirm(`${nr.map(h => h.name).join(', ')} עדיין לא ${nr.length > 1 ? 'מוכנים' : 'מוכן/ה'}. להתחיל בכל זאת?`, 'התחל בכל זאת', () => hostStart(true)); return; }
+  NET.humans.forEach(h => h.rdy = false);   // everyone is un-ready again for the next lobby round
   const used = NET.humans.map(h => h.char), slots = NET.humans.map(h => ({ id: h.id, char: h.char, kart: h.kart || 0, name: h.name, cos: h.cos || {} }));
   for (let c = 0; c < 4 && slots.length < 4; c++) if (!used.includes(c)) slots.push({ id: null, char: c });
   // shuffle grid order a bit so the host is not always at the back
@@ -4120,7 +4138,7 @@ function renderLobby() {
     const h = NET.humans[i];
     if (!h) { ph += `<div class="lp ai"><span class="av">🤖</span><b>מחשב</b><small>מקום פנוי</small></div>`; continue; }
     const c = h.char !== null ? CHARS[h.char] : null, img = c && portraitUrls[h.char] ? `<img src="${portraitUrls[h.char]}" alt="">` : '<span class="av">🙂</span>';
-    ph += `<div class="lp ${h.id === NET.myId ? 'me' : ''}">${img}<b>${esc(h.name || 'שחקן ' + (i + 1))}${i === 0 ? ' 👑' : ''}${h.id === NET.myId ? ' (את/ה)' : ''}</b><small>${c ? c.name : 'בוחר/ת דמות…'} · ${KARTS[h.kart || 0].name}</small></div>`;
+    ph += `<div class="lp ${h.id === NET.myId ? 'me' : ''}">${img}<b>${esc(h.name || 'שחקן ' + (i + 1))}${i === 0 ? ' 👑' : ''}${h.id === NET.myId ? ' (את/ה)' : ''}</b><small>${c ? c.name : 'בוחר/ת דמות…'} · ${KARTS[h.kart || 0].name}</small>${i === 0 ? '<em class="rdy host">מארח</em>' : h.rdy ? '<em class="rdy on">✓ מוכן/ה</em>' : '<em class="rdy off">לא מוכן/ה</em>'}</div>`;
   }
   $('lobbyPlayers').innerHTML = ph;
   $('lobbyChars').innerHTML = CHARS.map((c, i) => {
@@ -4129,12 +4147,12 @@ function renderLobby() {
   }).join('');
   $('lobbyChars').querySelectorAll('.lc').forEach(el => el.onclick = () => {
     SND.init(); SND.tink(true); const i = +el.dataset.i;
-    if (NET.host) hostPick(NET.myId, i); else if (NET.hostConn) { NET.hostConn.send({ t: 'pick', c: i }); if (me) { me.char = i; renderLobby(); } }
+    if (NET.host) hostPick(NET.myId, i); else if (NET.hostConn) { NET.hostConn.send({ t: 'pick', c: i }); if (me) { if (me.char !== i) me.rdy = false; me.char = i; renderLobby(); } }
   });
   $('lobbyKarts').innerHTML = KARTS.map((kt, i) => { const lock = !isUnlocked('kart', i); return `<button class="lt ${me && (me.kart || 0) === i ? 'sel' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>${lock ? '🔒 ' : ''}${kt.name}${lock ? ` <small>(רמה ${unlockLevel('kart', i)})</small>` : ''}</button>`; }).join('');
   $('lobbyKarts').querySelectorAll('.lt').forEach(el => el.onclick = () => {
     SND.init(); SND.tink(true); const i = +el.dataset.i; selKart = i;
-    if (NET.host) { if (me) { me.kart = i; broadcastLobby(); } } else if (NET.hostConn) { NET.hostConn.send({ t: 'kart', k: i }); if (me) { me.kart = i; renderLobby(); } }
+    if (NET.host) { if (me) { me.kart = i; broadcastLobby(); } } else if (NET.hostConn) { NET.hostConn.send({ t: 'kart', k: i }); if (me) { if (me.kart !== i) me.rdy = false; me.kart = i; renderLobby(); } }
   });
   const gp = NET.gp || { on: false, cup: 0, diff: 1 }, hd = NET.host ? '' : 'disabled';
   $('lobbyMode').innerHTML = `<button class="tab ${gp.on ? '' : 'sel'}" data-m="0" ${hd}>⚡ משחק מהיר</button><button class="tab ${gp.on ? 'sel' : ''}" data-m="1" ${hd}>🏆 אליפות (4 מרוצים)</button>`;
@@ -4146,9 +4164,11 @@ function renderLobby() {
   }
   $('lobbyTracks').innerHTML = TRACKS.map((t, i) => { const lk = NET.host && !isUnlocked('track', i); return `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host && !lk ? '' : 'disabled'}>${lk ? '🔒 ' : t.emoji + ' '}${t.name}${lk ? ` (רמה ${unlockLevel('track', i)})` : ''}</button>`; }).join('');
   if (NET.host) $('lobbyTracks').querySelectorAll('.lt').forEach(el => el.onclick = () => { SND.tink(false); NET.track = +el.dataset.i; broadcastLobby(); });
-  const ready = NET.humans.every(h => h.char !== null);
+  const ready = NET.humans.every(h => h.char !== null), nr = notReady().length;
   $('lobbyStart').disabled = !ready;
-  $('lobbyStart').textContent = ready ? `🏁 התחל מרוץ (${NET.humans.length} שחקנים)` : 'ממתין שכולם יבחרו דמות…';
+  $('lobbyStart').classList.toggle('waiting', ready && nr > 0);
+  $('lobbyStart').textContent = !ready ? 'ממתין שכולם יבחרו דמות…' : nr ? `⏳ ממתינים ל-${nr === 1 ? 'שחקן אחד' : nr + ' שחקנים'}` : `🏁 התחל מרוץ (${NET.humans.length} שחקנים)`;
+  const rb = $('lobbyReady'); if (rb) { const on = !!(me && me.rdy); rb.classList.toggle('on', on); rb.classList.toggle('ghost', !on); rb.disabled = !me || me.char === null; rb.textContent = on ? '✓ מוכן/ה! (לחצו לביטול)' : 'מוכן/ה?'; }
   $('lobbyWait').textContent = NET.host ? (NET.humans.length < 2 ? 'שלחו את הקוד לחברים! מקומות פנויים יתמלאו במחשב' : '') : `ממתין שהמארח יתחיל… מסלול: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`;
 }
 const roomLink = () => `${location.origin}${location.pathname}?room=${NET.code}`;
@@ -4232,6 +4252,17 @@ setInterval(() => {   // chat is available whenever we're in a room and not driv
   const show = NET.on && !(state === 'race' || state === 'countdown' || state === 'paused') && ['lobbyScreen', 'endScreen', 'podiumScreen'].includes(curScreen);
   $('chatFab').style.display = show ? '' : 'none'; if (!show && chatIsOpen) chatOpen(false);
 }, 300);
+
+// ---------- ready toggle (guests) + confirm dialog ----------
+$('lobbyReady').addEventListener('click', () => {
+  SND.init(); const me = NET.humans.find(h => h.id === NET.myId); if (!me || NET.host || !NET.hostConn) return;
+  me.rdy = !me.rdy; SND.tink(me.rdy); NET.hostConn.send({ t: 'rdy', v: me.rdy }); renderLobby();
+});
+function askConfirm(text, okLabel, onOk) {
+  $('confirmText').textContent = text; $('confirmOk').textContent = okLabel; $('confirmBox').style.display = 'flex';
+  $('confirmOk').onclick = () => { $('confirmBox').style.display = 'none'; onOk(); };
+  $('confirmNo').onclick = () => { $('confirmBox').style.display = 'none'; };
+}
 </script>
 </body>
 </html>
