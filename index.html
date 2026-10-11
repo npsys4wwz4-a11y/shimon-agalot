@@ -466,12 +466,29 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 .shopItem{position:relative}
 .shopItem .si .sw{background-size:cover}
 
+#chatFab{position:fixed;z-index:30;left:calc(14px + env(safe-area-inset-left));bottom:calc(84px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;border:3px solid #0b1e5a;background:radial-gradient(circle at 40% 30%,#7fb2ff,#2f6bff 60%,#163fae);box-shadow:0 4px 0 #0b1e5a,0 8px 18px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:26px;touch-action:manipulation}
+#chatFab .ic{width:34px;height:34px}
+#chatFab:active{transform:translateY(3px);box-shadow:0 1px 0 #0b1e5a}
+#chatDot{position:absolute;top:-6px;right:-6px;min-width:24px;height:24px;padding:0 5px;border-radius:12px;background:#ef3b3b;color:#fff;font:900 13px/24px Rubik,Arial;font-style:normal;border:2px solid #fff;box-shadow:0 2px 0 #0b1e5a}
+#chatPanel{position:fixed;z-index:31;left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));bottom:0;max-height:70vh;margin:0 auto;max-width:520px;flex-direction:column;gap:6px;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:linear-gradient(180deg,#f4f8ff,#dfe9ff);border:3px solid #0b1e5a;border-bottom:0;box-shadow:0 -8px 30px rgba(0,0,0,.35);direction:rtl}
+#chatPanel .chHead{display:flex;justify-content:space-between;align-items:center;color:#0b1e5a;font-size:17px}
+#chatPanel .chList{flex:1 1 auto;min-height:90px;max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:5px;padding:4px}
+#chatPanel .cm{background:#fff;border-radius:12px;padding:5px 10px;border:2px solid #c9d8f5;font-size:15px;color:#0b1e5a;max-width:85%;align-self:flex-start;word-break:break-word}
+#chatPanel .cm.mine{align-self:flex-end;background:#e6f0ff;border-color:#9cc8ff}
+#chatPanel .cm b{margin-left:6px;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+#chatPanel .cm.empty{opacity:.6;align-self:center}
+#chatPanel .chQuick{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+#chatPanel .chQuick .tab{flex:0 0 auto;font-size:14px;padding:6px 10px}
+#chatPanel .chForm{display:flex;gap:6px}
+#chatPanel .chForm input{flex:1;min-width:0;font:700 16px Rubik,Arial;padding:10px 12px;border-radius:14px;border:3px solid #0b1e5a;direction:rtl;-webkit-user-select:text;user-select:text;touch-action:manipulation}
+#chatPanel .chForm .btn{padding:8px 16px;font-size:16px}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261011040630', busy = false;
+  var BUILD = '20261011042958', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -739,6 +756,14 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
     <p class="note warn" id="ctrlMsg"></p>
   </div>
 </div>
+<button id="chatFab" aria-label="צ'אט" style="display:none">💬<i id="chatDot" style="display:none"></i></button>
+<div id="chatPanel" style="display:none">
+  <div class="chHead"><b>💬 צ'אט החדר</b><button class="btn ghost sm" id="chatClose">✕</button></div>
+  <div id="chatList" class="chList"></div>
+  <div id="chatQuick" class="chQuick"></div>
+  <form id="chatForm" class="chForm" autocomplete="off"><input id="chatInput" type="text" maxlength="80" enterkeyhint="send" placeholder="כתבו הודעה…"><button class="btn" id="chatSend" type="submit">שלח</button></form>
+  <div id="chatWarn" class="note warn"></div>
+</div>
 <div id="tutOverlay" style="display:none"><div class="tutCard" id="tutBody"></div></div>
 <div id="pauseScreen" class="screen" style="display:none">
   <div class="card pauseCard">
@@ -882,6 +907,8 @@ const I = {
   arr_u: P('M32 6l22 24H42v26H22V30H10z', 'white'), arr_d: P('M32 58l22-24H42V8H22v26H10z', 'white'),
   arr_l: P('M6 32l24-22v12h26v20H30v12z', 'white'), arr_r: P('M58 32L34 10v12H8v20h26v12z', 'white'),
   slot_e: R(14, 14, 36, 36, 8, 'gray', 'opacity=".55"'),
+  chat: P('M8 12h48a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H28l-14 12v-12H8a4 4 0 0 1-4-4V16a4 4 0 0 1 4-4z', 'white') + C(20, 28, 3.5, '#2f6bff', 'stroke-width="0"') + C(32, 28, 3.5, '#2f6bff', 'stroke-width="0"') + C(44, 28, 3.5, '#2f6bff', 'stroke-width="0"'),
+  close: L('M16 16l32 32M48 16L16 48', 7) + L('M16 16l32 32M48 16L16 48', 3.4, '#ffffff'),
   gear: '',
   dot_g: C(32, 32, 14, 'green'), dot_y: C(32, 32, 14, 'gold'), dot_o: C(32, 32, 14, 'orange'),
   face: C(32, 32, 26, 'gold') + C(23, 27, 3.5, '#10204f', 'stroke-width="0"') + C(41, 27, 3.5, '#10204f', 'stroke-width="0"') + P('M21 40c6 6 16 6 22 0', 'none'),
@@ -903,7 +930,7 @@ const MAP = { '🪙': 'coin', '₪coin': 'coin', '🏆': 'trophy', '🥇': 'meda
   '😵': 'dizzy', '⏱': 'timer', '⏱️': 'timer', '⏩': 'ffwd', '🆕': 'newb', '🇮🇱': 'ilflag', '🏖️': 'beach', '🏖': 'beach', '🏜️': 'desert', '🏜': 'desert', '⛰️': 'mountain', '⛰': 'mountain', '🏔️': 'snowpeak', '🏔': 'snowpeak',
   '🟢': 'dot_g', '🟡': 'dot_y', '🟠': 'dot_o', '😅': 'face', '🙂': 'face', '🤔': 'face', '😕': 'facesad', '📵': 'nosignal', '↩️': 'undo', '🍩': 'gift', '🦺': 'shield', '▶': 'play', '▶️': 'play',
   '🌊': 'wave', '🧶': 'kippa', '🧢': 'beanie', '🤠': 'cowboy', '👓': 'glasses', '🥽': 'goggles', '🤡': 'clown', '🎵': 'note', '🎊': 'confetti', '🎆': 'fireworks', '🌀': 'swirl',
-  '⛳': 'golf', '🍦': 'icecream', '🏄‍♀️': 'surfer', '🏄': 'surfer', '🧔': 'grocer', '🚀': 'rocket', '🤸': 'acro', '💥': 'boom', '◀': 'tri_l', '⬆': 'arr_u', '⬇': 'arr_d', '⬅': 'arr_l', '➡': 'arr_r', '⚙': 'gear', '⚙️': 'gear', '▫️': 'slot_e', '▫': 'slot_e' };
+  '⛳': 'golf', '🍦': 'icecream', '🏄‍♀️': 'surfer', '🏄': 'surfer', '🧔': 'grocer', '🚀': 'rocket', '🤸': 'acro', '💥': 'boom', '◀': 'tri_l', '⬆': 'arr_u', '⬇': 'arr_d', '⬅': 'arr_l', '➡': 'arr_r', '⚙': 'gear', '⚙️': 'gear', '▫️': 'slot_e', '▫': 'slot_e', '💬': 'chat', '✕': 'close' };
 const keys = Object.keys(MAP).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 const RX = new RegExp(`(${keys.join('|')})\uFE0F?`, 'u'), RXG = new RegExp(RX.source, 'gu');
 const STRIP = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{1F1E6}-\u{1F1FF}]\uFE0F?/gu;
@@ -2396,7 +2423,7 @@ addEventListener('pagehide', releaseAllTouch);
 document.addEventListener('visibilitychange', () => { if (document.hidden) { releaseAllTouch(); for (const k in keys) keys[k] = false; } });
 // Block iOS page zoom / scroll bounce / callouts outside scrollable menus.
 for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
-document.addEventListener('touchmove', e => { if (!e.target.closest || !e.target.closest('.screen')) { if (e.cancelable) e.preventDefault(); } }, { passive: false });
+document.addEventListener('touchmove', e => { if (!e.target.closest || !e.target.closest('.screen,#chatPanel')) { if (e.cancelable) e.preventDefault(); } }, { passive: false });
 document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 document.addEventListener('contextmenu', e => e.preventDefault());
 let AUTO = false, trickPrev = false;
@@ -3892,7 +3919,7 @@ function errText(err) {
     : 'שגיאת רשת (' + t + ') – נסו שוב.';
 }
 function netLeave() {
-  NET.hold = false; clearTimeout(NET.goT);
+  NET.hold = false; clearTimeout(NET.goT); NET.chat = []; chatUnread = 0; chatOpen(false);
   if (!NET.on && !NET.peer) return;
   try { if (NET.host) NET.conns.forEach(c => { try { c.send({ t: 'bye' }); } catch (_) {} }); else if (NET.hostConn) NET.hostConn.send({ t: 'bye' }); } catch (_) {}
   const p = NET.peer; setTimeout(() => { try { p && p.destroy(); } catch (_) {} }, 150);
@@ -3916,6 +3943,7 @@ function lobbyState() { return { t: 'lobby', humans: NET.humans, track: NET.trac
 function onHostData(c, d) {
   if (d.t === 'ready') { if (NET.ready) { NET.ready.add(c.peer); hostCheckGo(); } return; }
   if (d.t === 'ping') return;
+  if (d.t === 'chat') { hostChat(c.peer, d.txt); return; }
   if (d.t === 'hello') {
     if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו' }); setTimeout(() => c.close(), 300); return; }
     if (NET.humans.length >= 4) { c.send({ t: 'deny', why: 'החדר מלא (4 שחקנים)' }); setTimeout(() => c.close(), 300); return; }
@@ -3978,6 +4006,8 @@ function hostBackToLobby() {
 
 // ---------- client side ----------
 function onClientData(d) {
+  if (d.t === 'chat') { gotChat(d.m); return; }
+  if (d.t === 'chatno') { $('chatWarn').textContent = d.why; setTimeout(() => $('chatWarn').textContent = '', 2000); return; }
   if (d.t === 'go') { if (state === 'countdown' && NET.hold) NET.hold = false; else NET.goEarly = true; NET.grace = performance.now() + 4000; return; }
   if (d.t === 'lobby') { NET.humans = d.humans; NET.track = d.track; NET.code = d.code; NET.gp = d.gp || { on: false, cup: 0, diff: 1 }; if (!NET.inRace && $('lobbyScreen').style.display === 'none' && state === 'menu') showLobby(); renderLobby(); return; }
   if (d.t === 'deny') { const why = d.why; netLeave(); showScreen('mpScreen'); mpMsg(why); return; }
@@ -4147,6 +4177,61 @@ $('endLobbyBtn').addEventListener('click', () => hostBackToLobby());
 // meta badges on first load
 if (curScreen === "startScreen") document.body.classList.add("titlemode");
 renderMetaBadges();
+
+// ---------- lobby / between-races chat (host relays; no server) ----------
+const QUICK_CHAT = ['יאללה!', 'רגע, אני בוחר/ת', 'מוכן/ה!', 'בהצלחה!', 'עוד מרוץ?', 'גג!', 'וואו!'];
+const CHAT_MAX = 80;
+let chatUnread = 0, chatIsOpen = false, chatMyLast = 0;
+function chatColor(id) { const h = NET.humans.find(h => h.id === id); return h && h.char !== null && CHARS[h.char] ? CHARS[h.char].dot : '#9aa4b5'; }
+function cleanChat(t) { return String(t || '').replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e]/g, '').replace(/\s+/g, ' ').trim().slice(0, CHAT_MAX); }
+function hostChat(id, raw) {   // host: validate + rate-limit + stamp, then relay to everyone
+  const txt = cleanChat(raw), h = NET.humans.find(h => h.id === id); if (!txt || !h) return;
+  const now = performance.now(); h.chatT = (h.chatT || []).filter(t => now - t < 10000);
+  const c = NET.conns.get(id);
+  if (h.chatT.length >= 5 || now - (h.chatT[h.chatT.length - 1] || -1e9) < 900) { if (c) c.send({ t: 'chatno', why: 'לאט לאט… 🙂' }); else { $('chatWarn').textContent = 'לאט לאט… 🙂'; setTimeout(() => $('chatWarn').textContent = '', 2000); } return; }
+  h.chatT.push(now);
+  const m = { id, name: h.name, col: chatColor(id), txt, ts: Date.now() };
+  sendAll({ t: 'chat', m }); gotChat(m);
+}
+function sendChat(txt) {
+  txt = cleanChat(txt); if (!txt || !NET.on) return;
+  if (NET.host) hostChat(NET.myId, txt); else if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'chat', txt });
+  chatMyLast = performance.now();
+}
+function gotChat(m) {
+  if (!m || typeof m.txt !== 'string') return;
+  (NET.chat || (NET.chat = [])).push({ id: String(m.id || ''), name: cleanChat(m.name).slice(0, 16) || 'שחקן', col: /^#[0-9a-f]{3,8}$/i.test(m.col) ? m.col : '#9aa4b5', txt: cleanChat(m.txt) });
+  if (NET.chat.length > 50) NET.chat.splice(0, NET.chat.length - 50);
+  if (m.id !== NET.myId) { if (!chatIsOpen) chatUnread++; SND.ctx && SND.tone(1320, SND.now(), 0.07, { type: 'sine', gain: 0.12 }); SND.ctx && SND.tone(1760, SND.now() + 0.06, 0.08, { type: 'sine', gain: 0.1 }); }
+  renderChat();
+}
+function renderChat() {
+  const L = $('chatList'); if (!L) return;
+  L.innerHTML = (NET.chat || []).map(m => `<div class="cm ${m.id === NET.myId ? 'mine' : ''}"><b style="color:${m.col}">${esc(m.name)}</b><span>${esc(m.txt)}</span></div>`).join('') || '<div class="cm empty">עוד אין הודעות – תגידו שלום!</div>';
+  L.scrollTop = L.scrollHeight;
+  $('chatDot').textContent = chatUnread > 9 ? '9+' : chatUnread; $('chatDot').style.display = chatUnread && !chatIsOpen ? '' : 'none';
+}
+function chatOpen(v) {
+  chatIsOpen = !!v; const P = $('chatPanel'); if (!P) return; P.style.display = v ? 'flex' : 'none';
+  if (v) { chatUnread = 0; renderChat(); } else { const i = $('chatInput'); if (i && document.activeElement === i) i.blur(); }
+  renderChat(); chatFit();
+}
+function chatFit() {   // keep the panel above the iOS keyboard (visualViewport shrinks when it opens)
+  const P = $('chatPanel'), vv = window.visualViewport; if (!P || !chatIsOpen) return;
+  if (vv) { const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop); P.style.bottom = kb + 'px'; P.style.maxHeight = Math.max(200, vv.height - 16) + 'px'; } 
+}
+if (window.visualViewport) { visualViewport.addEventListener('resize', chatFit); visualViewport.addEventListener('scroll', chatFit); }
+$('chatQuick').innerHTML = QUICK_CHAT.map(q => `<button type="button" class="tab qc">${q}</button>`).join('');
+$('chatQuick').querySelectorAll('.qc').forEach(b => b.onclick = () => { SND.init(); sendChat(b.textContent); });
+$('chatForm').addEventListener('submit', e => { e.preventDefault(); const i = $('chatInput'); sendChat(i.value); i.value = ''; });
+$('chatInput').addEventListener('keydown', e => e.stopPropagation());   // typing must not drive the kart / pause
+$('chatInput').addEventListener('focus', () => setTimeout(() => { chatFit(); $('chatInput').scrollIntoView({ block: 'nearest' }); }, 300));
+$('chatFab').addEventListener('click', e => { e.stopPropagation(); SND.init(); SND.tink(false); chatOpen(!chatIsOpen); });
+$('chatClose').addEventListener('click', e => { e.stopPropagation(); chatOpen(false); });
+setInterval(() => {   // chat is available whenever we're in a room and not driving
+  const show = NET.on && !(state === 'race' || state === 'countdown' || state === 'paused') && ['lobbyScreen', 'endScreen', 'podiumScreen'].includes(curScreen);
+  $('chatFab').style.display = show ? '' : 'none'; if (!show && chatIsOpen) chatOpen(false);
+}, 300);
 </script>
 </body>
 </html>
