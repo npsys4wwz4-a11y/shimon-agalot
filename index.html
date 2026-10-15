@@ -499,7 +499,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261011045223', busy = false;
+  var BUILD = '20261015180433', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -3824,19 +3824,25 @@ const TURN_KEY = 'shimon-agalot-turn-v1';
 })();
 const FORCE_RELAY = /[?&]relay=1/.test(location.search);
 let iceCache = null;
+const METERED_DEFAULT = 'shimonagalot:e1399377caa25768b1fb4f094e7e27f343e0';
+const TURN_FALLBACK = [{ urls: ['turn:global.relay.metered.ca:80', 'turn:global.relay.metered.ca:80?transport=tcp', 'turn:global.relay.metered.ca:443', 'turns:global.relay.metered.ca:443?transport=tcp'], username: 'ae149b0d78e451f7e01189d2', credential: 'PBGOkD1rDuzx0rfB' }];
+const STUN_METERED = { urls: 'stun:stun.relay.metered.ca:80' };
+async function fetchMetered(spec, ms = 3000) {
+  const [app, key] = spec.split(':'); const ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const t = ac && setTimeout(() => ac.abort(), ms);
+  try { const r = await fetch(`https://${app}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(key)}`, ac ? { signal: ac.signal } : {}); if (r.ok) { const j = await r.json(); const l = (Array.isArray(j) ? j : []).filter(s => /^turns?:/.test([].concat(s.urls)[0])); if (l.length) return l; } } catch (_) {} finally { if (t) clearTimeout(t); }
+  return null;
+}
 async function getTurn() {
+  if (/[?&]turn=off/.test(location.search)) return [];
   if (TURN_STATIC.length) return TURN_STATIC;
   let cfg = null; try { cfg = JSON.parse(localStorage.getItem(TURN_KEY) || 'null'); } catch (_) {}
-  if (!cfg) return [];
-  if (cfg.servers) return cfg.servers;
-  if (cfg.metered) {
-    const [app, key] = cfg.metered.split(':');
-    try { const r = await fetch(`https://${app}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(key)}`); if (r.ok) { const j = await r.json(); return (Array.isArray(j) ? j : []).filter(s => /^turns?:/.test([].concat(s.urls)[0])); } } catch (_) {}
-  }
-  return [];
+  if (cfg && cfg.servers) return cfg.servers;
+  if (cfg && cfg.metered) { const l = await fetchMetered(cfg.metered); if (l) return l; }
+  return (await fetchMetered(METERED_DEFAULT)) || TURN_FALLBACK;
 }
 async function iceConfig() {
-  if (!iceCache) { const turn = await getTurn(); iceCache = { iceServers: [...STUN, ...turn], hasTurn: turn.length > 0 }; }
+  if (!iceCache) { const turn = await getTurn(); iceCache = { iceServers: [...STUN, ...(turn.length ? [STUN_METERED] : []), ...turn], hasTurn: turn.length > 0 }; }
   return { iceServers: iceCache.iceServers, iceTransportPolicy: FORCE_RELAY ? 'relay' : 'all' };
 }
 async function peerOpts() { return { debug: 0, config: await iceConfig() }; }
@@ -3855,7 +3861,7 @@ function gather(cfg, ms = 6000) {
 }
 async function runDiag() {
   const out = $('diagOut'), btn = $('diagBtn'); btn.disabled = true;
-  const row = (ok, t) => `<div class="dr ${ok === true ? 'ok' : ok === false ? 'bad' : 'warn'}">${ok === true ? '✅' : ok === false ? '❌' : '⚠️'} ${t}</div>`;
+  const row = (ok, t) => `<div class="dr ${ok === true ? 'ok' : ok === false ? 'bad' : 'warn'}">${t}</div>`;
   out.innerHTML = '<div class="dr">⏳ בודק חיבור…</div>';
   let html = '';
   const online = navigator.onLine !== false;
@@ -3871,10 +3877,10 @@ async function runDiag() {
   if (turn.length) { const t = await gather({ iceServers: turn, iceTransportPolicy: 'relay' }, 8000); relay = t.has('relay'); html += row(relay, relay ? 'שרת ממסר (TURN) עובד' : 'שרת ממסר (TURN) מוגדר אבל לא עונה'); }
   else html += row(null, 'לא הוגדר שרת ממסר (TURN)');
   let sum;
-  if (!broker) sum = '❌ אי אפשר לשחק מרובה משתתפים כרגע מהרשת הזו. נסו Wi-Fi אחר או נתונים סלולריים.';
-  else if (relay) sum = '🟢 מצוין! החיבור אמור לעבוד גם בין טלפונים רחוקים.';
-  else if (stun) sum = '🟡 עובד על אותה רשת Wi-Fi ובחלק מהרשתות. בין טלפונים ברשתות סלולריות שונות החיבור עלול להיכשל בלי שרת ממסר (TURN).';
-  else sum = '🟠 הרשת מגבילה חיבורים ישירים. שחקו על אותה רשת Wi-Fi, או הגדירו שרת ממסר (TURN).';
+  if (!broker) sum = 'אי אפשר לשחק מרובה משתתפים כרגע מהרשת הזו. נסו Wi-Fi אחר או נתונים סלולריים.';
+  else if (relay) sum = 'מצוין! החיבור אמור לעבוד גם בין טלפונים רחוקים.';
+  else if (stun) sum = 'עובד על אותה רשת Wi-Fi ובחלק מהרשתות. בין טלפונים ברשתות סלולריות שונות החיבור עלול להיכשל בלי שרת ממסר (TURN).';
+  else sum = 'הרשת מגבילה חיבורים ישירים. שחקו על אותה רשת Wi-Fi, או הגדירו שרת ממסר (TURN).';
   out.innerHTML = html + `<div class="dsum">${sum}</div>`; btn.disabled = false;
   return { broker, stun, relay, hasTurn: turn.length > 0 };
 }
