@@ -510,13 +510,38 @@ html[dir=ltr] #chatPanel,html[dir=ltr] .bub{direction:ltr}
 @media (max-height:520px){.lobbyPlayers{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 html[dir=ltr] .pick.locked::after,html[dir=ltr] .cupCard.locked::after{direction:ltr;background-position:left 8px center,0 0!important}
 .lchars{overflow-x:auto;justify-content:flex-start!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px} .lchars>:first-child{margin-inline-start:auto} .lchars>:last-child{margin-inline-end:auto} .lchars>*{flex:none}
+/* in-race messages: compact pill under the item box (never over the road); big = countdown/lap/finish */
+#msg{top:calc(env(safe-area-inset-top) + 96px)!important;transform:translateX(-50%);max-width:min(78vw,520px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#msg:empty{display:none!important}
+#msg.pill{font-size:clamp(15px,2.3vw,20px)!important;padding:5px 14px;border-radius:999px;background:rgba(11,30,90,.62);border:2px solid rgba(255,255,255,.75);text-shadow:var(--ol)!important;gap:6px}
+#msg.big{top:calc(env(safe-area-inset-top) + 92px)!important;font-size:clamp(30px,6.5vw,56px);background:none;border:0}
+@media (max-height:520px){#msg{top:calc(env(safe-area-inset-top) + 92px)!important} #msg.pill{font-size:15px!important;padding:4px 12px}}
+/* one-thumb gas: hint arrows (up = cruise, left = drift), lock badge when cruising, orange while gas-drifting */
+.tb[data-k=gas] .gd,.tb[data-k=gas] .glk,.tb[data-k=gas] .gh{display:none}
+body.ctrl-onethumb .tb[data-k=gas] .gh{display:block;position:absolute;width:22px;height:22px;opacity:.85;filter:drop-shadow(0 1px 1px rgba(0,0,30,.6))}
+body.ctrl-onethumb .tb[data-k=gas] .gh .ic{width:100%;height:100%}
+.tb[data-k=gas] .gu{top:-26px;left:50%;margin-left:-11px} .tb[data-k=gas] .gl{left:-4px;top:50%;margin-top:-11px}
+.tb[data-k=gas].drift{background:radial-gradient(circle at 50% 30%,rgba(255,200,90,.9),rgba(255,120,30,.55) 60%,rgba(120,40,0,.4))!important;opacity:1!important}
+.tb[data-k=gas].drift .gn{display:none} .tb[data-k=gas].drift .gd{display:block}
+.tb[data-k=gas].lock{opacity:.9!important;box-shadow:0 0 0 4px #ffd23f,0 0 18px rgba(255,210,63,.8)!important}
+.tb[data-k=gas].lock .glk{display:block;position:absolute;top:-10px;right:-6px;width:28px;height:28px;border-radius:50%;background:#ffd23f;border:2px solid #0b1e5a;padding:3px}
+.tb[data-k=gas].lock .glk .ic{width:100%;height:100%}
+/* Back always reachable: sticks to the top of a scrolled menu, below the iOS status-bar tap zone (tapping there only scrolls-to-top) */
+.screen .backBtn{position:sticky!important;top:calc(env(safe-area-inset-top) + 8px);z-index:6}
+.tb[data-k=gas] .gu{top:2px;left:auto;right:-20px;margin-left:0}
+body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
+@media (max-aspect-ratio:1/1){#msg,#msg.big{top:calc(env(safe-area-inset-top) + 200px)!important} #msg.pill{max-width:56vw}}
+#msg.pill{white-space:normal;text-align:center;line-height:1.15;text-overflow:clip}
+@media (max-aspect-ratio:1/1){#msg,#msg.big{top:calc(env(safe-area-inset-top) + 102px)!important} #msg.pill{max-width:44vw;font-size:14px!important;padding:4px 10px;border-radius:14px} #msg.big{font-size:clamp(26px,8vw,40px)}}
+#msg.pill.long{font-size:13px!important}
+@media (max-aspect-ratio:1/1){#msg.pill{max-width:54vw}}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016084927', busy = false;
+  var BUILD = '20261016102522', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -629,6 +654,8 @@ I18N.add({
   "צ'אט": 'Chat', "💬 צ'אט החדר": '💬 Room chat', 'כתבו הודעה…': 'Write a message…', 'שלח': 'Send',
   'אישור': 'OK', 'ביטול': 'Cancel',
   '⏸ הפסקה': '⏸ Paused', 'הפסקה': 'Pause', '▶ המשך': '▶ Resume', '🔄 התחל מחדש': '🔄 Restart', '🏠 חזרה לתפריט הראשי': '🏠 Back to main menu', '⚙ שליטה': '⚙ Controls', '🔊 צליל: פועל': '🔊 Sound: on',
+  'גז באגודל אחד': 'One-thumb gas', 'גז באגודל אחד:': 'One-thumb gas:',
+  'מחזיקים גז, ומחליקים את האגודל שמאלה או למטה = דריפט (הגז נשאר לחוץ). מחליקים למעלה ומרימים = גז נעול; נגיעה בגז או בברקס משחררת.': 'hold gas and slide your thumb left or down = drift (gas stays on). Slide up and lift = gas locked on; tap gas or brake to release.',
   'צופר': 'Horn', 'דריפט': 'Drift', 'ברקס': 'Brake'
 });
 </script>
@@ -822,6 +849,7 @@ I18N.data = {
     <p><span class="keys">↑/W</span> גז &nbsp; <span class="keys">↓/S</span> ברקס/רוורס &nbsp; <span class="keys">←→/AD</span> היגוי</p>
     <p><span class="keys">Shift/רווח</span> דריפט – החזק בפנייה ושחרר לבוסט &nbsp; <span class="keys">E/X</span> פריט</p>
     <p>בטלפון: ◀ ▶ משמאל, גז/ברקס/פריט מימין. אפשר להחליק אצבע בין ◀ ל-▶.</p>
+    <p><b>גז באגודל אחד:</b> מחזיקים גז, ומחליקים את האגודל שמאלה או למטה = דריפט (הגז נשאר לחוץ). מחליקים למעלה ומרימים = גז נעול; נגיעה בגז או בברקס משחררת.</p>
     <p>☕ קפה שחור – טורבו · 🛡️ כיפת ברזל – מגן שחוסם פגיעה אחת · 🥙 פיתה חומוס – שלולית מחליקה · 🧆 פלאפל מעופף – מונחה · ✡️ מגן דוד זהוב – בלתי מנוצח · 📯 שופר – מכווץ את כולם</p>
   </div>
 </div>
@@ -919,6 +947,7 @@ I18N.data = {
     <h2>⚙ הגדרות</h2>
     <div class="cRow"><b>היגוי</b><div class="cOpts" id="ctrlSteer"><button class="tab" data-v="buttons">כפתורים</button><button class="tab" data-v="swipe">החלקה</button><button class="tab" data-v="tilt">הטיית מכשיר</button></div></div>
     <div class="cRow"><b>גז אוטומטי</b><div class="cOpts"><button class="tab" id="ctrlGas"></button></div></div>
+    <div class="cRow"><b>גז באגודל אחד</b><div class="cOpts"><button class="tab" id="ctrlOne"></button></div></div>
     <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tab" id="ctrlDrift"></button></div></div>
     <div class="cRow"><b>שפה</b><div class="cOpts" id="ctrlLang"><button class="tab" data-l="he" lang="he">עברית</button><button class="tab" data-l="en" lang="en">English</button></div></div>
     <div class="cRow"><b>מוזיקה</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
@@ -957,7 +986,7 @@ I18N.data = {
   <div class="tb" data-k="left"><svg class="ic flip"><use href="#i-play"/></svg></div>
   <div class="tb" data-k="right"><svg class="ic"><use href="#i-play"/></svg></div>
   <div class="tb" data-k="drift"><small>דריפט</small></div>
-  <div class="tb" data-k="gas"><small>גז</small></div>
+  <div class="tb" data-k="gas"><small class="gn">גז</small><small class="gd">דריפט</small><i class="gh gu"><svg class="ic"><use href="#i-arr_u"/></svg></i><i class="gh gl"><svg class="ic"><use href="#i-arr_l"/></svg></i><i class="glk"><svg class="ic"><use href="#i-lock"/></svg></i></div>
   <div class="tb" data-k="brake"><small>ברקס<br>דריפט</small></div>
   <div class="tb" data-k="item"><small>פריט</small></div>
 </div>
@@ -2553,18 +2582,29 @@ function hitButton(x, y) {
   for (const r of tbRects) { const dx = (x - r.cx) / r.rx, dy = (y - r.cy) / r.ry, d = dx * dx + dy * dy; if (d <= 1 && d < bd) { bd = d; best = r.k; } }
   return best;
 }
-function applyTouchSet(points) {
+// ---- one-thumb gas (default on touch): a touch that starts on GAS owns the gas for its whole life (sliding off doesn't drop it);
+// slide that thumb left (toward brake) or down = DRIFT with the gas still on; flick it up and let go = cruise (gas locked on, tap gas/brake to unlock)
+const gasOwn = new Map(); let gasLock = false, gasDrift = false;
+function gasSize() { const g = tbRects.find(r => r.k === 'gas'); return g ? g.rx - 16 : 50; }
+function applyTouchSet(points, ids) {
   if (!tbRects.length) measureButtons();
-  const now = {};
-  for (const [x, y] of points) { const k = hitButton(x, y); if (k) now[k] = true; }
+  const now = {}; gasDrift = false; let gasHeld = false;
+  points.forEach(([x, y], i) => {
+    const id = ids ? ids[i] : null, o = id != null && CTRL.oneThumb ? gasOwn.get(id) : null;
+    if (o) { gasHeld = true; const b = gasSize(), dx = x - o.x0, dy = y - o.y0; o.up = dy < -b * 0.75 && Math.abs(dx) < b * 0.9; if (dx < -b * 0.55 || dy > b * 0.35) gasDrift = true; return; }
+    const k = hitButton(x, y); if (k) now[k] = true;
+  });
+  if (gasHeld) now.gas = true;
+  if (CTRL.oneThumb && gasLock && (now.brake || (now.gas && !gasHeld))) setGasLock(false);
   if (now.item && !touch.item) useItem(player);
-  for (const el of tbEls) { const k = el.dataset.k, on = !!now[k]; touch[k] = on; el.classList.toggle('on', on); }
+  for (const el of tbEls) { const k = el.dataset.k, on = !!now[k] || (k === 'gas' && gasLock); touch[k] = on; el.classList.toggle('on', on); if (k === 'gas') el.classList.toggle('drift', gasDrift); }
 }
-function releaseAllTouch() { for (const el of tbEls) { touch[el.dataset.k] = false; el.classList.remove('on'); } activePointers.clear(); swipeStart.clear(); touchSteer = 0; }
+function releaseAllTouch() { for (const el of tbEls) { touch[el.dataset.k] = false; el.classList.remove('on'); } activePointers.clear(); swipeStart.clear(); gasOwn.clear(); gasDrift = false; setGasLock(false); touchSteer = 0; }
+function setGasLock(on) { gasLock = !!on; const g = tbEls.find(e => e.dataset.k === 'gas'); if (g) { g.classList.toggle('lock', gasLock); } }
 // ---- control settings: steering mode (buttons / swipe / tilt), auto-gas, optional separate drift button ----
-const CTRL = Object.assign({ steer: 'buttons', autoGas: false, driftBtn: false }, (() => { try { return JSON.parse(localStorage.getItem('kart-ctrl') || '{}'); } catch (_) { return {}; } })());
+const CTRL = Object.assign({ steer: 'buttons', autoGas: false, driftBtn: false, oneThumb: true }, (() => { try { return JSON.parse(localStorage.getItem('kart-ctrl') || '{}'); } catch (_) { return {}; } })());
 let touchSteer = 0, tiltSteer = 0; const swipeStart = new Map();
-function applyCtrlClasses() { const b = document.body.classList; b.toggle('ctrl-swipe', CTRL.steer === 'swipe'); b.toggle('ctrl-tilt', CTRL.steer === 'tilt'); b.toggle('ctrl-driftbtn', !!CTRL.driftBtn); b.toggle('ctrl-autogas', !!CTRL.autoGas); setTimeout(measureButtons, 50); }
+function applyCtrlClasses() { const b = document.body.classList; b.toggle('ctrl-swipe', CTRL.steer === 'swipe'); b.toggle('ctrl-tilt', CTRL.steer === 'tilt'); b.toggle('ctrl-driftbtn', !!CTRL.driftBtn); b.toggle('ctrl-autogas', !!CTRL.autoGas); b.toggle('ctrl-onethumb', !!CTRL.oneThumb && !CTRL.autoGas); setTimeout(measureButtons, 50); }
 function saveCtrl() { try { localStorage.setItem('kart-ctrl', JSON.stringify(CTRL)); } catch (_) {} applyCtrlClasses(); }
 function onTilt(e) { const ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0; let t = ang === 90 ? e.beta : (ang === 270 || ang === -90) ? -e.beta : e.gamma; t = t || 0; tiltSteer = Math.abs(t) < 3 ? 0 : clamp(-(t - Math.sign(t) * 3) / 20, -1, 1); }
 async function enableTilt() {
@@ -2574,12 +2614,12 @@ async function enableTilt() {
 if (CTRL.steer === 'tilt') addEventListener('deviceorientation', onTilt);
 const onTouch = e => {
   if (e.cancelable) e.preventDefault();
-  if (e.type === 'touchstart') for (const t of e.changedTouches) swipeStart.set(t.identifier, t.clientX);
-  if (e.type === 'touchend' || e.type === 'touchcancel') for (const t of e.changedTouches) swipeStart.delete(t.identifier);
+  if (e.type === 'touchstart') for (const t of e.changedTouches) { swipeStart.set(t.identifier, t.clientX); if (CTRL.oneThumb && state === 'race' || CTRL.oneThumb && state === 'countdown') { if (!tbRects.length) measureButtons(); if (hitButton(t.clientX, t.clientY) === 'gas') { if (gasLock) setGasLock(false); gasOwn.set(t.identifier, { x0: t.clientX, y0: t.clientY, up: false }); } } }
+  if (e.type === 'touchend' || e.type === 'touchcancel') for (const t of e.changedTouches) { swipeStart.delete(t.identifier); const o = gasOwn.get(t.identifier); if (o) { gasOwn.delete(t.identifier); if (o.up && e.type === 'touchend') { setGasLock(true); SND.tink && SND.tink(true); } } }
   const pts = [...e.touches].map(t => [t.clientX, t.clientY]);
   touchSteer = 0;
   if (CTRL.steer === 'swipe') { if (!tbRects.length) measureButtons(); for (const t of e.touches) { if (t.clientX > innerWidth * 0.5 || hitButton(t.clientX, t.clientY)) continue; const sx = swipeStart.get(t.identifier) ?? t.clientX; touchSteer = clamp((sx - t.clientX) / 55, -1, 1); } }
-  applyTouchSet(pts);
+  applyTouchSet(pts, [...e.touches].map(t => t.identifier));
 };
 for (const ev of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) touchLayer.addEventListener(ev, onTouch, { passive: false });
 // Pointer fallback (touch screens without Touch Events, e.g. some Windows devices); ignored when touch events exist.
@@ -2603,10 +2643,10 @@ for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEv
 document.addEventListener('touchmove', e => { if (!e.target.closest || !e.target.closest('.screen,#chatPanel')) { if (e.cancelable) e.preventDefault(); } }, { passive: false });
 document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 document.addEventListener('contextmenu', e => e.preventDefault());
-let AUTO = false, trickPrev = false;
+let AUTO = false, trickPrev = false, gasDriftPrev = false;
 function playerInput() {
   if (AUTO && player) { const a = aiInput(player, 1 / 60); return a; }
-  const up = keys.ArrowUp || keys.KeyW || touch.gas || (CTRL.autoGas && isTouch), dn = keys.ArrowDown || keys.KeyS || touch.brake;
+  const up = keys.ArrowUp || keys.KeyW || touch.gas || gasLock || (CTRL.autoGas && isTouch), dn = keys.ArrowDown || keys.KeyS || touch.brake;
   const lf = keys.ArrowLeft || keys.KeyA || touch.left, rt = keys.ArrowRight || keys.KeyD || touch.right;
   let steer = (lf ? 1 : 0) - (rt ? 1 : 0);
   if (!steer) steer = CTRL.steer === 'swipe' ? touchSteer : CTRL.steer === 'tilt' ? tiltSteer : 0;
@@ -2614,7 +2654,7 @@ function playerInput() {
   // touch: hold BRAKE while steering at speed = drift (keeps the gas on); brake when straight / slow = normal brake
   const brakeDrift = !!touch.brake && player && (player.drifting || (Math.abs(steer) > 0.3 && player.speed > 17));
   const trickBtn = !!(touch.brake || touch.drift || kbDrift || keys.ArrowDown || keys.KeyS), trick = trickBtn && !trickPrev; trickPrev = trickBtn;
-  return { throttle: brakeDrift ? 1 : dn ? -1 : up ? 1 : 0, steer, drift: kbDrift || !!touch.drift || brakeDrift, trick };
+  return { throttle: brakeDrift || gasDrift ? 1 : dn ? -1 : up ? 1 : 0, steer, drift: kbDrift || !!touch.drift || brakeDrift || gasDrift, trick: trick || (gasDrift && !gasDriftPrev && player && player.air > 0.03), _g: (gasDriftPrev = gasDrift) };
 }
 // ================= GRAPHICS FX: sky, shadows, toon ramp, particles, skid marks, shake, adaptive quality =================
 const FX = { q: isTouch ? 1 : 2, shake: 0 };   // quality: 2 = desktop (2k shadows), 1 = phone (1k shadows), 0 = no shadows, fewer particles
@@ -3167,7 +3207,8 @@ function renderMetaBadges() {
 const $ = id => document.getElementById(id);
 const hudTop = $('hudTop'), hudTime = $('hudTime'), hudPos = $('hudPos'), itemBox = $('itemBox'), itemHint = $('itemHint'), msg = $('msg'), board = $('board');
 let msgTimer = 0;
-function flash(text, dur = 1.1, color = '#ffe14d') { msg.textContent = text; msg.style.fontSize = text.length > 9 ? `min(${Math.max(5, 75 / text.length).toFixed(1)}vw, 64px)` : ''; msg.style.color = color; msgTimer = dur; msg.style.transform = 'translate(-50%,-50%) scale(1.25)'; setTimeout(() => msg.style.transform = 'translate(-50%,-50%) scale(1)', 120); }
+// in-race text: 'big' (countdown/lap/finish/wrong way) shows centred-high; everything else is a compact pill under the item box, out of the driving view
+function flash(text, dur = 1.1, color = '#ffe14d', big = false) { msg.textContent = text; msg.classList.toggle('big', !!big); msg.classList.toggle('pill', !big); msg.classList.toggle('long', !big && [...text].length > 24); msg.style.fontSize = big && text.length > 9 ? `min(${Math.max(4.5, 60 / text.length).toFixed(1)}vw, 52px)` : ''; msg.style.color = color; msgTimer = big ? dur : Math.min(dur, 1.0); msg.style.transform = 'translateX(-50%) scale(1.12)'; setTimeout(() => msg.style.transform = 'translateX(-50%) scale(1)', 110); }
 const fmt = t => { const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s < 10 ? '0' : ''}${s.toFixed(2)}`; };
 const mm = p => [150 + (p.x - mmB.cx) * mmB.s, 150 + (p.z - mmB.cz) * mmB.s];
 function drawMini() {
@@ -3416,7 +3457,7 @@ function updateKart(k, dt, inp) {
   if (k.path === 1 && BR && k.idx > BR.n * 0.5 && !k.brCounted) { k.brCounted = true; k.shortcuts = (k.shortcuts || 0) + 1; }
   const newLap = clamp(Math.floor(k.total / N) + 1, 1, LAPS);
   if (newLap > k.lap) { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.lapDirty = false; k.brCounted = false; }
-  if (k.isPlayer && newLap > k.lap && state === 'race') { const fin = newLap === LAPS; flash(fin ? tr('הקפה אחרונה!', 'Final lap!') : tr(`הקפה ${newLap}`, `Lap ${newLap}`), 1.3); SND.lap(fin); if (fin) SND.tempoMul = 1.12; }
+  if (k.isPlayer && newLap > k.lap && state === 'race') { const fin = newLap === LAPS; flash(fin ? tr('הקפה אחרונה!', 'Final lap!') : tr(`הקפה ${newLap}`, `Lap ${newLap}`), 1.3, undefined, true); SND.lap(fin); if (fin) SND.tempoMul = 1.12; }
   k.lap = Math.max(k.lap, newLap);
   if (!k.finished && k.total >= LAPS * N && state !== 'countdown') { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.finished = true; k.finishTime = raceTime; finishCount++; k.place = finishCount; if (k.isPlayer) onPlayerFinish(); }
   if (k.rolling > 0) {
@@ -3515,7 +3556,7 @@ function onPlayerFinish() {
     if (GP) $('endSub').textContent += tr(`  ·  🏆 מרוץ ${GP.i + 1}/4`, `  ·  🏆 Race ${GP.i + 1}/4`);
     ffOn = !netOn(); lastResHTML = ''; renderResults(); renderStandings(); showScreen('endScreen'); showXP(xpRes);
   }, 1400));
-  flash(tr('סיום! 🏁', 'Finish! 🏁'), 1.6);
+  flash(tr('סיום! 🏁', 'Finish! 🏁'), 1.6, undefined, true);
 }
 
 function renderResults() {
@@ -3726,7 +3767,7 @@ function step(dt, now) {
     if (NET.on && NET.hold) { if (msgTimer <= 0.2) flash(tr('ממתינים לשאר השחקנים…', 'Waiting for the other players…'), 0.5, '#bfe3ff'); }
     else cd -= dt; const n = Math.ceil(cd);
     if (n !== lastCd && n > 0) { lastCd = n; flash(String(n), 0.9, n === 1 ? '#34d058' : '#ffe14d'); SND.beep(false); }
-    if (cd <= 0) { state = 'race'; flash(tr('יאללה!', 'Yalla!'), 0.9, '#34d058'); SND.beep(true); if (playerInput().throttle > 0) { player.boost = 0.6; SND.boost(); } }
+    if (cd <= 0) { state = 'race'; flash(tr('יאללה!', 'Yalla!'), 0.9, '#34d058', true); SND.beep(true); if (playerInput().throttle > 0) { player.boost = 0.6; SND.boost(); } }
   }
   if (state === 'race' && !player.finished) {
     const rk = rankOf(player);
@@ -3751,7 +3792,7 @@ function step(dt, now) {
     }
     if (state === 'race') {
       const t = pT(player), fd = Math.sin(player.heading) * t.x + Math.cos(player.heading) * t.z;
-      if (fd < -0.35 && player.speed > 4 && player.spin <= 0) { wrongT += dt; if (wrongT > 0.9 && msgTimer <= 0) flash(tr('כיוון הפוך! ↩️', 'Wrong way! ↩️'), 0.9, '#ff5a5a'); } else wrongT = 0;
+      if (fd < -0.35 && player.speed > 4 && player.spin <= 0) { wrongT += dt; if (wrongT > 0.9 && msgTimer <= 0) flash(tr('כיוון הפוך! ↩️', 'Wrong way! ↩️'), 0.9, '#ff5a5a', true); } else wrongT = 0;
     }
   }
   for (const b of boxes) if (!b.active) { b.t -= dt; if (b.t <= 0) { b.active = true; b.mesh.visible = true; } }
@@ -3835,6 +3876,7 @@ let ctrlFrom = 'startScreen';
 function renderCtrl() {
   document.querySelectorAll('#ctrlSteer .tab').forEach(b => b.classList.toggle('sel', b.dataset.v === CTRL.steer));
   $('ctrlGas').textContent = CTRL.autoGas ? tr('פועל', 'On') : tr('כבוי', 'Off'); $('ctrlGas').classList.toggle('sel', !!CTRL.autoGas);
+  $('ctrlOne').textContent = CTRL.oneThumb ? tr('פועל', 'On') : tr('כבוי', 'Off'); $('ctrlOne').classList.toggle('sel', !!CTRL.oneThumb);
   $('ctrlDrift').textContent = CTRL.driftBtn ? tr('מוצג', 'Shown') : tr('מוסתר', 'Hidden'); $('ctrlDrift').classList.toggle('sel', !!CTRL.driftBtn);
   $('ctrlHelp').textContent = (EN ? { buttons: 'Arrows to steer. Hold brake while turning at speed = drift.', swipe: 'Drag your thumb on the left side of the screen to steer. Brake + steer = drift.', tilt: 'Tilt the phone like a steering wheel. Brake + steer = drift.' } : { buttons: 'חיצים להיגוי. החזיקו ברקס תוך כדי פנייה במהירות = דריפט.', swipe: 'גררו את האגודל בצד שמאל של המסך כדי לנווט. ברקס + היגוי = דריפט.', tilt: 'הטו את המכשיר כמו הגה. ברקס + היגוי = דריפט.' })[CTRL.steer] + tr(' באוויר: הקישו ברקס לטריק ובוסט בנחיתה.', ' In the air: tap brake for a trick and a landing boost.');
   document.querySelectorAll('#ctrlLang .tab').forEach(b => b.classList.toggle('sel', b.dataset.l === LANG));
@@ -3849,6 +3891,7 @@ document.querySelectorAll('#ctrlSteer .tab').forEach(b => b.addEventListener('cl
 document.querySelectorAll('#ctrlLang .tab').forEach(b => b.addEventListener('click', () => { if (b.dataset.l === LANG) return; if (state === 'race' || state === 'countdown' || state === 'paused' || NET.on) { $('ctrlMsg').textContent = tr('השפה תתחלף בפעם הבאה שהמשחק ייפתח', 'Language will switch next time the game opens'); try { localStorage.setItem('shimon-agalot-lang', b.dataset.l); } catch (_) {} return; } I18N.set(b.dataset.l); }));
 { const lb = $('langBtn'); lb.textContent = EN ? "עברית" : "English"; lb.lang = EN ? "he" : "en"; lb.setAttribute('aria-label', EN ? 'Switch language to Hebrew' : 'החלף שפה לאנגלית'); lb.addEventListener('click', () => { SND.tink && SND.tink(true); I18N.set(EN ? 'he' : 'en'); }); }
 $('ctrlGas').addEventListener('click', () => { CTRL.autoGas = !CTRL.autoGas; saveCtrl(); renderCtrl(); });
+$('ctrlOne').addEventListener('click', () => { CTRL.oneThumb = !CTRL.oneThumb; saveCtrl(); renderCtrl(); });
 $('ctrlDrift').addEventListener('click', () => { CTRL.driftBtn = !CTRL.driftBtn; saveCtrl(); renderCtrl(); });
 applyCtrlClasses();
 let tutT = 0;
@@ -3856,9 +3899,9 @@ function showTut() {
   try { if (localStorage.getItem('kart-tut') === '1') return; localStorage.setItem('kart-tut', '1'); } catch (_) { return; }
   const t = isTouch;
   $('tutBody').innerHTML = tr(`<h3>איך נוהגים?</h3>`, `<h3>How to drive</h3>`) + (EN ? (t
-    ? `▶ <b>Gas</b> – bottom-right button${CTRL.autoGas ? ' (automatic)' : ''}<br>◀ ▶ <b>Steer</b> – ${CTRL.steer === 'swipe' ? 'drag your thumb on the left' : CTRL.steer === 'tilt' ? 'tilt the phone' : 'the arrows on the left'}<br>🔥 <b>Drift</b> – hold <b>brake</b> while turning at speed, let go for a boost<br>⭐ <b>Trick</b> – tap brake in the air = boost on landing<br>🎁 <b>Item</b> – the button above gas`
+    ? `▶ <b>Gas</b> – bottom-right button${CTRL.autoGas ? ' (automatic)' : ''}<br>◀ ▶ <b>Steer</b> – ${CTRL.steer === 'swipe' ? 'drag your thumb on the left' : CTRL.steer === 'tilt' ? 'tilt the phone' : 'the arrows on the left'}<br>🔥 <b>Drift</b> – ${CTRL.oneThumb && !CTRL.autoGas ? 'keep your thumb on gas and slide it <b>left or down</b>; slide up and lift = cruise' : 'hold <b>brake</b> while turning at speed'}, let go for a boost<br>⭐ <b>Trick</b> – tap brake in the air = boost on landing<br>🎁 <b>Item</b> – the button above gas`
     : `⬆ / W – gas · ⬇ / S – brake<br>⬅ ➡ – steer<br>Shift / Space – drift (in the air: trick)<br>E – item · H – horn · Esc – pause`) + `<small>(change it under "⚙ Controls" in the pause menu)</small>` : (t
-    ? `▶ <b>גז</b> – כפתור ימין למטה${CTRL.autoGas ? ' (אוטומטי)' : ''}<br>◀ ▶ <b>היגוי</b> – ${CTRL.steer === 'swipe' ? 'גררו אגודל בצד שמאל' : CTRL.steer === 'tilt' ? 'הטו את המכשיר' : 'החיצים משמאל'}<br>🔥 <b>דריפט</b> – החזיקו <b>ברקס</b> תוך כדי פנייה במהירות, שחררו לבוסט<br>⭐ <b>טריק</b> – באוויר הקישו ברקס = בוסט בנחיתה<br>🎁 <b>פריט</b> – הכפתור מעל הגז`
+    ? `▶ <b>גז</b> – כפתור ימין למטה${CTRL.autoGas ? ' (אוטומטי)' : ''}<br>◀ ▶ <b>היגוי</b> – ${CTRL.steer === 'swipe' ? 'גררו אגודל בצד שמאל' : CTRL.steer === 'tilt' ? 'הטו את המכשיר' : 'החיצים משמאל'}<br>🔥 <b>דריפט</b> – ${CTRL.oneThumb && !CTRL.autoGas ? 'השאירו את האגודל על הגז והחליקו <b>שמאלה או למטה</b>; החלקה למעלה והרמה = גז נעול' : 'החזיקו <b>ברקס</b> תוך כדי פנייה במהירות'}, שחררו לבוסט<br>⭐ <b>טריק</b> – באוויר הקישו ברקס = בוסט בנחיתה<br>🎁 <b>פריט</b> – הכפתור מעל הגז`
     : `⬆ / W – גז · ⬇ / S – ברקס<br>⬅ ➡ – היגוי<br>Shift / רווח – דריפט (ובאוויר: טריק)<br>E – פריט · H – צופר · Esc – הפסקה`) + `<small>(אפשר לשנות ב"⚙ שליטה" בתפריט ההפסקה)</small>`);
   $('tutOverlay').style.display = 'flex'; clearTimeout(tutT); tutT = setTimeout(() => { $('tutOverlay').style.display = 'none'; }, 6500);
 }
@@ -4177,7 +4220,7 @@ function hostDrop(c) {
   if (hi >= 0) NET.humans.splice(hi, 1);
   if (NET.inRace) {
     const k = karts.find(k => k.peerId === c.peer);
-    if (k && k.human) { makeAI(k); k.peerId = null; flash(tr(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, `${k.name} disconnected – the computer takes the wheel 🤖`), 2.2, '#ffb84d'); sendAll({ t: 'left', s: k.slot }); }
+    if (k && k.human) { makeAI(k); k.peerId = null; flash(tr(`${k.name} יצא/ה – המחשב נוהג 🤖`, `${k.name} left – CPU drives 🤖`), 2.2, '#ffb84d'); sendAll({ t: 'left', s: k.slot }); }
   } else { broadcastLobby(); lobbyMsg(tr(`שחקן ${num} עזב את החדר`, `Player ${num} left the room`)); }
 }
 const notReady = () => NET.humans.filter(h => h.id !== NET.myId && !h.rdy);
@@ -4220,7 +4263,7 @@ function onClientData(d) {
   if (d.t === 'gpend' && GP) { GP.pts = d.pts; GP.meta = d.meta; showPodium(); return; }
   if (d.t === 'sn' && NET.inRace) { for (const e of d.d) { const k = karts[e[0]]; if (k && k.remote) applyState(k, e); } return; }
   if (d.t === 'ev' && NET.inRace) { applyEv(d.e); return; }
-  if (d.t === 'left' && NET.inRace) { const k = karts[d.s]; if (k) { k.human = false; k.peerId = null; flash(tr(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, `${k.name} disconnected – the computer takes the wheel 🤖`), 2.2, '#ffb84d'); } return; }
+  if (d.t === 'left' && NET.inRace) { const k = karts[d.s]; if (k) { k.human = false; k.peerId = null; flash(tr(`${k.name} יצא/ה – המחשב נוהג 🤖`, `${k.name} left – CPU drives 🤖`), 2.2, '#ffb84d'); } return; }
   if (d.t === 'tolobby') { if (GP || curScreen === 'podiumScreen') { podiumDefault(); gpEndAbandon(); } NET.inRace = false; clearHazards(); clearFinTimers(); state = 'menu'; SND.playSong('menu'); showLobby(); return; }
   if (d.t === 'bye') { onHostLost(); }
 }
@@ -4230,7 +4273,7 @@ function onHostLost() {
   netLeave();
   if (racing) {
     for (const k of karts) if (k.remote) makeAI(k);
-    flash(tr('המארח התנתק – ממשיכים מול המחשב 🤖', 'The host left – racing on against the computer 🤖'), 2.6, '#ffb84d');
+    flash(tr('המארח יצא – ממשיכים מול המחשב 🤖', 'Host left – racing the CPU 🤖'), 2.6, '#ffb84d');
     $('resNote').textContent = '';
   } else { state = 'menu'; showScreen('mpScreen'); mpMsg(tr('החיבור למארח נותק', 'Lost connection to the host')); }
 }
@@ -4335,7 +4378,7 @@ function renderLobby() {
     SND.init(); SND.tink(true); const i = +el.dataset.i;
     if (NET.host) hostPick(NET.myId, i); else if (NET.hostConn) { NET.hostConn.send({ t: 'pick', c: i }); if (me) { if (me.char !== i) me.rdy = false; me.char = i; renderLobby(); } }
   });
-  $('lobbyKarts').innerHTML = KARTS.map((kt, i) => { const lock = !isUnlocked('kart', i); return `<button class="lt ${me && (me.kart || 0) === i ? 'sel' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>${lock ? '🔒 ' : ''}${kt.name}${lock ? ` <small>(${tr('רמה', 'Lv')} ${unlockLevel('kart', i)})</small>` : ''}</button>`; }).join('');
+  $('lobbyKarts').innerHTML = KARTS.map((kt, i) => { const lock = !isUnlocked('kart', i); return `<button class="lt ${me && (me.kart || 0) === i ? 'sel' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>${lock ? '🔒 ' : ''}${kt.name}${lock ? ` <small>(${kartLockLabel(i)})</small>` : ''}</button>`; }).join('');
   $('lobbyKarts').querySelectorAll('.lt').forEach(el => el.onclick = () => {
     SND.init(); SND.tink(true); const i = +el.dataset.i; selKart = i;
     if (NET.host) { if (me) { me.kart = i; broadcastLobby(); } } else if (NET.hostConn) { NET.hostConn.send({ t: 'kart', k: i }); if (me) { if (me.kart !== i) me.rdy = false; me.kart = i; renderLobby(); } }
@@ -4358,6 +4401,8 @@ function renderLobby() {
   $('lobbyWait').textContent = NET.host ? (NET.humans.length < 2 ? tr('שלחו את הקוד לחברים! מקומות פנויים יתמלאו במחשב', 'Send the code to your friends! Empty seats get computer drivers') : '') : tr(`ממתין שהמארח יתחיל… מסלול: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`, `Waiting for the host to start… Track: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`);
 }
 const roomLink = () => `${location.origin}${location.pathname}?room=${NET.code}`;
+// why a kart is locked in the lobby: shop karts show their shop level / 'shop', the golden kart its cup goal, level unlocks their level
+function kartLockLabel(i) { const d = KARTS[i]; if (d && d.shop) { const it = SHOP.find(s => s.id === d.shop); return it && lvLocked(it) ? `${tr('רמה', 'Lv')} ${it.lv}` : tr('בחנות', 'shop'); } if (d && d.gold) return tr('זהב באליפות קשה', 'gold on Hard'); return `${tr('רמה', 'Lv')} ${unlockLevel('kart', i)}`; }
 function toast(t) { lobbyMsg(t); $('lobbyMsg').dataset.t = t; setTimeout(() => { if ($('lobbyMsg').dataset.t === t) lobbyMsg(''); }, 2200); }
 async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (_) { const ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (_) {} ta.remove(); return ok; } }
 
