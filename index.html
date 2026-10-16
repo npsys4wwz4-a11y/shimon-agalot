@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>שמעון עגלות 🏁</title>
+<title>שמעון עגלות · Shimon Karts</title>
 <meta name="description" content="שמעון עגלות – מרוץ עגלות תלת-ממדי בדפדפן">
 <meta name="theme-color" content="#1d4ed8">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -493,18 +493,29 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 #lobbyStart.waiting{filter:saturate(.45) brightness(.95)}
 #confirmBox{position:fixed;inset:0;z-index:40;background:rgba(5,15,45,.55);display:flex;align-items:center;justify-content:center;padding:20px}
 #confirmBox .confCard{max-width:420px;text-align:center;font-size:17px;color:#0b1e5a}
+/* language toggle (title screen) */
+#langBtn{position:fixed;z-index:25;top:calc(env(safe-area-inset-top) + 64px);left:calc(env(safe-area-inset-left) + 12px);display:none;-webkit-appearance:none;appearance:none;padding:6px 13px;border-radius:999px;border:3px solid #fff;background:linear-gradient(180deg,rgba(47,107,255,.95),rgba(19,42,116,.95));box-shadow:0 0 0 3px var(--navy),0 4px 0 var(--navy);color:#fff;font:900 14px/1 Rubik,Arial,sans-serif;text-shadow:var(--ol);cursor:pointer}
+body.inmenu.titlemode #langBtn{display:inline-block}
+@media (max-aspect-ratio:1/1){#langBtn{top:calc(env(safe-area-inset-top) + 12px);left:auto;right:calc(env(safe-area-inset-right) + 12px)}}
+#langBtn:active{transform:translateY(2px)}
+html[dir=ltr] #chatPanel .chForm input{direction:ltr}
+/* ---- LTR (English) mirroring of the RTL-specific bits ---- */
+html[dir=ltr] .backBtn{float:left!important;margin:0 8px 4px 0!important}
+html[dir=ltr] .chRow,html[dir=ltr] table.res td.nm,html[dir=ltr] .stat b,html[dir=ltr] .lp,html[dir=ltr] .lsec,html[dir=ltr] #profBadge,html[dir=ltr] #xpBox,html[dir=ltr] #diagOut,html[dir=ltr] .tutCard{text-align:left}
+html[dir=ltr] table.res .dot{margin-left:0;margin-right:6px} html[dir=ltr] #lvlUp small{margin-right:0;margin-left:6px} html[dir=ltr] #chatPanel .cm b{margin-left:0;margin-right:6px}
+html[dir=ltr] .bigMode b{font-size:clamp(18px,4vw,26px)!important}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016075151', busy = false;
+  var BUILD = '20261016082207', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
   function racing() { var k = window.__kart; return k && (k.state === 'race' || k.state === 'countdown' || k.state === 'paused'); }
-  function toast() { var t = document.createElement('div'); t.textContent = 'גרסה חדשה! מתעדכן…'; t.style.cssText = 'position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:99;background:#1d4ed8;color:#fff;font:900 20px Arial;padding:10px 22px;border-radius:20px;border:3px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.35);direction:rtl'; document.body.appendChild(t); }
+  function toast() { var t = document.createElement('div'); t.textContent = window.tr ? tr('גרסה חדשה! מתעדכן…', 'New version! Updating…') : 'גרסה חדשה! מתעדכן…'; t.style.cssText = 'position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:99;background:#1d4ed8;color:#fff;font:900 20px Arial;padding:10px 22px;border-radius:20px;border:3px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.35);direction:rtl'; document.body.appendChild(t); }
   function apply(v) {
     if (racing()) { pending = v; return; }
     toast();
@@ -524,6 +535,67 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
   setInterval(function () { if (pending && !racing()) apply(pending); else if (!racing()) check(); }, 3 * 60 * 1000);
   setInterval(function () { if (pending && !racing()) apply(pending); }, 2000);   // apply right after the race ends
 })();
+</script>
+<script>
+// ================= i18n: Hebrew (rtl) / English (ltr) =================
+// LANG is picked once per page load: saved choice, else navigator.language (he -> Hebrew, otherwise English).
+// Static HTML is translated by exact-text lookup in I18N.dict (keys are the Hebrew text, emoji included);
+// dynamic strings in JS use tr('עברית', 'English'). Switching language saves the choice and reloads.
+(function () {
+  var KEY = 'shimon-agalot-lang', saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  var q = /[?&]lang=(he|en)\b/.exec(location.search);
+  var nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'he';
+  var L = q ? q[1] : saved === 'he' || saved === 'en' ? saved : /^(he|iw)\b/i.test(nav) ? 'he' : 'en';
+  window.LANG = L; window.EN = L === 'en';
+  window.tr = function (he, en) { return L === 'en' && en != null ? en : he; };
+  var de = document.documentElement; de.lang = L; de.dir = L === 'en' ? 'ltr' : 'rtl'; de.classList.add('lang-' + L);
+  var dict = {};
+  var norm = function (s) { return s.replace(/[\s\u00A0]+/g, ' ').trim(); };
+  var ATTRS = ['placeholder', 'aria-label', 'alt', 'title', 'content', 'data-lock'];
+  function apply(root) {
+    if (L !== 'en') return;
+    root = root || document;
+    var tw = document.createTreeWalker(root.body || root, NodeFilter.SHOW_TEXT), n, list = [];
+    while ((n = tw.nextNode())) list.push(n);
+    list.forEach(function (n) {
+      var p = n.parentNode; if (!p || /^(SCRIPT|STYLE)$/.test(p.nodeName)) return;
+      var k = norm(n.nodeValue); if (!k || !/[\u0590-\u05FF]/.test(k)) return;
+      var v = dict[k]; if (v == null) { (window.__i18nMiss = window.__i18nMiss || []).push(k); return; }
+      var lead = /^[\s\u00A0]*/.exec(n.nodeValue)[0], trail = /[\s\u00A0]*$/.exec(n.nodeValue)[0];
+      n.nodeValue = (lead ? ' ' : '') + v + (trail ? ' ' : '');
+    });
+    var els = (root.querySelectorAll ? root : document).querySelectorAll('[placeholder],[aria-label],[alt],[title],meta[content],[data-lock]');
+    Array.prototype.forEach.call(els, function (el) { ATTRS.forEach(function (a) { var v = el.getAttribute(a); if (v && /[\u0590-\u05FF]/.test(v) && dict[norm(v)] != null) el.setAttribute(a, dict[norm(v)]); }); });
+    if (dict[norm(document.title)] != null) document.title = dict[norm(document.title)];
+  }
+  window.I18N = {
+    lang: L, dict: dict, apply: apply,
+    add: function (o) { for (var k in o) dict[norm(k)] = o[k]; },
+    set: function (l) { if (l !== 'he' && l !== 'en') return; try { localStorage.setItem(KEY, l); } catch (e) {} if (l === L) return; var u = location.pathname + location.search.replace(/([?&])lang=(he|en)&?/, '$1').replace(/[?&]$/, ''); if (u === location.pathname + location.search) location.reload(); else location.replace(u + location.hash); }
+  };
+})();
+</script>
+<script>
+// English strings for static HTML (exact Hebrew text -> English). Dynamic JS strings use tr().
+I18N.add({
+  // ---- part 1: page, main menu, mode select, name, settings ----
+  'שמעון עגלות · Shimon Karts': 'Shimon Karts · שמעון עגלות',
+  'שמעון עגלות – מרוץ עגלות תלת-ממדי בדפדפן': 'Shimon Karts – a 3D kart race right in your browser',
+  'שמעון עגלות': 'Shimon Karts',
+  'השתק': 'Mute', 'פרופיל': 'Profile', 'רמה': 'Level', 'מטבעות': 'Coins',
+  '🏁 מרוץ העגלות הישראלי 🏁': '🏁 The Israeli Kart Race 🏁',
+  '▶ שחקן יחיד': '▶ Single Player', '🌐 מרובה משתתפים': '🌐 Multiplayer',
+  '🎯 אתגרים': '🎯 Challenges', '📅 בונוס יומי': '📅 Daily Bonus', '🛒 חנות': '🛒 Shop', '❓ איך משחקים': '❓ How to Play',
+  'חזרה': 'Back', 'שחקן יחיד': 'Single Player',
+  'משחק מהיר': 'Quick Race', 'מרוץ אחד במסלול לבחירה': 'One race, your pick of track',
+  'אליפות': 'Championship', '4 מרוצים · ניקוד · גביע': '4 races · points · a trophy',
+  'איך קוראים לך?': "What's your name?", 'השם יופיע בטבלת התוצאות ובמשחק מרובה משתתפים': 'It shows up on the results board and in multiplayer',
+  'השם שלך': 'Your name', 'יאללה! ✔': 'Yalla! ✔',
+  '⚙ הגדרות': '⚙ Settings', 'היגוי': 'Steering', 'כפתורים': 'Buttons', 'החלקה': 'Swipe', 'הטיית מכשיר': 'Tilt',
+  'גז אוטומטי': 'Auto gas', 'כפתור דריפט נפרד': 'Separate drift button', 'מוזיקה': 'Music', 'אפקטים': 'Sound FX',
+  'שפה': 'Language'
+});
 </script>
 </head>
 <body class="inmenu">
@@ -593,6 +665,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
   </div>
 </div>
 <button id="coinBadge" aria-label="מטבעות">🪙 0 ₪</button>
+<button id="langBtn" class="langBtn" lang="x"></button>
 <div id="modeScreen" class="screen" style="display:none">
   <div class="card metaCard">
     <button class="backBtn" data-back><svg class="ic"><use href="#i-back"/></svg> חזרה</button>
@@ -762,6 +835,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
     <div class="cRow"><b>היגוי</b><div class="cOpts" id="ctrlSteer"><button class="tab" data-v="buttons">כפתורים</button><button class="tab" data-v="swipe">החלקה</button><button class="tab" data-v="tilt">הטיית מכשיר</button></div></div>
     <div class="cRow"><b>גז אוטומטי</b><div class="cOpts"><button class="tab" id="ctrlGas"></button></div></div>
     <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tab" id="ctrlDrift"></button></div></div>
+    <div class="cRow"><b>שפה</b><div class="cOpts" id="ctrlLang"><button class="tab" data-l="he" lang="he">עברית</button><button class="tab" data-l="en" lang="en">English</button></div></div>
     <div class="cRow"><b>מוזיקה</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
     <div class="cRow"><b>אפקטים</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volSfx" min="0" max="100" step="5"></div></div>
     <p class="note" id="ctrlHelp"></p>
@@ -803,6 +877,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
   <div class="tb" data-k="item"><small>פריט</small></div>
 </div>
 </div>
+<script>I18N.apply(document)</script>
 <script>
 // ================= ICONS: one inline SVG sprite, consistent style (navy outline, gradient fill, gloss) =================
 // Every emoji the UI prints is swapped for one of these at render time (see emoji→icon map at the bottom).
@@ -1438,8 +1513,8 @@ function buildTrack(ti) {
     for (const s of [-1, 1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 9, 12), postM); p.position.set(s * (WALL + 1.5), 4.5, 0); arch.add(p); }
     const bt = canvasTex(1024, 128, (g, w, h) => {
       g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#0038b8'; g.fillRect(0, 0, w, 14); g.fillRect(0, h - 14, w, 14);
-      g.font = '900 78px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl'; g.fillStyle = '#0038b8';
-      g.fillText('שמעון עגלות', w / 2, h / 2 + 4); drawStar(g, 90, h / 2, 36, 7, '#0038b8'); drawStar(g, w - 90, h / 2, 36, 7, '#0038b8');
+      g.font = '900 78px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = EN ? 'ltr' : 'rtl'; if (EN) g.font = '900 64px Arial'; g.fillStyle = '#0038b8';
+      g.fillText(tr('שמעון עגלות', 'SHIMON KARTS'), w / 2, h / 2 + 4); drawStar(g, 90, h / 2, 36, 7, '#0038b8'); drawStar(g, w - 90, h / 2, 36, 7, '#0038b8');
     });
     const bm = new THREE.MeshLambertMaterial({ map: bt }), pm = lam(0x1d4ed8);
     const beam = new THREE.Mesh(new THREE.BoxGeometry((WALL + 2) * 2, 2.6, 0.6), [pm, pm, pm, pm, bm, bm]); beam.position.y = 9; arch.add(beam);
@@ -1472,7 +1547,7 @@ const padTex = canvasTex(128, 256, (g, w, h) => {
   g.fillStyle = '#fff'; for (let k = 0; k < 3; k++) { const y = 30 + k * 75; g.beginPath(); g.moveTo(14, y + 50); g.lineTo(w / 2, y); g.lineTo(w - 14, y + 50); g.lineTo(w - 14, y + 70); g.lineTo(w / 2, y + 22); g.lineTo(14, y + 70); g.closePath(); g.fill(); }
 });
 padTex.dispose = () => {};
-function signTex(text, bg) { return canvasTex(512, 96, (g, w, h) => { g.fillStyle = bg; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = '900 52px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl'; g.fillText(text, w / 2, h / 2 + 3); g.strokeStyle = '#fff'; g.lineWidth = 6; g.strokeRect(4, 4, w - 8, h - 8); }); }
+function signTex(text, bg) { return canvasTex(512, 96, (g, w, h) => { g.fillStyle = bg; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = '900 52px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = EN ? 'ltr' : 'rtl'; if (EN) g.font = '900 64px Arial'; g.fillText(text, w / 2, h / 2 + 3); g.strokeStyle = '#fff'; g.lineWidth = 6; g.strokeRect(4, 4, w - 8, h - 8); }); }
 function gantry(G, p, t, halfW, text, bg) {
   const g = new THREE.Group(), pm = lam(0xeeeeee);
   for (const s of [-1, 1]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 7, 0.5), pm); post.position.set(s * (halfW + 1.2), 3.5, 0); g.add(post); }
@@ -2654,10 +2729,10 @@ function unlockName(u) { return u.type === 'kart' ? KARTS[u.i].name : u.type ===
 // name validation: 2–14 chars, Hebrew/English letters, digits, space, - _ ' ; must differ from the built-in drivers
 function validName(raw) {
   const n = (raw || '').replace(/\s+/g, ' ').trim();
-  if (n.length < 2) return [null, 'השם קצר מדי (לפחות 2 תווים)'];
-  if (n.length > 14) return [null, 'השם ארוך מדי (עד 14 תווים)'];
-  if (!/^[\u0590-\u05FFa-zA-Z0-9 _\-'"]+$/.test(n)) return [null, 'רק אותיות בעברית/אנגלית, ספרות ורווח'];
-  if (CHARS.some(c => c.name === n) || n === 'מחשב') return [null, 'השם הזה שמור לנהגי המשחק – בחר/י שם אחר'];
+  if (n.length < 2) return [null, tr('השם קצר מדי (לפחות 2 תווים)', 'Too short (at least 2 characters)')];
+  if (n.length > 14) return [null, tr('השם ארוך מדי (עד 14 תווים)', 'Too long (14 characters max)')];
+  if (!/^[\u0590-\u05FFa-zA-Z0-9 _\-'"]+$/.test(n)) return [null, tr('רק אותיות בעברית/אנגלית, ספרות ורווח', 'Letters (Hebrew/English), digits and spaces only')];
+  if (CHARS.some(c => c.name === n) || n === 'מחשב') return [null, tr('השם הזה שמור לנהגי המשחק – בחר/י שם אחר', 'That name belongs to one of our drivers – pick another')];
   return [n, ''];
 }
 // XP for one finished race
@@ -2699,11 +2774,11 @@ function confettiBurst() {
 }
 function renderBadge() {
   const lp = levelProgress(PROFILE.xp);
-  $('pbName').textContent = PROFILE.name || 'שחקן/ית חדש/ה'; $('pbLvl').textContent = lp.L; $('pbXp').textContent = `${lp.cur}/${lp.need} XP`; { const nu = nextUnlock(lp.L); $('pbNext').textContent = nu ? `ברמה ${nu.lv}: ${nu.name}` : ''; }
+  $('pbName').textContent = PROFILE.name || tr('שחקן/ית חדש/ה', 'New driver'); $('pbLvl').textContent = lp.L; $('pbXp').textContent = `${lp.cur}/${lp.need} XP`; { const nu = nextUnlock(lp.L); $('pbNext').textContent = nu ? tr(`ברמה ${nu.lv}: ${nu.name}`, `Level ${nu.lv}: ${nu.name}`) : ''; }
   $('pbBar').style.width = (lp.frac * 100).toFixed(1) + '%';
 }
 let nameNext = null;   // screen to continue to after the name is saved
-function askName(next) { nameNext = next || null; $('nameInput').value = PROFILE.name || ''; $('nameErr').textContent = ''; $('nameTitle').textContent = PROFILE.name ? 'שינוי שם' : 'ברוכים הבאים! איך קוראים לך?'; showScreen('nameScreen'); setTimeout(() => { try { $('nameInput').focus(); } catch (_) {} }, 50); }
+function askName(next) { nameNext = next || null; $('nameInput').value = PROFILE.name || ''; $('nameErr').textContent = ''; $('nameTitle').textContent = PROFILE.name ? tr('שינוי שם', 'Change name') : tr('ברוכים הבאים! איך קוראים לך?', "Welcome! What's your name?"); showScreen('nameScreen'); setTimeout(() => { try { $('nameInput').focus(); } catch (_) {} }, 50); }
 function saveName() {
   const [n, err] = validName($('nameInput').value);
   if (!n) { $('nameErr').textContent = err; SND.wall && SND.wall(0.3); return; }
@@ -3006,7 +3081,7 @@ function screenFlash() { flashOv.style.transition = 'none'; flashOv.style.opacit
 
 // ---------- mute ----------
 const muteBtn = $('muteBtn');
-const syncMute = () => { muteBtn.textContent = SND.muted ? '🔇' : '🔊'; muteBtn.setAttribute('aria-label', SND.muted ? 'הפעל צליל' : 'השתק'); };
+const syncMute = () => { muteBtn.textContent = SND.muted ? '🔇' : '🔊'; muteBtn.setAttribute('aria-label', SND.muted ? tr('הפעל צליל', 'Unmute') : tr('השתק', 'Mute')); };
 syncMute();
 muteBtn.addEventListener('click', e => { e.stopPropagation(); SND.init(); SND.setMuted(!SND.muted); try { localStorage.setItem('kart-muted', SND.muted ? '1' : '0'); } catch (_) {} syncMute(); });
 
@@ -3377,7 +3452,7 @@ function goMainMenu() {
   clearFinTimers(); clearHazards(); pausedFrom = null; ffOn = false; state = 'menu';
   SND.init(); SND.pause(false); SND.starMode = false; SND.playSong('menu'); showScreen('startScreen');
 }
-const syncPauseMute = () => { $('pauseMuteBtn').textContent = SND.muted ? '🔇 צליל: כבוי' : '🔊 צליל: פועל'; };
+const syncPauseMute = () => { $('pauseMuteBtn').textContent = SND.muted ? tr('🔇 צליל: כבוי', '🔇 Sound: off') : tr('🔊 צליל: פועל', '🔊 Sound: on'); };
 $('pauseBtn').addEventListener('click', e => { e.stopPropagation(); SND.init(); pauseGame(); });
 $('resumeBtn').addEventListener('click', resumeGame);
 $('pauseRestartBtn').addEventListener('click', () => { SND.init(); resetRace(); });
@@ -3660,17 +3735,20 @@ window.__kart = { input: () => playerInput(), get state() { return state; }, get
 let ctrlFrom = 'startScreen';
 function renderCtrl() {
   document.querySelectorAll('#ctrlSteer .tab').forEach(b => b.classList.toggle('sel', b.dataset.v === CTRL.steer));
-  $('ctrlGas').textContent = CTRL.autoGas ? 'פועל' : 'כבוי'; $('ctrlGas').classList.toggle('sel', !!CTRL.autoGas);
-  $('ctrlDrift').textContent = CTRL.driftBtn ? 'מוצג' : 'מוסתר'; $('ctrlDrift').classList.toggle('sel', !!CTRL.driftBtn);
-  $('ctrlHelp').textContent = { buttons: 'חיצים להיגוי. החזיקו ברקס תוך כדי פנייה במהירות = דריפט.', swipe: 'גררו את האגודל בצד שמאל של המסך כדי לנווט. ברקס + היגוי = דריפט.', tilt: 'הטו את המכשיר כמו הגה. ברקס + היגוי = דריפט.' }[CTRL.steer] + ' באוויר: הקישו ברקס לטריק ובוסט בנחיתה.';
+  $('ctrlGas').textContent = CTRL.autoGas ? tr('פועל', 'On') : tr('כבוי', 'Off'); $('ctrlGas').classList.toggle('sel', !!CTRL.autoGas);
+  $('ctrlDrift').textContent = CTRL.driftBtn ? tr('מוצג', 'Shown') : tr('מוסתר', 'Hidden'); $('ctrlDrift').classList.toggle('sel', !!CTRL.driftBtn);
+  $('ctrlHelp').textContent = (EN ? { buttons: 'Arrows to steer. Hold brake while turning at speed = drift.', swipe: 'Drag your thumb on the left side of the screen to steer. Brake + steer = drift.', tilt: 'Tilt the phone like a steering wheel. Brake + steer = drift.' } : { buttons: 'חיצים להיגוי. החזיקו ברקס תוך כדי פנייה במהירות = דריפט.', swipe: 'גררו את האגודל בצד שמאל של המסך כדי לנווט. ברקס + היגוי = דריפט.', tilt: 'הטו את המכשיר כמו הגה. ברקס + היגוי = דריפט.' })[CTRL.steer] + tr(' באוויר: הקישו ברקס לטריק ובוסט בנחיתה.', ' In the air: tap brake for a trick and a landing boost.');
+  document.querySelectorAll('#ctrlLang .tab').forEach(b => b.classList.toggle('sel', b.dataset.l === LANG));
 }
 function openCtrl(from) { ctrlFrom = from; $('ctrlMsg').textContent = ''; renderCtrl(); showScreen('ctrlScreen'); }
 $('pauseCtrlBtn').addEventListener('click', () => openCtrl('pauseScreen'));
 $('helpCtrlBtn').addEventListener('click', () => openCtrl('helpScreen'));
 document.querySelectorAll('#ctrlSteer .tab').forEach(b => b.addEventListener('click', async () => {
-  if (b.dataset.v === 'tilt') { const ok = await enableTilt(); if (!ok) { $('ctrlMsg').textContent = 'אין גישה לחיישן ההטיה במכשיר הזה'; return; } }
+  if (b.dataset.v === 'tilt') { const ok = await enableTilt(); if (!ok) { $('ctrlMsg').textContent = tr('אין גישה לחיישן ההטיה במכשיר הזה', "Can't access the tilt sensor on this device"); return; } }
   CTRL.steer = b.dataset.v; saveCtrl(); renderCtrl();
 }));
+document.querySelectorAll('#ctrlLang .tab').forEach(b => b.addEventListener('click', () => { if (b.dataset.l === LANG) return; if (state === 'race' || state === 'countdown' || state === 'paused' || NET.on) { $('ctrlMsg').textContent = tr('השפה תתחלף בפעם הבאה שהמשחק ייפתח', 'Language will switch next time the game opens'); try { localStorage.setItem('shimon-agalot-lang', b.dataset.l); } catch (_) {} return; } I18N.set(b.dataset.l); }));
+{ const lb = $('langBtn'); lb.textContent = EN ? "עברית" : "English"; lb.lang = EN ? "he" : "en"; lb.setAttribute('aria-label', EN ? 'Switch language to Hebrew' : 'החלף שפה לאנגלית'); lb.addEventListener('click', () => { SND.tink && SND.tink(true); I18N.set(EN ? 'he' : 'en'); }); }
 $('ctrlGas').addEventListener('click', () => { CTRL.autoGas = !CTRL.autoGas; saveCtrl(); renderCtrl(); });
 $('ctrlDrift').addEventListener('click', () => { CTRL.driftBtn = !CTRL.driftBtn; saveCtrl(); renderCtrl(); });
 applyCtrlClasses();

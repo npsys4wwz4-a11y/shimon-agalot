@@ -1,9 +1,8 @@
 {
-  "name": "שמעון עגלות",
-  "short_name": "שמעון עגלות",
-  "description": "מרוץ עגלות תלת-ממדי בדפדפן",
-  "lang": "he",
-  "dir": "rtl",
+  "name": "Shimon Karts · שמעון עגלות",
+  "short_name": "Shimon Karts",
+  "description": "Shimon Karts – a 3D Israeli kart race in your browser · שמעון עגלות – מרוץ עגלות תלת-ממדי בדפדפן",
+  "dir": "auto",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
@@ -11,8 +10,21 @@
   "background_color": "#1d4ed8",
   "theme_color": "#1d4ed8",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
