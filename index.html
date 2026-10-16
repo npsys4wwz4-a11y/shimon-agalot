@@ -505,13 +505,18 @@ html[dir=ltr] .chRow,html[dir=ltr] table.res td.nm,html[dir=ltr] .stat b,html[di
 html[dir=ltr] table.res .dot{margin-left:0;margin-right:6px} html[dir=ltr] #lvlUp small{margin-right:0;margin-left:6px} html[dir=ltr] #chatPanel .cm b{margin-left:0;margin-right:6px}
 html[dir=ltr] .bigMode b{font-size:clamp(18px,4vw,26px)!important}
 html[dir=ltr] .stat b{width:auto!important;min-width:68px;flex:none;text-align:left}
+html[dir=ltr] #chatPanel,html[dir=ltr] .bub{direction:ltr}
+.lobbyPlayers{grid-template-columns:repeat(2,minmax(0,1fr))!important} .lp{min-width:0;flex-wrap:wrap} .lp b{flex:1 1 auto;min-width:0} .lp small{min-width:0;overflow-wrap:break-word}
+@media (max-height:520px){.lobbyPlayers{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+html[dir=ltr] .pick.locked::after,html[dir=ltr] .cupCard.locked::after{direction:ltr;background-position:left 8px center,0 0!important}
+.lchars{overflow-x:auto;justify-content:flex-start!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px} .lchars>:first-child{margin-inline-start:auto} .lchars>:last-child{margin-inline-end:auto} .lchars>*{flex:none}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016082951', busy = false;
+  var BUILD = '20261016084927', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -610,6 +615,21 @@ I18N.add({
   '🛒 החנות': '🛒 The Shop', 'תצוגה מקדימה': 'Preview', 'רק מטבעות מהמשחק – בלי כסף אמיתי. מרוויחים ₪ במרוצים, אתגרים ובונוס יומי.': 'In-game coins only – no real money. Earn ₪ from races, challenges and the daily bonus.',
   'מי נוהג היום?': "Who's driving today?", 'בחר/י רכב': 'Pick your ride', 'בחר מסלול': 'Pick a track',
   'סיימת!': 'Finished!', 'המרוץ הבא ▶': 'Next race ▶', '🔁 מרוץ נוסף (לובי)': '🔁 Another race (lobby)', 'שחק שוב 🔄': 'Play again 🔄', 'דמות / רכב / מסלול': 'Driver / kart / track'
+  ,
+  // ---- part 3: help/tutorial, multiplayer, lobby, chat, confirm, pause, touch controls ----
+  'איך משחקים?': 'How to play', '⚙ הגדרות שליטה': '⚙ Control settings',
+  'גז': 'Gas', 'ברקס/רוורס': 'Brake/reverse', 'Shift/רווח': 'Shift/Space', 'דריפט – החזק בפנייה ושחרר לבוסט': 'Drift – hold through a turn, release for a boost', 'פריט': 'Item',
+  'בטלפון: ◀ ▶ משמאל, גז/ברקס/פריט מימין. אפשר להחליק אצבע בין ◀ ל-▶.': 'On a phone: ◀ ▶ on the left, gas/brake/item on the right. You can slide your finger between ◀ and ▶.',
+  '☕ קפה שחור – טורבו · 🛡️ כיפת ברזל – מגן שחוסם פגיעה אחת · 🥙 פיתה חומוס – שלולית מחליקה · 🧆 פלאפל מעופף – מונחה · ✡️ מגן דוד זהוב – בלתי מנוצח · 📯 שופר – מכווץ את כולם':
+    '☕ Black Coffee – turbo · 🛡️ Iron Dome – blocks one hit · 🥙 Hummus Pita – a slippery puddle · 🧆 Flying Falafel – homing · ✡️ Golden Star of David – invincible · 📯 Shofar – shrinks everyone',
+  'עד 4 שחקנים, כל אחד מהטלפון שלו. מקומות פנויים – המחשב נוהג.': 'Up to 4 players, each on their own phone. Empty seats – the computer drives.',
+  '➕ צור חדר': '➕ Create room', 'או': 'or', 'קוד חדר': 'Room code', 'קוד': 'Code', 'הצטרף': 'Join', '🩺 בדיקת חיבור': '🩺 Connection check',
+  '📋 העתק': '📋 Copy', '📤 שתף': '📤 Share', 'הדמות שלך:': 'Your driver:', 'הרכב שלך:': 'Your kart:', 'מצב משחק:': 'Game mode:', 'מסלול:': 'Track:',
+  'מוכן/ה?': 'Ready?', '🏁 התחל מרוץ': '🏁 Start race', '🚪 עזוב חדר': '🚪 Leave room',
+  "צ'אט": 'Chat', "💬 צ'אט החדר": '💬 Room chat', 'כתבו הודעה…': 'Write a message…', 'שלח': 'Send',
+  'אישור': 'OK', 'ביטול': 'Cancel',
+  '⏸ הפסקה': '⏸ Paused', 'הפסקה': 'Pause', '▶ המשך': '▶ Resume', '🔄 התחל מחדש': '🔄 Restart', '🏠 חזרה לתפריט הראשי': '🏠 Back to main menu', '⚙ שליטה': '⚙ Controls', '🔊 צליל: פועל': '🔊 Sound: on',
+  'צופר': 'Horn', 'דריפט': 'Drift', 'ברקס': 'Brake'
 });
 </script>
 <script>
@@ -844,7 +864,7 @@ I18N.data = {
     <button class="btn" id="createRoomBtn">➕ צור חדר</button>
     <div class="orLine">או</div>
     <div class="joinRow">
-      <input id="joinCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="קוד חדר" autocomplete="off" enterkeyhint="go" aria-label="קוד חדר">
+      <input id="joinCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="קוד" autocomplete="off" enterkeyhint="go" aria-label="קוד חדר">
       <button class="btn blue" id="joinBtn">הצטרף</button>
     </div>
     <div id="mpMsg" class="note"></div>
@@ -1680,8 +1700,8 @@ function buildPadsAndSigns(G, def) {
   for (const j of JUMPS) if (j.ng > 0) { const i = (j.iL - j.nr - Math.round(22 / SEG) + N) % N; pad(P[i], T[i], L[i], HW * 1.6); }
   if (BR) {
     for (const f of [0.35, 0.7]) { const i = Math.floor(f * (BR.n - 1)); pad(BR.P[i], BR.T[i], BR.L[i], BR_HW * 1.3); }
-    const ia = 22; gantry(G, BR.P[ia], BR.T[ia], BR_HW, '⚡ קיצור דרך', '#d61f1f');
-    const im = (BR.a + 30) % N; gantry(G, P[im], T[im], HW, '🎁 הדרך הארוכה', '#1d4ed8');
+    const ia = 22; gantry(G, BR.P[ia], BR.T[ia], BR_HW, tr('⚡ קיצור דרך', '⚡ SHORTCUT'), '#d61f1f');
+    const im = (BR.a + 30) % N; gantry(G, P[im], T[im], HW, tr('🎁 הדרך הארוכה', '🎁 THE LONG WAY'), '#1d4ed8');
   }
 }
 const qTex = canvasTex(128, 128, (g, w, h) => {
@@ -2164,7 +2184,7 @@ function kartStats(o, ki, human) {
 }
 // combined bars (speed, accel, handling, weight) for the UI, 1..5
 function comboBars(ci, ki) { const c = CHARS[ci].bars, k = KARTS[ki].bars; return [(c[0] + k[0]) / 2, (c[1] + k[1]) / 2, (c[2] + k[2]) / 2, k[3]]; }
-const taxiTex = canvasTex(256, 80, (g, w, h) => { g.fillStyle = '#ffd000'; g.fillRect(0, 0, w, h); g.fillStyle = '#111'; for (let i = 0; i < 16; i++) g.fillRect(i * 16, (i % 2) * 8, 8, 8); g.font = '900 46px Arial'; g.textAlign = 'center'; g.direction = 'rtl'; g.fillText('מונית', w / 2, 66); });
+const taxiTex = canvasTex(256, 80, (g, w, h) => { g.fillStyle = '#ffd000'; g.fillRect(0, 0, w, h); g.fillStyle = '#111'; for (let i = 0; i < 16; i++) g.fillRect(i * 16, (i % 2) * 8, 8, 8); g.font = '900 46px Arial'; g.textAlign = 'center'; g.direction = EN ? 'ltr' : 'rtl'; g.fillText(tr('מונית', 'TAXI'), w / 2, 66); });
 // ---------- characters ----------
 const CHARS = [
   { id: 'shimon', name: 'שמעון', tag: 'הקלאסיקה. כובע מגן דוד, שפם ועגלה כחול-לבן. מאוזן בכל דבר.',
@@ -2477,13 +2497,13 @@ function spinKart(k, dur, byPlayer) {
   if (k.star > 0 || k.spin > 0) return false;
   if (k.shield > 0) {   // Iron Dome absorbs exactly one hit
     k.shield = 0; k.shieldPop = 0.5; k.blocks = (k.blocks || 0) + 1; react(k, 'cheer');
-    if (k.isPlayer) { flash('כיפת ברזל יירטה! 🛡️', .9, '#7fd8ff'); SND.block(); } else if (k.pos.distanceTo(player.pos) < 35) SND.block();
+    if (k.isPlayer) { flash(tr('כיפת ברזל יירטה! 🛡️', 'Iron Dome intercepted! 🛡️'), .9, '#7fd8ff'); SND.block(); } else if (k.pos.distanceTo(player.pos) < 35) SND.block();
     if (typeof netEv === 'function' && !k.remote) netEv({ k: 'block', s: k.slot });
     return 'blocked';
   }
   k.spin = dur; k.boost = 0; k.drifting = false;
   k.timesHit = (k.timesHit || 0) + 1; react(k, 'angry'); if (byPlayer && !k.isPlayer) { player.hitsLanded = (player.hitsLanded || 0) + 1; setTimeout(() => react(player, 'cheer'), 350); }
-  if (k.isPlayer) { flash('אופס! 😵', 1, '#ffe135'); SND.spin(); shakeCam(0.55); }
+  if (k.isPlayer) { flash(tr('אופס! 😵', 'Oops! 😵'), 1, '#ffe135'); SND.spin(); shakeCam(0.55); }
   else if (byPlayer || k.pos.distanceTo(player.pos) < 35) SND.spin();
   return true;
 }
@@ -2493,7 +2513,7 @@ function updateHazards(dt) {
     for (const k of karts) {
       if (b.owner === k && b.age < 0.9 || k.remote) continue;   // only karts simulated here decide their own hits
       const dx = b.g.position.x - k.pos.x, dz = b.g.position.z - k.pos.z;
-      if (dx * dx + dz * dz < 3.2) { if (spinKart(k, 1.1, b.owner.isPlayer) && k.isPlayer) flash('החלקת על חומוס! 🥙', 1, '#ffe135'); else if (k.isPlayer || k.pos.distanceTo(player.pos) < 35) SND.splat(); scene.remove(b.g); bananas.splice(i, 1); if (netOn()) netEv({ k: 'rm', id: b.id }); break; }
+      if (dx * dx + dz * dz < 3.2) { if (spinKart(k, 1.1, b.owner.isPlayer) && k.isPlayer) flash(tr('החלקת על חומוס! 🥙', 'You slipped on hummus! 🥙'), 1, '#ffe135'); else if (k.isPlayer || k.pos.distanceTo(player.pos) < 35) SND.splat(); scene.remove(b.g); bananas.splice(i, 1); if (netOn()) netEv({ k: 'rm', id: b.id }); break; }
     }
   }
   for (let i = shells.length - 1; i >= 0; i--) {
@@ -2506,7 +2526,7 @@ function updateHazards(dt) {
     const { lat, lim, l } = trackProject(s);
     if (Math.abs(lat) > lim + 0.5) { const o = lat - Math.sign(lat) * (lim + 0.5); s.pos.x -= l.x * o; s.pos.z -= l.z * o; }
     s.g.rotation.y += dt * 12;
-    for (const k of karts) { if (k === s.owner && s.age < 0.5) continue; if (k.pos.distanceToSquared(s.pos) < 4.4) { if (!k.remote && spinKart(k, 1.25, s.owner.isPlayer) && k.isPlayer) flash('פלאפל בפרצוף! 🧆', 1, '#ffb84d'); dead = true; break; } }
+    for (const k of karts) { if (k === s.owner && s.age < 0.5) continue; if (k.pos.distanceToSquared(s.pos) < 4.4) { if (!k.remote && spinKart(k, 1.25, s.owner.isPlayer) && k.isPlayer) flash(tr('פלאפל בפרצוף! 🧆', 'Falafel to the face! 🧆'), 1, '#ffb84d'); dead = true; break; } }
     for (let j = bananas.length - 1; j >= 0 && !dead; j--) { if (bananas[j].g.position.distanceToSquared(s.pos) < 2.6) { scene.remove(bananas[j].g); bananas.splice(j, 1); dead = true; } }
     if (dead) { scene.remove(s.g); shells.splice(i, 1); }
   }
@@ -2721,6 +2741,15 @@ const LINES = {
   good: ['יש!', 'לא רע!', 'פודיום!'],
   sad: ['אוף…', 'פעם הבאה…', 'חבל…'],
 };
+if (EN) Object.assign(LINES, {   // keep the Israeli flavour in English mode
+  angry: ['Come on!', 'Ya Allah!', 'What was that?!', 'Such a bummer!', 'Khalas!', 'Oy vey!'],
+  happy: ['Bye bye!', 'Yalla!', 'Catch me!', 'Sababa!', 'Passing!'],
+  cheer: ['Bull\'s-eye!', 'Gotcha!', 'Achla!', 'Walla!', 'In your face!'],
+  yelp: ['Woohoo!', 'Hopa!', 'Yesss!', 'Wheee!'],
+  win: ['Champion!', 'Yesss!!!', 'First place!', 'Who\'s the king?!'],
+  good: ['Yes!', 'Not bad!', 'Podium!'],
+  sad: ['Uff…', 'Next time…', 'Too bad…'],
+});
 const MOOD = {   // syllables, pitch shape and speed per mood
   angry: { n: 3, base: 0.85, slope: -0.35, dur: 0.07, wave: 'sawtooth' }, happy: { n: 3, base: 1.1, slope: 0.3, dur: 0.075, wave: 'square' },
   cheer: { n: 4, base: 1.2, slope: 0.25, dur: 0.07, wave: 'square' }, yelp: { n: 1, base: 1.35, slope: 0.7, dur: 0.16, wave: 'square' },
@@ -3224,18 +3253,18 @@ function useItem(k) {
   if (state !== 'race' || !k || !k.item || k.rolling > 0 || k.finished) return;
   const it = k.item, me = k.isPlayer; k.itemsUsed = (k.itemsUsed || 0) + 1; (k.itemsBy || (k.itemsBy = {}))[it] = (k.itemsBy[it] || 0) + 1;
   if (it === 'shield') {
-    k.shield = 10; if (me) { flash('כיפת ברזל! 🛡️ מוגן מפגיעה אחת', 1.1, '#7fd8ff'); SND.shield(); }
+    k.shield = 10; if (me) { flash(tr('כיפת ברזל! 🛡️ מוגן מפגיעה אחת', 'Iron Dome! 🛡️ Blocks one hit'), 1.1, '#7fd8ff'); SND.shield(); }
     netEv({ k: 'shield', s: k.slot });
   } else if (it === 'mushroom') {
-    k.boost = Math.max(k.boost, 1.4); if (me) { flash('קפה שחור! ☕ טורבו', .7); SND.sip(); SND.boost(); }
-  } else if (it === 'banana') { dropBanana(k); if (me) { SND.splat(); flash('חומוס על הכביש! 🥙', .7); } }
-  else if (it === 'shell') { fireShell(k); if (me) { SND.sizzle(); SND.shell(); flash('פלאפל מעופף! 🧆', .7); } }
-  else if (it === 'star') { k.star = 6.5; k.spin = 0; if (me) { flash('מגן דוד זהוב! ✡️', 1, '#ffd23f'); SND.star(); SND.starMode = true; } }
+    k.boost = Math.max(k.boost, 1.4); if (me) { flash(tr('קפה שחור! ☕ טורבו', 'Black coffee! ☕ Turbo'), .7); SND.sip(); SND.boost(); }
+  } else if (it === 'banana') { dropBanana(k); if (me) { SND.splat(); flash(tr('חומוס על הכביש! 🥙', 'Hummus on the road! 🥙'), .7); } }
+  else if (it === 'shell') { fireShell(k); if (me) { SND.sizzle(); SND.shell(); flash(tr('פלאפל מעופף! 🧆', 'Flying falafel! 🧆'), .7); } }
+  else if (it === 'star') { k.star = 6.5; k.spin = 0; if (me) { flash(tr('מגן דוד זהוב! ✡️', 'Golden Star of David! ✡️'), 1, '#ffd23f'); SND.star(); SND.starMode = true; } }
   else if (it === 'lightning') {
     react(k, 'cheer', k.isPlayer);
     for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { if (spinKart(o, 0.7, false) !== 'blocked') o.shrink = 3.2; }
     if (netOn()) netEv({ k: 'light', s: k.slot });
-    screenFlash(); shakeCam(0.3); SND.lightning(); flash(me ? 'תקיעת שופר! 📯' : `${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
+    screenFlash(); shakeCam(0.3); SND.lightning(); flash(me ? tr('תקיעת שופר! 📯', 'Shofar blast! 📯') : tr(`${k.name} תקע/ה בשופר! 📯`, `${k.name} blew the shofar! 📯`), 1.2, '#ffd23f');
   }
   k.item = null; k.itemCount = 0;
 }
@@ -3243,7 +3272,7 @@ function giveItem(k) {
   if (k.rolling > 0) return;                     // already spinning the roulette
   const swap = !!k.item;                          // holding something? it gets swapped for a new random item
   k.item = null; k.itemCount = 0;
-  k.pending = pickItem(); k.rolling = 1.0; if (k.isPlayer) { SND.pickup(); if (swap) flash('🔄 החלפת פריט!', .6, '#ffd23f'); }
+  k.pending = pickItem(); k.rolling = 1.0; if (k.isPlayer) { SND.pickup(); if (swap) flash(tr('🔄 החלפת פריט!', '🔄 Item swap!'), .6, '#ffd23f'); }
 }
 const ITEM_KEYS = Object.keys(ITEMS);
 // position-independent odds: the shofar (hits everyone) is rare, all other items share the rest equally
@@ -3275,10 +3304,10 @@ function respawnKart(k, fwd) {
   if (i === null) { const p = pP(k), t = pT(k); k.pos.set(p.x, 0, p.z); k.heading = Math.atan2(t.x, t.z); }
   else { if (fwd) { let s = 0; while (s < 80 && (isMainGap(i) || isMainGap(i - 1) || isMainGap(i - 2))) { i = (i + 1) % N; s++; } i = (i + 3) % N; } k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); }
   k.respawns = (k.respawns || 0) + 1; k.speed = 10; k.drifting = false; k.charge = 0; k.air = 0; k.vy = 0; k.y = undefined; k.fall = 0; k.trick = 0;
-  if (k.isPlayer) { flash('אופס! חוזרים למסלול', .8, '#ffd23f'); shakeCam(0.2); }
+  if (k.isPlayer) { flash(tr('אופס! חוזרים למסלול', 'Oops! Back on track'), .8, '#ffd23f'); shakeCam(0.2); }
 }
 function updateVertical(k, dt, inp) {
-  if (k.isPlayer && inp && inp.trick && k.air > 0.03 && !k.trickDone) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; react(k, 'yelp'); SND.trick && SND.trick(); flash('טריק!', .4, '#4fc3ff'); }
+  if (k.isPlayer && inp && inp.trick && k.air > 0.03 && !k.trickDone) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; react(k, 'yelp'); SND.trick && SND.trick(); flash(tr('טריק!', 'Trick!'), .4, '#4fc3ff'); }
   trackProject(k); let gy = roadHAt(k); const gap = gy === null; if (gap) gy = ghAt(k.pos.x, k.pos.z);
   if (k.y === undefined || !isFinite(k.y)) { k.y = gy; k.vy = 0; k.air = 0; }
   if (!k.air) {
@@ -3302,7 +3331,7 @@ function updateVertical(k, dt, inp) {
         const hard = k.air > 0.3; k.y = gy; k.vy = 0;
         if (k.air > 0.55) k.jumps = (k.jumps || 0) + 1;
         if (hard) { k.squash = 1; k.landDust = 1; if (k.isPlayer) { shakeCam(Math.min(0.35, 0.1 + k.air * 0.25)); SND.land && SND.land(); } }
-        if (k.trickDone && k.trickOk) { k.tricks = (k.tricks || 0) + 1; k.boost = Math.max(k.boost, 0.8); if (k.isPlayer) { flash('טריק! בוסט', .6, '#ff9a2f'); SND.boost(); } }
+        if (k.trickDone && k.trickOk) { k.tricks = (k.tricks || 0) + 1; k.boost = Math.max(k.boost, 0.8); if (k.isPlayer) { flash(tr('טריק! בוסט', 'Trick! Boost'), .6, '#ff9a2f'); SND.boost(); } }
         k.air = 0; k.trickOk = false; k.fall = 0;
       }
     }
@@ -3331,8 +3360,8 @@ function updateKart(k, dt, inp) {
   if (inp.drift && !k.drifting && !k.air && Math.abs(inp.steer) > 0.2 && k.speed > 17) { k.drifting = true; k.driftDir = Math.sign(inp.steer); k.charge = 0; k.hop = 0.3; k.sparkTier = 0; }
   if (k.drifting) {
     if (!inp.drift || k.speed < 9) {
-      if (k.charge > 1.6) { k.boost = Math.max(k.boost, 1.0); if (k.isPlayer) { flash('סופר בוסט!', .7, '#ff9a2f'); SND.boost(); } }
-      else if (k.charge > 0.75) { k.boost = Math.max(k.boost, 0.55); if (k.isPlayer) { flash('בוסט!', .6, '#4fc3ff'); SND.boost(); } }
+      if (k.charge > 1.6) { k.boost = Math.max(k.boost, 1.0); if (k.isPlayer) { flash(tr('סופר בוסט!', 'Super boost!'), .7, '#ff9a2f'); SND.boost(); } }
+      else if (k.charge > 0.75) { k.boost = Math.max(k.boost, 0.55); if (k.isPlayer) { flash(tr('בוסט!', 'Boost!'), .6, '#4fc3ff'); SND.boost(); } }
       k.drifting = false;
     } else {
       k.charge += dt * (Math.sign(inp.steer) === k.driftDir ? 1.35 : 0.8) * k.driftMul;
@@ -3373,7 +3402,7 @@ function updateKart(k, dt, inp) {
     let sm = 1, grip = 1, sk = null;
     for (const s of SURF) { const dx = k.pos.x - s.x, dz = k.pos.z - s.z; if (dx * dx + dz * dz < s.r * s.r * 0.8) { const K = SURF_KIND[s.kind]; sm = Math.min(sm, K.mul); if (K.grip) grip = Math.min(grip, K.grip); sk = s.kind; } }
     if (k.path === 1 && Math.abs(lat) > BR_HW + CURB - 0.3) { sm = Math.min(sm, 0.5); sk = sk || 'off'; }
-    if (sk && !k.surf && k.isPlayer) flash(sk === 'off' ? 'יצאת מהכביש! 🪨' : SURF_KIND[sk].name + '! ' + (sk === 'ice' ? '🧊' : sk === 'puddle' ? '💦' : sk === 'sand' ? '🏜️' : '🟤'), .6, '#ffd23f');
+    if (sk && !k.surf && k.isPlayer) flash(sk === 'off' ? tr('יצאת מהכביש! 🪨', 'Off the road! 🪨') : SURF_KIND[sk].name + '! ' + (sk === 'ice' ? '🧊' : sk === 'puddle' ? '💦' : sk === 'sand' ? '🏜️' : '🟤'), .6, '#ffd23f');
     if (sm < 1 && k.offroad) sm = sm + (1 - sm) * k.offroad;
     k.surfMul = sm; k.grip = grip; k.surf = sk;
     for (const o of OBST) hitObstacle(k, o.x, o.z, o.r, o.hard ? 0.45 : 0.75, false);
@@ -3382,12 +3411,12 @@ function updateKart(k, dt, inp) {
   // boost pads
   let on = false;
   for (const b of BOOST) { const dx = k.pos.x - b.x, dz = k.pos.z - b.z, al = dx * b.tx + dz * b.tz, la = dx * b.lx + dz * b.lz; if (Math.abs(al) < 4 && Math.abs(la) < b.w / 2 && !k.air) { on = true; break; } }
-  if (on && !k.onPad) { k.boost = Math.max(k.boost, 0.9); k.padBoosts = (k.padBoosts || 0) + 1; if (k.isPlayer) { SND.boost(); flash('בוסט! ⚡', .5, '#ff9a2f'); shakeCam(0.12); } }
+  if (on && !k.onPad) { k.boost = Math.max(k.boost, 0.9); k.padBoosts = (k.padBoosts || 0) + 1; if (k.isPlayer) { SND.boost(); flash(tr('בוסט! ⚡', 'Boost! ⚡'), .5, '#ff9a2f'); shakeCam(0.12); } }
   k.onPad = on;
   if (k.path === 1 && BR && k.idx > BR.n * 0.5 && !k.brCounted) { k.brCounted = true; k.shortcuts = (k.shortcuts || 0) + 1; }
   const newLap = clamp(Math.floor(k.total / N) + 1, 1, LAPS);
   if (newLap > k.lap) { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.lapDirty = false; k.brCounted = false; }
-  if (k.isPlayer && newLap > k.lap && state === 'race') { const fin = newLap === LAPS; flash(fin ? 'הקפה אחרונה!' : `הקפה ${newLap}`, 1.3); SND.lap(fin); if (fin) SND.tempoMul = 1.12; }
+  if (k.isPlayer && newLap > k.lap && state === 'race') { const fin = newLap === LAPS; flash(fin ? tr('הקפה אחרונה!', 'Final lap!') : tr(`הקפה ${newLap}`, `Lap ${newLap}`), 1.3); SND.lap(fin); if (fin) SND.tempoMul = 1.12; }
   k.lap = Math.max(k.lap, newLap);
   if (!k.finished && k.total >= LAPS * N && state !== 'countdown') { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.finished = true; k.finishTime = raceTime; finishCount++; k.place = finishCount; if (k.isPlayer) onPlayerFinish(); }
   if (k.rolling > 0) {
@@ -3462,7 +3491,7 @@ function collideKarts() {
         if (hit || (vic.remote && (att.bumpOut || 0) <= 0)) {
           if (!att.remote) att.speed *= 1 - 0.04 * clamp((vic.weight || 1) / (att.weight || 1), 0.5, 1.8);
           att.bumpOut = 0.7; bumpFx(cx, cy, cz, true);
-          if (near) { SND.bump(true); if (vic.isPlayer) { shakeCam(0.25); flash('בום! נדחפת', 0.6, '#ff9a2f'); } }
+          if (near) { SND.bump(true); if (vic.isPlayer) { shakeCam(0.25); flash(tr('בום! נדחפת', 'Boom! You got shoved'), 0.6, '#ff9a2f'); } }
         }
       } else {
         if (!a.remote) a.speed *= 0.985; if (!b.remote) b.speed *= 0.985;
@@ -3694,10 +3723,10 @@ function frame(now) {
 function step(dt, now) {
   if (state === 'paused') return;
   if (state === 'countdown') {
-    if (NET.on && NET.hold) { if (msgTimer <= 0.2) flash('ממתינים לשאר השחקנים…', 0.5, '#bfe3ff'); }
+    if (NET.on && NET.hold) { if (msgTimer <= 0.2) flash(tr('ממתינים לשאר השחקנים…', 'Waiting for the other players…'), 0.5, '#bfe3ff'); }
     else cd -= dt; const n = Math.ceil(cd);
     if (n !== lastCd && n > 0) { lastCd = n; flash(String(n), 0.9, n === 1 ? '#34d058' : '#ffe14d'); SND.beep(false); }
-    if (cd <= 0) { state = 'race'; flash('יאללה!', 0.9, '#34d058'); SND.beep(true); if (playerInput().throttle > 0) { player.boost = 0.6; SND.boost(); } }
+    if (cd <= 0) { state = 'race'; flash(tr('יאללה!', 'Yalla!'), 0.9, '#34d058'); SND.beep(true); if (playerInput().throttle > 0) { player.boost = 0.6; SND.boost(); } }
   }
   if (state === 'race' && !player.finished) {
     const rk = rankOf(player);
@@ -3722,7 +3751,7 @@ function step(dt, now) {
     }
     if (state === 'race') {
       const t = pT(player), fd = Math.sin(player.heading) * t.x + Math.cos(player.heading) * t.z;
-      if (fd < -0.35 && player.speed > 4 && player.spin <= 0) { wrongT += dt; if (wrongT > 0.9 && msgTimer <= 0) flash('כיוון הפוך! ↩️', 0.9, '#ff5a5a'); } else wrongT = 0;
+      if (fd < -0.35 && player.speed > 4 && player.spin <= 0) { wrongT += dt; if (wrongT > 0.9 && msgTimer <= 0) flash(tr('כיוון הפוך! ↩️', 'Wrong way! ↩️'), 0.9, '#ff5a5a'); } else wrongT = 0;
     }
   }
   for (const b of boxes) if (!b.active) { b.t -= dt; if (b.t <= 0) { b.active = true; b.mesh.visible = true; } }
@@ -3780,14 +3809,14 @@ function render(dt, now) {
   hudT -= dt;
   if (hudT <= 0 && state !== 'menu' && state !== 'paused') {
     hudT = 0.05;
-    hudTop.textContent = `הקפה ${Math.min(player.lap, LAPS)}/${LAPS}`;
+    hudTop.textContent = tr(`הקפה ${Math.min(player.lap, LAPS)}/${LAPS}`, `Lap ${Math.min(player.lap, LAPS)}/${LAPS}`);
     hudTime.textContent = fmt(state === 'finished' ? player.finishTime : raceTime);
-    { const r = rankOf(player); if (hudPos.dataset.r !== String(r)) { hudPos.dataset.r = r; hudPos.className = 'hud p' + r; hudPos.innerHTML = `<span class="pl">${['מקום ראשון', 'מקום שני', 'מקום שלישי', 'מקום רביעי'][r - 1]}</span><span class="pn">${r}<sub>/4</sub></span>`; } }
+    { const r = rankOf(player); if (hudPos.dataset.r !== String(r)) { hudPos.dataset.r = r; hudPos.className = 'hud p' + r; hudPos.innerHTML = `<span class="pl">${tr(['מקום ראשון', 'מקום שני', 'מקום שלישי', 'מקום רביעי'], ['1st place', '2nd place', '3rd place', '4th place'])[r - 1]}</span><span class="pn">${r}<sub>/4</sub></span>`; } }
     const keysOrder = Object.keys(ITEMS);
     if (player.rolling > 0) itemBox.textContent = ITEMS[keysOrder[Math.floor(now / 80) % keysOrder.length]].icon;
     else if (player.item) itemBox.innerHTML = ITEMS[player.item].icon;
     else itemBox.textContent = '';
-    itemHint.innerHTML = player.item && player.rolling <= 0 ? `${ITEMS[player.item].name} · ` + (isTouch ? 'לחץ "פריט"' : '<span class="keys">E</span> / <span class="keys">X</span>') : '';
+    itemHint.innerHTML = player.item && player.rolling <= 0 ? `${ITEMS[player.item].name} · ` + (isTouch ? tr('לחץ "פריט"', 'tap "Item"') : '<span class="keys">E</span> / <span class="keys">X</span>') : '';
     board.innerHTML = rankList().map((k, i) => `<div class="${k.isPlayer ? 'me' : ''}">${i + 1}. ${k.name}${k.human && !k.isPlayer ? ' 🎮' : ''}</div>`).join('');
     drawMini();
   }
@@ -3826,9 +3855,11 @@ let tutT = 0;
 function showTut() {
   try { if (localStorage.getItem('kart-tut') === '1') return; localStorage.setItem('kart-tut', '1'); } catch (_) { return; }
   const t = isTouch;
-  $('tutBody').innerHTML = `<h3>איך נוהגים?</h3>` + (t
+  $('tutBody').innerHTML = tr(`<h3>איך נוהגים?</h3>`, `<h3>How to drive</h3>`) + (EN ? (t
+    ? `▶ <b>Gas</b> – bottom-right button${CTRL.autoGas ? ' (automatic)' : ''}<br>◀ ▶ <b>Steer</b> – ${CTRL.steer === 'swipe' ? 'drag your thumb on the left' : CTRL.steer === 'tilt' ? 'tilt the phone' : 'the arrows on the left'}<br>🔥 <b>Drift</b> – hold <b>brake</b> while turning at speed, let go for a boost<br>⭐ <b>Trick</b> – tap brake in the air = boost on landing<br>🎁 <b>Item</b> – the button above gas`
+    : `⬆ / W – gas · ⬇ / S – brake<br>⬅ ➡ – steer<br>Shift / Space – drift (in the air: trick)<br>E – item · H – horn · Esc – pause`) + `<small>(change it under "⚙ Controls" in the pause menu)</small>` : (t
     ? `▶ <b>גז</b> – כפתור ימין למטה${CTRL.autoGas ? ' (אוטומטי)' : ''}<br>◀ ▶ <b>היגוי</b> – ${CTRL.steer === 'swipe' ? 'גררו אגודל בצד שמאל' : CTRL.steer === 'tilt' ? 'הטו את המכשיר' : 'החיצים משמאל'}<br>🔥 <b>דריפט</b> – החזיקו <b>ברקס</b> תוך כדי פנייה במהירות, שחררו לבוסט<br>⭐ <b>טריק</b> – באוויר הקישו ברקס = בוסט בנחיתה<br>🎁 <b>פריט</b> – הכפתור מעל הגז`
-    : `⬆ / W – גז · ⬇ / S – ברקס<br>⬅ ➡ – היגוי<br>Shift / רווח – דריפט (ובאוויר: טריק)<br>E – פריט · H – צופר · Esc – הפסקה`) + `<small>(אפשר לשנות ב"⚙ שליטה" בתפריט ההפסקה)</small>`;
+    : `⬆ / W – גז · ⬇ / S – ברקס<br>⬅ ➡ – היגוי<br>Shift / רווח – דריפט (ובאוויר: טריק)<br>E – פריט · H – צופר · Esc – הפסקה`) + `<small>(אפשר לשנות ב"⚙ שליטה" בתפריט ההפסקה)</small>`);
   $('tutOverlay').style.display = 'flex'; clearTimeout(tutT); tutT = setTimeout(() => { $('tutOverlay').style.display = 'none'; }, 6500);
 }
 
@@ -3953,7 +3984,7 @@ function loadPeerJS() {
 let mpRetry = null;
 function mpMsg(t, retry) {
   const el = $('mpMsg'); el.textContent = t || ''; mpRetry = retry || null;
-  if (retry) { const b = document.createElement('button'); b.className = 'btn ghost sm'; b.id = 'mpRetryBtn'; b.textContent = '🔄 נסה שוב'; b.onclick = () => { SND.init(); const f = mpRetry; mpMsg(''); f && f(); }; el.appendChild(document.createElement('br')); el.appendChild(b); }
+  if (retry) { const b = document.createElement('button'); b.className = 'btn ghost sm'; b.id = 'mpRetryBtn'; b.textContent = tr('🔄 נסה שוב', '🔄 Try again'); b.onclick = () => { SND.init(); const f = mpRetry; mpMsg(''); f && f(); }; el.appendChild(document.createElement('br')); el.appendChild(b); }
 }
 // ---------- ICE servers (STUN always; TURN relay is pluggable) ----------
 // Without a TURN relay, phones on different mobile networks / strict NATs often can't connect directly.
@@ -4011,25 +4042,25 @@ function gather(cfg, ms = 6000) {
 async function runDiag() {
   const out = $('diagOut'), btn = $('diagBtn'); btn.disabled = true;
   const row = (ok, t) => `<div class="dr ${ok === true ? 'ok' : ok === false ? 'bad' : 'warn'}">${t}</div>`;
-  out.innerHTML = '<div class="dr">⏳ בודק חיבור…</div>';
+  out.innerHTML = tr('<div class="dr">⏳ בודק חיבור…</div>', '<div class="dr">⏳ Checking connection…</div>');
   let html = '';
   const online = navigator.onLine !== false;
   let broker = false; try { const r = await fetch('https://0.peerjs.com/peerjs/id?ts=' + Date.now(), { cache: 'no-store' }); broker = r.ok; } catch (_) {}
-  html += row(broker, broker ? 'שרת התיווך (PeerJS) זמין' : online ? 'אין גישה לשרת התיווך – ייתכן שהרשת חוסמת' : 'אין חיבור לאינטרנט');
-  out.innerHTML = html + '<div class="dr">⏳ בודק STUN…</div>';
+  html += row(broker, broker ? tr('שרת התיווך (PeerJS) זמין', 'Matchmaking server (PeerJS) is up') : online ? tr('אין גישה לשרת התיווך – ייתכן שהרשת חוסמת', 'Can\'t reach the matchmaking server – the network may be blocking it') : tr('אין חיבור לאינטרנט', 'No internet connection'));
+  out.innerHTML = html + tr('<div class="dr">⏳ בודק STUN…</div>', '<div class="dr">⏳ Checking STUN…</div>');
   const st = await gather({ iceServers: STUN });
   const stun = st.has('srflx');
-  html += row(stun ? true : null, stun ? 'STUN תקין – הכתובת הציבורית זוהתה' : 'STUN לא החזיר כתובת ציבורית (רשת מוגבלת)');
-  out.innerHTML = html + '<div class="dr">⏳ בודק TURN…</div>';
+  html += row(stun ? true : null, stun ? tr('STUN תקין – הכתובת הציבורית זוהתה', 'STUN OK – public address found') : tr('STUN לא החזיר כתובת ציבורית (רשת מוגבלת)', 'STUN returned no public address (restricted network)'));
+  out.innerHTML = html + tr('<div class="dr">⏳ בודק TURN…</div>', '<div class="dr">⏳ Checking TURN…</div>');
   const turn = await getTurn(); iceCache = null;
   let relay = false;
-  if (turn.length) { const t = await gather({ iceServers: turn, iceTransportPolicy: 'relay' }, 8000); relay = t.has('relay'); html += row(relay, relay ? 'שרת ממסר (TURN) עובד' : 'שרת ממסר (TURN) מוגדר אבל לא עונה'); }
-  else html += row(null, 'לא הוגדר שרת ממסר (TURN)');
+  if (turn.length) { const t = await gather({ iceServers: turn, iceTransportPolicy: 'relay' }, 8000); relay = t.has('relay'); html += row(relay, relay ? tr('שרת ממסר (TURN) עובד', 'Relay server (TURN) OK') : tr('שרת ממסר (TURN) מוגדר אבל לא עונה', 'Relay server (TURN) is set up but not answering')); }
+  else html += row(null, tr('לא הוגדר שרת ממסר (TURN)', 'No relay server (TURN) configured'));
   let sum;
-  if (!broker) sum = 'אי אפשר לשחק מרובה משתתפים כרגע מהרשת הזו. נסו Wi-Fi אחר או נתונים סלולריים.';
-  else if (relay) sum = 'מצוין! החיבור אמור לעבוד גם בין טלפונים רחוקים.';
-  else if (stun) sum = 'עובד על אותה רשת Wi-Fi ובחלק מהרשתות. בין טלפונים ברשתות סלולריות שונות החיבור עלול להיכשל בלי שרת ממסר (TURN).';
-  else sum = 'הרשת מגבילה חיבורים ישירים. שחקו על אותה רשת Wi-Fi, או הגדירו שרת ממסר (TURN).';
+  if (!broker) sum = tr('אי אפשר לשחק מרובה משתתפים כרגע מהרשת הזו. נסו Wi-Fi אחר או נתונים סלולריים.', 'Multiplayer can\'t work from this network right now. Try another Wi-Fi or mobile data.');
+  else if (relay) sum = tr('מצוין! החיבור אמור לעבוד גם בין טלפונים רחוקים.', 'Excellent! Connecting should work even between phones far apart.');
+  else if (stun) sum = tr('עובד על אותה רשת Wi-Fi ובחלק מהרשתות. בין טלפונים ברשתות סלולריות שונות החיבור עלול להיכשל בלי שרת ממסר (TURN).', 'Works on the same Wi-Fi and some networks. Phones on different mobile networks may fail without a relay server (TURN).');
+  else sum = tr('הרשת מגבילה חיבורים ישירים. שחקו על אותה רשת Wi-Fi, או הגדירו שרת ממסר (TURN).', 'This network limits direct connections. Play on the same Wi-Fi, or set up a relay server (TURN).');
   out.innerHTML = html + `<div class="dsum">${sum}</div>`; btn.disabled = false;
   return { broker, stun, relay, hasTurn: turn.length > 0 };
 }
@@ -4038,12 +4069,12 @@ function setMpBusy(b) { NET.connecting = b; $('createRoomBtn').disabled = b; $('
 
 // ---------- room setup ----------
 async function createRoom(tries = 0) {
-  setMpBusy(true); mpMsg('יוצר חדר…');
-  try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.', () => createRoom()); return; }
+  setMpBusy(true); mpMsg(tr('יוצר חדר…', 'Creating a room…'));
+  try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg(tr('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.', 'Couldn\'t load the network module. Check your internet connection.'), () => createRoom()); return; }
   const code = String(1000 + Math.floor(Math.random() * 9000));
   const peer = new Peer(PEER_PREFIX + code, await peerOpts());
   peer.on('open', id => {
-    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: 0, kart: selKart, name: PROFILE.name || 'מארח/ת', cos: myCos() }], gp: { on: false, cup: 0, diff: 1 }, track: 0, inRace: false });
+    Object.assign(NET, { on: true, host: true, peer, code, myId: id, conns: new Map(), humans: [{ id, char: 0, kart: selKart, name: PROFILE.name || tr('מארח/ת', 'Host'), cos: myCos() }], gp: { on: false, cup: 0, diff: 1 }, track: 0, inRace: false });
     peer.on('connection', onHostConnection);
     setMpBusy(false); document.body.classList.add('mp', 'mphost'); showLobby(); startNetTimer();
   });
@@ -4055,15 +4086,15 @@ async function createRoom(tries = 0) {
 }
 async function joinRoom(code) {
   code = (code || '').replace(/\D/g, '');
-  if (code.length !== 4) { mpMsg('קוד חדר הוא 4 ספרות'); return; }
-  setMpBusy(true); mpMsg('מתחבר לחדר ' + code + '…');
+  if (code.length !== 4) { mpMsg(tr('קוד חדר הוא 4 ספרות', 'A room code is 4 digits')); return; }
+  setMpBusy(true); mpMsg(tr('מתחבר לחדר ' + code + '…', 'Joining room ' + code + '…'));
   const retry = () => joinRoom(code);
-  try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.', retry); return; }
+  try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg(tr('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.', 'Couldn\'t load the network module. Check your internet connection.'), retry); return; }
   const peer = new Peer(await peerOpts());
   let opened = false, brokerOk = false, iceState = '';
   const fail = t => { if (opened) return; clearTimeout(to); setMpBusy(false); mpMsg(t, retry); try { peer.destroy(); } catch (_) {} };
-  const iceFail = () => fail('החדר נמצא, אבל החיבור הישיר בין המכשירים נכשל – כנראה רשתות סלולריות/NAT קשוח. נסו לחבר את שני הטלפונים לאותה רשת Wi-Fi, או הריצו "בדיקת חיבור".');
-  const to = setTimeout(() => !brokerOk ? fail('אין תגובה משרת התיווך. בדקו חיבור לאינטרנט ונסו שוב.') : iceState ? iceFail() : fail('לא הצלחנו להתחבר לחדר ' + code + '. ודאו שהקוד נכון ושהמארח עדיין בלובי.'), 16000);
+  const iceFail = () => fail(tr('החדר נמצא, אבל החיבור הישיר בין המכשירים נכשל – כנראה רשתות סלולריות/NAT קשוח. נסו לחבר את שני הטלפונים לאותה רשת Wi-Fi, או הריצו "בדיקת חיבור".', 'Found the room, but the direct link between the devices failed – probably mobile networks / strict NAT. Try both phones on the same Wi-Fi, or run "Connection check".'));
+  const to = setTimeout(() => !brokerOk ? fail(tr('אין תגובה משרת התיווך. בדקו חיבור לאינטרנט ונסו שוב.', 'No answer from the matchmaking server. Check your internet and try again.')) : iceState ? iceFail() : fail(tr('לא הצלחנו להתחבר לחדר ' + code + '. ודאו שהקוד נכון ושהמארח עדיין בלובי.', 'Couldn\'t join room ' + code + '. Make sure the code is right and the host is still in the lobby.')), 16000);
   peer.on('open', id => {
     brokerOk = true;
     const c = peer.connect(PEER_PREFIX + code, { reliable: true, serialization: 'json' });
@@ -4077,14 +4108,14 @@ async function joinRoom(code) {
     c.on('close', () => onHostLost());
     c.on('error', () => onHostLost());
   });
-  peer.on('error', err => { if (err.type === 'peer-unavailable') fail('חדר ' + code + ' לא נמצא. בדקו את הקוד (או שהמארח סגר את החדר).'); else if (!opened) fail(errText(err)); });
+  peer.on('error', err => { if (err.type === 'peer-unavailable') fail(tr('חדר ' + code + ' לא נמצא. בדקו את הקוד (או שהמארח סגר את החדר).', 'Room ' + code + ' not found. Check the code (or the host closed the room).')); else if (!opened) fail(errText(err)); });
 }
 function errText(err) {
   const t = err && err.type;
-  return t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed' ? 'אין חיבור לשרת התיווך. בדקו את האינטרנט ונסו שוב.'
-    : t === 'browser-incompatible' ? 'הדפדפן לא תומך ב-WebRTC. נסו Safari/Chrome מעודכן.'
-    : t === 'webrtc' ? 'החיבור הישיר נכשל (WebRTC). נסו אותה רשת Wi-Fi או "בדיקת חיבור".'
-    : 'שגיאת רשת (' + t + ') – נסו שוב.';
+  return t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed' ? tr('אין חיבור לשרת התיווך. בדקו את האינטרנט ונסו שוב.', 'No connection to the matchmaking server. Check your internet and try again.')
+    : t === 'browser-incompatible' ? tr('הדפדפן לא תומך ב-WebRTC. נסו Safari/Chrome מעודכן.', 'This browser doesn\'t support WebRTC. Try an up-to-date Safari/Chrome.')
+    : t === 'webrtc' ? tr('החיבור הישיר נכשל (WebRTC). נסו אותה רשת Wi-Fi או "בדיקת חיבור".', 'Direct connection failed (WebRTC). Try the same Wi-Fi or "Connection check".')
+    : tr('שגיאת רשת (' + t + ') – נסו שוב.', 'Network error (' + t + ') – try again.');
 }
 function netLeave() {
   NET.hold = false; clearTimeout(NET.goT); NET.chat = []; chatUnread = 0; chatOpen(false);
@@ -4113,8 +4144,8 @@ function onHostData(c, d) {
   if (d.t === 'ping') return;
   if (d.t === 'chat') { hostChat(c.peer, d.txt); return; }
   if (d.t === 'hello') {
-    if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו' }); setTimeout(() => c.close(), 300); return; }
-    if (NET.humans.length >= 4) { c.send({ t: 'deny', why: 'החדר מלא (4 שחקנים)' }); setTimeout(() => c.close(), 300); return; }
+    if (NET.inRace) { c.send({ t: 'deny', why: 'המרוץ כבר התחיל – נסו שוב בסיומו', en: 'The race already started – try again when it ends' }); setTimeout(() => c.close(), 300); return; }
+    if (NET.humans.length >= 4) { c.send({ t: 'deny', why: 'החדר מלא (4 שחקנים)', en: 'The room is full (4 players)' }); setTimeout(() => c.close(), 300); return; }
     NET.conns.set(c.peer, c); const free = [0, 1, 2, 3].find(i => !NET.humans.some(h => h.char === i)); NET.humans.push({ id: c.peer, char: free === undefined ? null : free, kart: kartOk(d.kart) ? d.kart : 0, name: uniqueName(d.name), cos: cosOk(d.cos) });
     SND.tink(true); broadcastLobby(); return;
   }
@@ -4128,7 +4159,7 @@ function onHostData(c, d) {
 const kartOk = k => Number.isInteger(k) && k >= 0 && k < KARTS.length;
 // names are only unique inside a room (no server): the host adds a number to duplicates
 function uniqueName(raw) {
-  let [n] = validName(String(raw || '').slice(0, 14)); if (!n) n = 'שחקן/ית';
+  let [n] = validName(String(raw || '').slice(0, 14)); if (!n) n = tr('שחקן/ית', 'Player');
   let out = n, i = 2; while (NET.humans.some(h => h.name === out)) out = `${n.slice(0, 12)} ${i++}`;
   return out;
 }
@@ -4146,15 +4177,15 @@ function hostDrop(c) {
   if (hi >= 0) NET.humans.splice(hi, 1);
   if (NET.inRace) {
     const k = karts.find(k => k.peerId === c.peer);
-    if (k && k.human) { makeAI(k); k.peerId = null; flash(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, 2.2, '#ffb84d'); sendAll({ t: 'left', s: k.slot }); }
-  } else { broadcastLobby(); lobbyMsg(`שחקן ${num} עזב את החדר`); }
+    if (k && k.human) { makeAI(k); k.peerId = null; flash(tr(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, `${k.name} disconnected – the computer takes the wheel 🤖`), 2.2, '#ffb84d'); sendAll({ t: 'left', s: k.slot }); }
+  } else { broadcastLobby(); lobbyMsg(tr(`שחקן ${num} עזב את החדר`, `Player ${num} left the room`)); }
 }
 const notReady = () => NET.humans.filter(h => h.id !== NET.myId && !h.rdy);
 function hostStart(force) {
   if (!NET.host || NET.inRace) return;
-  if (NET.humans.some(h => h.char === null)) { lobbyMsg('כל השחקנים צריכים לבחור דמות'); return; }
+  if (NET.humans.some(h => h.char === null)) { lobbyMsg(tr('כל השחקנים צריכים לבחור דמות', 'Everyone needs to pick a driver')); return; }
   const nr = notReady();
-  if (nr.length && !force) { askConfirm(`${nr.map(h => h.name).join(', ')} עדיין לא ${nr.length > 1 ? 'מוכנים' : 'מוכן/ה'}. להתחיל בכל זאת?`, 'התחל בכל זאת', () => hostStart(true)); return; }
+  if (nr.length && !force) { askConfirm(tr(`${nr.map(h => h.name).join(', ')} עדיין לא ${nr.length > 1 ? 'מוכנים' : 'מוכן/ה'}. להתחיל בכל זאת?`, `${nr.map(h => h.name).join(', ')} ${nr.length > 1 ? 'aren\'t' : 'isn\'t'} ready yet. Start anyway?`), tr('התחל בכל זאת', 'Start anyway'), () => hostStart(true)); return; }
   NET.humans.forEach(h => h.rdy = false);   // everyone is un-ready again for the next lobby round
   const used = NET.humans.map(h => h.char), slots = NET.humans.map(h => ({ id: h.id, char: h.char, kart: h.kart || 0, name: h.name, cos: h.cos || {} }));
   for (let c = 0; c < 4 && slots.length < 4; c++) if (!used.includes(c)) slots.push({ id: null, char: c });
@@ -4169,7 +4200,7 @@ function hostStart(force) {
 function hostGpNextRace() {   // championship: next race with the same grid; dropped players become AI
   const slots = GP.slots.map(s => s.id && s.id !== NET.myId && !NET.conns.has(s.id) ? { ...s, id: null } : s); GP.slots = slots;
   NET.inRace = true; sendAll({ t: 'start', slots, track: gpTrack(), gp: { cup: GP.cup, diff: GP.diff, i: GP.i } }); beginMPRace(slots, gpTrack());
-  flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f');
+  flash(tr(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, `🏆 ${CUPS[GP.cup].name} · Race ${GP.i + 1}/4`), 2.2, '#ffd23f');
 }
 function hostBackToLobby() {
   if (!NET.host) return; if (curScreen === 'podiumScreen' || GP) { podiumDefault(); gpEndAbandon(); }
@@ -4180,16 +4211,16 @@ function hostBackToLobby() {
 // ---------- client side ----------
 function onClientData(d) {
   if (d.t === 'chat') { gotChat(d.m); return; }
-  if (d.t === 'chatno') { $('chatWarn').textContent = d.why; setTimeout(() => $('chatWarn').textContent = '', 2000); return; }
+  if (d.t === 'chatno') { $('chatWarn').textContent = String(EN && d.en ? d.en : d.why || '').slice(0, 80); setTimeout(() => $('chatWarn').textContent = '', 2000); return; }
   if (d.t === 'go') { if (state === 'countdown' && NET.hold) NET.hold = false; else NET.goEarly = true; NET.grace = performance.now() + 4000; return; }
   if (d.t === 'lobby') { NET.humans = d.humans; NET.track = d.track; NET.code = d.code; NET.gp = d.gp || { on: false, cup: 0, diff: 1 }; if (!NET.inRace && $('lobbyScreen').style.display === 'none' && state === 'menu') showLobby(); renderLobby(); return; }
-  if (d.t === 'deny') { const why = d.why; netLeave(); showScreen('mpScreen'); mpMsg(why); return; }
-  if (d.t === 'start') { NET.inRace = true; if (d.gp) { if (!GP || d.gp.i === 0) gpBegin(d.gp.cup, d.gp.diff, true); GP.i = d.gp.i; GP.scored = false; GP.last = {}; } else gpEndAbandon(); beginMPRace(d.slots, d.track); if (d.gp) flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f'); return; }
+  if (d.t === 'deny') { const why = String(EN && d.en ? d.en : d.why || '').slice(0, 160); netLeave(); showScreen('mpScreen'); mpMsg(why); return; }
+  if (d.t === 'start') { NET.inRace = true; if (d.gp) { if (!GP || d.gp.i === 0) gpBegin(d.gp.cup, d.gp.diff, true); GP.i = d.gp.i; GP.scored = false; GP.last = {}; } else gpEndAbandon(); beginMPRace(d.slots, d.track); if (d.gp) flash(tr(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, `🏆 ${CUPS[GP.cup].name} · Race ${GP.i + 1}/4`), 2.2, '#ffd23f'); return; }
   if (d.t === 'gpst' && GP) { GP.pts = d.pts; GP.last = d.last; GP.meta = d.meta; GP.scored = true; renderStandings(); return; }
   if (d.t === 'gpend' && GP) { GP.pts = d.pts; GP.meta = d.meta; showPodium(); return; }
   if (d.t === 'sn' && NET.inRace) { for (const e of d.d) { const k = karts[e[0]]; if (k && k.remote) applyState(k, e); } return; }
   if (d.t === 'ev' && NET.inRace) { applyEv(d.e); return; }
-  if (d.t === 'left' && NET.inRace) { const k = karts[d.s]; if (k) { k.human = false; k.peerId = null; flash(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, 2.2, '#ffb84d'); } return; }
+  if (d.t === 'left' && NET.inRace) { const k = karts[d.s]; if (k) { k.human = false; k.peerId = null; flash(tr(`${k.name} התנתק/ה – המחשב ממשיך במקומו 🤖`, `${k.name} disconnected – the computer takes the wheel 🤖`), 2.2, '#ffb84d'); } return; }
   if (d.t === 'tolobby') { if (GP || curScreen === 'podiumScreen') { podiumDefault(); gpEndAbandon(); } NET.inRace = false; clearHazards(); clearFinTimers(); state = 'menu'; SND.playSong('menu'); showLobby(); return; }
   if (d.t === 'bye') { onHostLost(); }
 }
@@ -4199,9 +4230,9 @@ function onHostLost() {
   netLeave();
   if (racing) {
     for (const k of karts) if (k.remote) makeAI(k);
-    flash('המארח התנתק – ממשיכים מול המחשב 🤖', 2.6, '#ffb84d');
+    flash(tr('המארח התנתק – ממשיכים מול המחשב 🤖', 'The host left – racing on against the computer 🤖'), 2.6, '#ffb84d');
     $('resNote').textContent = '';
-  } else { state = 'menu'; showScreen('mpScreen'); mpMsg('החיבור למארח נותק'); }
+  } else { state = 'menu'; showScreen('mpScreen'); mpMsg(tr('החיבור למארח נותק', 'Lost connection to the host')); }
 }
 
 // ---------- race sync ----------
@@ -4262,7 +4293,7 @@ function applyEv(e) {
   else if (e.k === 'rm') removeBanana(e.id);
   else if (e.k === 'light' && k) {
     for (const o of karts) if (o !== k && !o.remote && !o.finished && o.star <= 0) { if (spinKart(o, 0.7, false) !== 'blocked') o.shrink = 3.2; }
-    screenFlash(); shakeCam(0.3); SND.lightning(); flash(`${k.name} תקע/ה בשופר! 📯`, 1.2, '#ffd23f');
+    screenFlash(); shakeCam(0.3); SND.lightning(); flash(tr(`${k.name} תקע/ה בשופר! 📯`, `${k.name} blew the shofar! 📯`), 1.2, '#ffd23f');
   }
 }
 function startNetTimer() {
@@ -4291,40 +4322,40 @@ function renderLobby() {
   let ph = '';
   for (let i = 0; i < 4; i++) {
     const h = NET.humans[i];
-    if (!h) { ph += `<div class="lp ai"><span class="av">🤖</span><b>מחשב</b><small>מקום פנוי</small></div>`; continue; }
+    if (!h) { ph += `<div class="lp ai"><span class="av">🤖</span><b>${tr('מחשב', 'Computer')}</b><small>${tr('מקום פנוי', 'Free seat')}</small></div>`; continue; }
     const c = h.char !== null ? CHARS[h.char] : null, img = c && portraitUrls[h.char] ? `<img src="${portraitUrls[h.char]}" alt="">` : '<span class="av">🙂</span>';
-    ph += `<div class="lp ${h.id === NET.myId ? 'me' : ''}">${img}<b>${esc(h.name || 'שחקן ' + (i + 1))}${i === 0 ? ' 👑' : ''}${h.id === NET.myId ? ' (את/ה)' : ''}</b><small>${c ? c.name : 'בוחר/ת דמות…'} · ${KARTS[h.kart || 0].name}</small>${i === 0 ? '<em class="rdy host">מארח</em>' : h.rdy ? '<em class="rdy on">✓ מוכן/ה</em>' : '<em class="rdy off">לא מוכן/ה</em>'}</div>`;
+    ph += `<div class="lp ${h.id === NET.myId ? 'me' : ''}">${img}<b>${esc(h.name || tr('שחקן ', 'Player ') + (i + 1))}${i === 0 ? ' 👑' : ''}${h.id === NET.myId ? tr(' (את/ה)', ' (you)') : ''}</b><small>${c ? c.name : tr('בוחר/ת דמות…', 'choosing a driver…')} · ${KARTS[h.kart || 0].name}</small>${i === 0 ? `<em class="rdy host">${tr('מארח', 'Host')}</em>` : h.rdy ? `<em class="rdy on">${tr('✓ מוכן/ה', '✓ Ready')}</em>` : `<em class="rdy off">${tr('לא מוכן/ה', 'Not ready')}</em>`}</div>`;
   }
   $('lobbyPlayers').innerHTML = ph;
   $('lobbyChars').innerHTML = CHARS.map((c, i) => {
     const owner = NET.humans.find(h => h.char === i), mine = owner && owner === me, taken = owner && !mine;
-    return `<button class="lc ${mine ? 'sel' : ''} ${taken ? 'taken' : ''}" data-i="${i}" ${taken || !isUnlocked('char', i) ? 'disabled' : ''}>${portraitUrls[i] ? `<img src="${portraitUrls[i]}" alt="">` : ''}<span>${c.name}</span>${taken ? '<em>תפוס</em>' : !isUnlocked('char', i) ? '<em>🛒 חנות</em>' : ''}</button>`;
+    return `<button class="lc ${mine ? 'sel' : ''} ${taken ? 'taken' : ''}" data-i="${i}" ${taken || !isUnlocked('char', i) ? 'disabled' : ''}>${portraitUrls[i] ? `<img src="${portraitUrls[i]}" alt="">` : ''}<span>${c.name}</span>${taken ? `<em>${tr('תפוס', 'Taken')}</em>` : !isUnlocked('char', i) ? `<em>${tr('🛒 חנות', '🛒 Shop')}</em>` : ''}</button>`;
   }).join('');
   $('lobbyChars').querySelectorAll('.lc').forEach(el => el.onclick = () => {
     SND.init(); SND.tink(true); const i = +el.dataset.i;
     if (NET.host) hostPick(NET.myId, i); else if (NET.hostConn) { NET.hostConn.send({ t: 'pick', c: i }); if (me) { if (me.char !== i) me.rdy = false; me.char = i; renderLobby(); } }
   });
-  $('lobbyKarts').innerHTML = KARTS.map((kt, i) => { const lock = !isUnlocked('kart', i); return `<button class="lt ${me && (me.kart || 0) === i ? 'sel' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>${lock ? '🔒 ' : ''}${kt.name}${lock ? ` <small>(רמה ${unlockLevel('kart', i)})</small>` : ''}</button>`; }).join('');
+  $('lobbyKarts').innerHTML = KARTS.map((kt, i) => { const lock = !isUnlocked('kart', i); return `<button class="lt ${me && (me.kart || 0) === i ? 'sel' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>${lock ? '🔒 ' : ''}${kt.name}${lock ? ` <small>(${tr('רמה', 'Lv')} ${unlockLevel('kart', i)})</small>` : ''}</button>`; }).join('');
   $('lobbyKarts').querySelectorAll('.lt').forEach(el => el.onclick = () => {
     SND.init(); SND.tink(true); const i = +el.dataset.i; selKart = i;
     if (NET.host) { if (me) { me.kart = i; broadcastLobby(); } } else if (NET.hostConn) { NET.hostConn.send({ t: 'kart', k: i }); if (me) { if (me.kart !== i) me.rdy = false; me.kart = i; renderLobby(); } }
   });
   const gp = NET.gp || { on: false, cup: 0, diff: 1 }, hd = NET.host ? '' : 'disabled';
-  $('lobbyMode').innerHTML = `<button class="tab ${gp.on ? '' : 'sel'}" data-m="0" ${hd}>⚡ משחק מהיר</button><button class="tab ${gp.on ? 'sel' : ''}" data-m="1" ${hd}>🏆 אליפות (4 מרוצים)</button>`;
-  $('lobbyCup').style.display = gp.on ? '' : 'none'; $('lobbyTracks').style.display = gp.on ? 'none' : ''; document.querySelector('#lobbyScreen .lTrk').textContent = gp.on ? '' : 'מסלול:';
-  $('lobbyCup').innerHTML = CUPS.map((c, i) => { const lk = NET.host && !cupOpen(i); return `<button class="tab ${gp.cup === i ? 'sel' : ''}" data-c="${i}" ${hd || (lk ? 'disabled' : '')}>${lk ? '🔒' : c.emoji} ${c.name}${lk ? ` (רמה ${c.level})` : ''}</button>`; }).join('') + DIFFS.map((d, i) => `<button class="tab ${gp.diff === i ? 'sel' : ''}" data-d="${i}" ${hd}>${d.name}</button>`).join('');
+  $('lobbyMode').innerHTML = `<button class="tab ${gp.on ? '' : 'sel'}" data-m="0" ${hd}>${tr('⚡ משחק מהיר', '⚡ Quick race')}</button><button class="tab ${gp.on ? 'sel' : ''}" data-m="1" ${hd}>${tr('🏆 אליפות (4 מרוצים)', '🏆 Championship (4 races)')}</button>`;
+  $('lobbyCup').style.display = gp.on ? '' : 'none'; $('lobbyTracks').style.display = gp.on ? 'none' : ''; document.querySelector('#lobbyScreen .lTrk').textContent = gp.on ? '' : tr('מסלול:', 'Track:');
+  $('lobbyCup').innerHTML = CUPS.map((c, i) => { const lk = NET.host && !cupOpen(i); return `<button class="tab ${gp.cup === i ? 'sel' : ''}" data-c="${i}" ${hd || (lk ? 'disabled' : '')}>${lk ? '🔒' : c.emoji} ${c.name}${lk ? ` (${tr('רמה', 'Lv')} ${c.level})` : ''}</button>`; }).join('') + DIFFS.map((d, i) => `<button class="tab ${gp.diff === i ? 'sel' : ''}" data-d="${i}" ${hd}>${d.name}</button>`).join('');
   if (NET.host) {
     $('lobbyMode').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); NET.gp = { ...gp, on: b.dataset.m === '1' }; broadcastLobby(); });
     $('lobbyCup').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); NET.gp = { ...gp, ...(b.dataset.c !== undefined ? { cup: +b.dataset.c } : { diff: +b.dataset.d }) }; broadcastLobby(); });
   }
-  $('lobbyTracks').innerHTML = TRACKS.map((t, i) => { const lk = NET.host && !isUnlocked('track', i); return `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host && !lk ? '' : 'disabled'}>${lk ? '🔒 ' : t.emoji + ' '}${t.name}${lk ? ` (רמה ${unlockLevel('track', i)})` : ''}</button>`; }).join('');
+  $('lobbyTracks').innerHTML = TRACKS.map((t, i) => { const lk = NET.host && !isUnlocked('track', i); return `<button class="lt ${NET.track === i ? 'sel' : ''}" data-i="${i}" ${NET.host && !lk ? '' : 'disabled'}>${lk ? '🔒 ' : t.emoji + ' '}${t.name}${lk ? ` (${tr('רמה', 'Lv')} ${unlockLevel('track', i)})` : ''}</button>`; }).join('');
   if (NET.host) $('lobbyTracks').querySelectorAll('.lt').forEach(el => el.onclick = () => { SND.tink(false); NET.track = +el.dataset.i; broadcastLobby(); });
   const ready = NET.humans.every(h => h.char !== null), nr = notReady().length;
   $('lobbyStart').disabled = !ready;
   $('lobbyStart').classList.toggle('waiting', ready && nr > 0);
-  $('lobbyStart').textContent = !ready ? 'ממתין שכולם יבחרו דמות…' : nr ? `⏳ ממתינים ל-${nr === 1 ? 'שחקן אחד' : nr + ' שחקנים'}` : `🏁 התחל מרוץ (${NET.humans.length} שחקנים)`;
-  const rb = $('lobbyReady'); if (rb) { const on = !!(me && me.rdy); rb.classList.toggle('on', on); rb.classList.toggle('ghost', !on); rb.disabled = !me || me.char === null; rb.textContent = on ? '✓ מוכן/ה! (לחצו לביטול)' : 'מוכן/ה?'; }
-  $('lobbyWait').textContent = NET.host ? (NET.humans.length < 2 ? 'שלחו את הקוד לחברים! מקומות פנויים יתמלאו במחשב' : '') : `ממתין שהמארח יתחיל… מסלול: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`;
+  $('lobbyStart').textContent = !ready ? tr('ממתין שכולם יבחרו דמות…', 'Waiting for everyone to pick a driver…') : nr ? tr(`⏳ ממתינים ל-${nr === 1 ? 'שחקן אחד' : nr + ' שחקנים'}`, `⏳ Waiting for ${nr === 1 ? 'one player' : nr + ' players'}`) : tr(`🏁 התחל מרוץ (${NET.humans.length} שחקנים)`, `🏁 Start race (${NET.humans.length} players)`);
+  const rb = $('lobbyReady'); if (rb) { const on = !!(me && me.rdy); rb.classList.toggle('on', on); rb.classList.toggle('ghost', !on); rb.disabled = !me || me.char === null; rb.textContent = on ? tr('✓ מוכן/ה! (לחצו לביטול)', '✓ Ready! (tap to cancel)') : tr('מוכן/ה?', 'Ready?'); }
+  $('lobbyWait').textContent = NET.host ? (NET.humans.length < 2 ? tr('שלחו את הקוד לחברים! מקומות פנויים יתמלאו במחשב', 'Send the code to your friends! Empty seats get computer drivers') : '') : tr(`ממתין שהמארח יתחיל… מסלול: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`, `Waiting for the host to start… Track: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`);
 }
 const roomLink = () => `${location.origin}${location.pathname}?room=${NET.code}`;
 function toast(t) { lobbyMsg(t); $('lobbyMsg').dataset.t = t; setTimeout(() => { if ($('lobbyMsg').dataset.t === t) lobbyMsg(''); }, 2200); }
@@ -4337,24 +4368,24 @@ $('createRoomBtn').addEventListener('click', () => { SND.init(); if (!NET.connec
 $('joinBtn').addEventListener('click', () => { SND.init(); if (!NET.connecting) joinRoom($('joinCode').value); });
 $('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') $('joinBtn').click(); });
 $('joinCode').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
-$('copyCodeBtn').addEventListener('click', async () => { toast(await copyText(NET.code) ? 'הקוד הועתק!' : 'קוד החדר: ' + NET.code); });
+$('copyCodeBtn').addEventListener('click', async () => { toast(await copyText(NET.code) ? tr('הקוד הועתק!', 'Code copied!') : tr('קוד החדר: ' + NET.code, 'Room code: ' + NET.code)); });
 $('shareBtn').addEventListener('click', async () => {
-  const url = roomLink(), text = `בואו למרוץ בשמעון עגלות! קוד חדר: ${NET.code}`;
-  if (navigator.share) { try { await navigator.share({ title: 'שמעון עגלות', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
-  toast(await copyText(text + ' ' + url) ? 'הקישור הועתק!' : url);
+  const url = roomLink(), text = tr(`בואו למרוץ בשמעון עגלות! קוד חדר: ${NET.code}`, `Come race me in Shimon Karts! Room code: ${NET.code}`);
+  if (navigator.share) { try { await navigator.share({ title: tr('שמעון עגלות', 'Shimon Karts'), text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  toast(await copyText(text + ' ' + url) ? tr('הקישור הועתק!', 'Link copied!') : url);
 });
 $('lobbyStart').addEventListener('click', () => { SND.init(); hostStart(); });
 $('lobbyLeave').addEventListener('click', () => { netLeave(); showScreen('mpScreen'); mpMsg(''); });
 $('endLobbyBtn').addEventListener('click', () => hostBackToLobby());
 // invite link: ?room=1234 opens the join screen pre-filled (a tap is still needed – it also unlocks audio on iOS)
-{ const rc = new URLSearchParams(location.search).get('room'); if (rc && /^\d{4}$/.test(rc)) { $('joinCode').value = rc; showScreen('mpScreen'); mpMsg('הוזמנת לחדר ' + rc + ' – לחצו "הצטרף"'); } }
+{ const rc = new URLSearchParams(location.search).get('room'); if (rc && /^\d{4}$/.test(rc)) { $('joinCode').value = rc; showScreen('mpScreen'); mpMsg(tr('הוזמנת לחדר ' + rc + ' – לחצו "הצטרף"', 'You\'re invited to room ' + rc + ' – tap "Join"')); } }
 
 // meta badges on first load
 if (curScreen === "startScreen") document.body.classList.add("titlemode");
 renderMetaBadges();
 
 // ---------- lobby / between-races chat (host relays; no server) ----------
-const QUICK_CHAT = ['יאללה!', 'רגע, אני בוחר/ת', 'מוכן/ה!', 'בהצלחה!', 'עוד מרוץ?', 'גג!', 'וואו!'];
+const QUICK_CHAT = tr(['יאללה!', 'רגע, אני בוחר/ת', 'מוכן/ה!', 'בהצלחה!', 'עוד מרוץ?', 'גג!', 'וואו!'], ['Yalla!', 'Wait, still choosing', 'Ready!', 'Good luck!', 'Another race?', 'GG!', 'Wow!']);
 const CHAT_MAX = 80;
 let chatUnread = 0, chatIsOpen = false, chatMyLast = 0;
 function chatColor(id) { const h = NET.humans.find(h => h.id === id); return h && h.char !== null && CHARS[h.char] ? CHARS[h.char].dot : '#9aa4b5'; }
@@ -4363,7 +4394,7 @@ function hostChat(id, raw) {   // host: validate + rate-limit + stamp, then rela
   const txt = cleanChat(raw), h = NET.humans.find(h => h.id === id); if (!txt || !h) return;
   const now = performance.now(); h.chatT = (h.chatT || []).filter(t => now - t < 10000);
   const c = NET.conns.get(id);
-  if (h.chatT.length >= 5 || now - (h.chatT[h.chatT.length - 1] || -1e9) < 900) { if (c) c.send({ t: 'chatno', why: 'לאט לאט…' }); else { $('chatWarn').textContent = 'לאט לאט…'; setTimeout(() => $('chatWarn').textContent = '', 2000); } return; }
+  if (h.chatT.length >= 5 || now - (h.chatT[h.chatT.length - 1] || -1e9) < 900) { if (c) c.send({ t: 'chatno', why: 'לאט לאט…', en: 'Easy there…' }); else { $('chatWarn').textContent = tr('לאט לאט…', 'Easy there…'); setTimeout(() => $('chatWarn').textContent = '', 2000); } return; }
   h.chatT.push(now);
   const m = { id, name: h.name, col: chatColor(id), txt, ts: Date.now() };
   sendAll({ t: 'chat', m }); gotChat(m);
@@ -4375,14 +4406,14 @@ function sendChat(txt) {
 }
 function gotChat(m) {
   if (!m || typeof m.txt !== 'string') return;
-  (NET.chat || (NET.chat = [])).push({ id: String(m.id || ''), name: cleanChat(m.name).slice(0, 16) || 'שחקן', col: /^#[0-9a-f]{3,8}$/i.test(m.col) ? m.col : '#9aa4b5', txt: cleanChat(m.txt) });
+  (NET.chat || (NET.chat = [])).push({ id: String(m.id || ''), name: cleanChat(m.name).slice(0, 16) || tr('שחקן', 'Player'), col: /^#[0-9a-f]{3,8}$/i.test(m.col) ? m.col : '#9aa4b5', txt: cleanChat(m.txt) });
   if (NET.chat.length > 50) NET.chat.splice(0, NET.chat.length - 50);
   if (m.id !== NET.myId) { if (!chatIsOpen) chatUnread++; SND.ctx && SND.tone(1320, SND.now(), 0.07, { type: 'sine', gain: 0.12 }); SND.ctx && SND.tone(1760, SND.now() + 0.06, 0.08, { type: 'sine', gain: 0.1 }); }
   renderChat();
 }
 function renderChat() {
   const L = $('chatList'); if (!L) return;
-  L.innerHTML = (NET.chat || []).map(m => `<div class="cm ${m.id === NET.myId ? 'mine' : ''}"><b style="color:${m.col}">${esc(m.name)}</b><span>${esc(m.txt)}</span></div>`).join('') || '<div class="cm empty">עוד אין הודעות – תגידו שלום!</div>';
+  L.innerHTML = (NET.chat || []).map(m => `<div class="cm ${m.id === NET.myId ? 'mine' : ''}"><b style="color:${m.col}">${esc(m.name)}</b><span>${esc(m.txt)}</span></div>`).join('') || tr('<div class="cm empty">עוד אין הודעות – תגידו שלום!</div>', '<div class="cm empty">No messages yet – say shalom!</div>');
   L.scrollTop = L.scrollHeight;
   $('chatDot').textContent = chatUnread > 9 ? '9+' : chatUnread; $('chatDot').style.display = chatUnread && !chatIsOpen ? '' : 'none';
 }
