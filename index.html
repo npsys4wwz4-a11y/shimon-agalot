@@ -504,13 +504,14 @@ html[dir=ltr] .backBtn{float:left!important;margin:0 8px 4px 0!important}
 html[dir=ltr] .chRow,html[dir=ltr] table.res td.nm,html[dir=ltr] .stat b,html[dir=ltr] .lp,html[dir=ltr] .lsec,html[dir=ltr] #profBadge,html[dir=ltr] #xpBox,html[dir=ltr] #diagOut,html[dir=ltr] .tutCard{text-align:left}
 html[dir=ltr] table.res .dot{margin-left:0;margin-right:6px} html[dir=ltr] #lvlUp small{margin-right:0;margin-left:6px} html[dir=ltr] #chatPanel .cm b{margin-left:0;margin-right:6px}
 html[dir=ltr] .bigMode b{font-size:clamp(18px,4vw,26px)!important}
+html[dir=ltr] .stat b{width:auto!important;min-width:68px;flex:none;text-align:left}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016082207', busy = false;
+  var BUILD = '20261016082951', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -571,6 +572,10 @@ html[dir=ltr] .bigMode b{font-size:clamp(18px,4vw,26px)!important}
   }
   window.I18N = {
     lang: L, dict: dict, apply: apply,
+    data: {},
+    // overlay English fields onto a data table (array of {id} or keyed object); keeps the Hebrew name as heName
+    patch: function (tbl, key) { var d = this.data[key]; if (!tbl) return tbl; var list = Array.isArray(tbl) ? tbl : Object.keys(tbl).map(function (k) { tbl[k].__k = k; return tbl[k]; });
+      list.forEach(function (it, i) { if (it.name && it.heName == null) it.heName = it.name; var o = d && (d[it.id] || d[it.__k] || d[i]); if (L === 'en' && o) for (var f in o) it[f] = o[f]; }); return tbl; },
     add: function (o) { for (var k in o) dict[norm(k)] = o[k]; },
     set: function (l) { if (l !== 'he' && l !== 'en') return; try { localStorage.setItem(KEY, l); } catch (e) {} if (l === L) return; var u = location.pathname + location.search.replace(/([?&])lang=(he|en)&?/, '$1').replace(/[?&]$/, ''); if (u === location.pathname + location.search) location.reload(); else location.replace(u + location.hash); }
   };
@@ -595,7 +600,67 @@ I18N.add({
   '⚙ הגדרות': '⚙ Settings', 'היגוי': 'Steering', 'כפתורים': 'Buttons', 'החלקה': 'Swipe', 'הטיית מכשיר': 'Tilt',
   'גז אוטומטי': 'Auto gas', 'כפתור דריפט נפרד': 'Separate drift button', 'מוזיקה': 'Music', 'אפקטים': 'Sound FX',
   'שפה': 'Language'
+  ,
+  // ---- part 2: championship, podium, challenges, daily bonus, shop, driver/kart/track select, results ----
+  '🏆 אליפות': '🏆 Championship', 'רמת קושי:': 'Difficulty:', 'בחר נהג ▶': 'Pick a driver ▶', '🏆 מדף הגביעים': '🏆 Trophy shelf',
+  'ניקוד: מקום 1 – 10 · מקום 2 – 7 · מקום 3 – 5 · מקום 4 – 3': 'Points: 1st – 10 · 2nd – 7 · 3rd – 5 · 4th – 3',
+  '🏆 אליפות נוספת': '🏆 Another championship', '🔁 חזרה ללובי': '🔁 Back to lobby', '⏳ המארח יחזיר את כולם ללובי': '⏳ The host will bring everyone back to the lobby', '🏠 תפריט ראשי': '🏠 Main menu',
+  '☀️ אתגרי היום': "☀️ Today's challenges", '🗓️ אתגרי השבוע': "🗓️ This week's challenges", 'אותם אתגרים לכל השחקנים · לפי שעון ישראל': 'Same challenges for every player · on Israel time',
+  '📅 בונוס כניסה יומי': '📅 Daily login bonus', '🎁 אסוף': '🎁 Collect',
+  '🛒 החנות': '🛒 The Shop', 'תצוגה מקדימה': 'Preview', 'רק מטבעות מהמשחק – בלי כסף אמיתי. מרוויחים ₪ במרוצים, אתגרים ובונוס יומי.': 'In-game coins only – no real money. Earn ₪ from races, challenges and the daily bonus.',
+  'מי נוהג היום?': "Who's driving today?", 'בחר/י רכב': 'Pick your ride', 'בחר מסלול': 'Pick a track',
+  'סיימת!': 'Finished!', 'המרוץ הבא ▶': 'Next race ▶', '🔁 מרוץ נוסף (לובי)': '🔁 Another race (lobby)', 'שחק שוב 🔄': 'Play again 🔄', 'דמות / רכב / מסלול': 'Driver / kart / track'
 });
+</script>
+<script>
+// English overlays for game data tables (applied with I18N.patch right after each table is defined)
+I18N.data = {
+  items: { mushroom: { name: 'Black Coffee' }, shield: { name: 'Iron Dome' }, banana: { name: 'Hummus Pita' }, shell: { name: 'Flying Falafel' }, star: { name: 'Golden Star of David' }, lightning: { name: 'Shofar' } },
+  tracks: {
+    beach: { name: 'Tel Aviv Beach', desc: 'Sea, palms, towers and beach umbrellas. Summer vibes!' },
+    desert: { name: 'Jerusalem Desert', desc: 'Jerusalem stone, camels, cactus and a windmill.' },
+    hills: { name: 'Samaria Hills', desc: 'A twisty road through terraces, olive groves and villages.' },
+    hermon: { name: 'Mount Hermon', desc: 'Snow, pines, a cable car and a ski lift. Careful – ice!' }
+  },
+  surf: { snow: { name: 'Deep snow' }, puddle: { name: 'Puddle' }, sand: { name: 'Sand' }, mud: { name: 'Mud' }, ice: { name: 'Ice' } },
+  karts: {
+    agala: { name: 'The Agala', tag: 'The classic cart. Balanced at everything.' },
+    susita: { name: 'Susita', tag: 'Light, nimble and nostalgic. Acceleration and handling!' },
+    sherut: { name: 'Taxi', tag: 'Stops wherever it feels like. High top speed.' },
+    tractor: { name: 'Tractor', tag: 'Heavy and unstoppable. Shoves everyone aside!' },
+    jeep: { name: 'Sufa Jeep', tag: 'Off-road jeep from the shop. Great grip and heavy – mud and sand? No problem.' },
+    golf: { name: 'Golf Cart', tag: 'Quiet, light and quick. Best in tight corners.' },
+    ice: { name: 'Ice Cream Truck', tag: 'Heavy and strong, with a jingle for a horn. High top speed.' },
+    gold: { name: 'Golden Agala', tag: 'For champions only: gold on Hard. Everything a little better.' }
+  },
+  chars: {
+    shimon: { name: 'Shimon', tag: 'The classic. Star of David cap, moustache and a blue-white cart. Balanced at everything.' },
+    shantal: { name: 'Shantal', tag: 'Perfect blowout, shiny pink nails and zero patience for traffic. Crazy acceleration!' },
+    avraham: { name: 'Avraham', tag: 'Chill, smiley and fast as the wind. Highest top speed.' },
+    rafi: { name: 'Rafi', tag: 'Tembel hat, shades and sandals. King of drifting – best handling and slides!' },
+    mazal: { name: 'Mazal', tag: 'Fastest savta in the neighborhood. Better items than you think – acceleration and handling!' },
+    tali: { name: 'Tali', tag: 'Surfer from Hilton Beach. Blonde hair, shades and zero fear. Great handling and drift!' },
+    beni: { name: 'Beni', tag: 'The neighborhood makolet owner. Kippah, beard and a smile – heavy and fast on the straights.' }
+  },
+  shop: {
+    paint_red: { name: 'Ferrari Red' }, paint_pink: { name: 'Bubblegum Pink' }, paint_green: { name: 'Olive Green' }, paint_orange: { name: 'Bamba Orange' }, paint_black: { name: 'Matte Black' }, paint_sky: { name: 'Eilat Turquoise' },
+    hat_crown: { name: 'Crown' }, hat_chef: { name: 'Chef Hat' }, hat_party: { name: 'Party Hat' }, hat_straw: { name: 'Straw Hat' },
+    gl_sun: { name: 'Sunglasses' }, gl_heart: { name: 'Heart Glasses' }, gl_star: { name: 'Star Glasses' },
+    dc_flames: { name: 'Flames' }, dc_stars: { name: 'Stars' }, dc_race: { name: 'Racing Stripes' },
+    horn_cuca: { name: 'La Cucaracha' }, horn_mizrahi: { name: 'Mizrahi Trill' }, horn_train: { name: 'Train Whistle' }, horn_duck: { name: 'Duck' },
+    kart_jeep: { name: 'Sufa Jeep' }, char_mazal: { name: 'Mazal' },
+    paint_pearl: { name: 'Pearl White' }, paint_mblue: { name: 'Metallic Blue' }, paint_mgold: { name: 'Metallic Gold' }, paint_chrome: { name: 'Chrome' }, paint_pulse: { name: 'Blue-White Pulse' }, paint_rainbow: { name: 'Animated Rainbow' },
+    dc_flag: { name: 'Israeli Flag' }, dc_falafel: { name: 'Falafel' }, dc_wave: { name: 'Waves' }, dc_lightning: { name: 'Lightning' },
+    hat_kippa: { name: 'Knitted Kippah' }, hat_tembel: { name: 'Tembel Hat' }, hat_beanie: { name: 'Hermon Beanie' }, hat_cowboy: { name: 'Cowboy Hat' },
+    gl_round: { name: 'Round Glasses' }, gl_ski: { name: 'Ski Goggles' },
+    tr_blue: { name: 'Blue Flame' }, tr_green: { name: 'Green Flame' }, tr_purple: { name: 'Purple Flame' }, tr_rainbow: { name: 'Rainbow Flame' },
+    horn_clown: { name: 'Clown Horn' }, horn_shofar: { name: 'Shofar Blast' }, horn_hava: { name: 'Hava Nagila' },
+    win_confetti: { name: 'Confetti Shower' }, win_fireworks: { name: 'Fireworks' }, win_spin: { name: 'Victory Spins' }, win_stars: { name: 'Star of David Rain' },
+    kart_golf: { name: 'Golf Cart' }, kart_ice: { name: 'Ice Cream Truck' }, char_tali: { name: 'Tali' }, char_beni: { name: 'Beni' }
+  },
+  cups: { falafel: { name: 'Falafel Cup', desc: 'The beach, Jerusalem, Samaria and back to the beach' }, aretz: { name: 'Eretz Cup', desc: 'The whole country – from the sea to the Hermon' } },
+  diffs: [{ name: 'Easy' }, { name: 'Medium' }, { name: 'Hard' }]
+};
 </script>
 </head>
 <body class="inmenu">
@@ -1283,6 +1348,7 @@ const ITEMS = {
   mushroom: { icon: '☕', name: 'קפה שחור' }, shield: { icon: '🛡️', name: 'כיפת ברזל' }, banana: { icon: '🥙', name: 'פיתה חומוס' },
   shell: { icon: '🧆', name: 'פלאפל מעופף' }, star: { icon: '✡️', name: 'מגן דוד זהוב' }, lightning: { icon: '📯', name: 'שופר' },
 };
+I18N.patch(ITEMS, 'items');
 
 // ---------- renderer / scene ----------
 const canvas = document.getElementById('c');
@@ -1350,6 +1416,7 @@ const TRACKS = [
     sky: 0xa9d8ff, fog: 0xe6f1fa, hemiG: 0xdfe8ee, road: '#4a4f58', curb: ['#d62828', '#ffffff'], walls: [0xf4f8fb, 0xe3ecf2, 0xffffff, 0xd5e1ea],
     ground: ['#f4f8fb', '#e8f0f6', '#ffffff'] },
 ];
+I18N.patch(TRACKS, 'tracks');
 let animFns = [];
 let spinners = [];
 let P = [], T = [], L = [], SEG = 1, trackGroup = null, boxes = [], curTrack = 0, seaMat = null, windBlades = null;
@@ -1558,6 +1625,7 @@ function gantry(G, p, t, halfW, text, bg) {
 // ---------- slow surfaces, obstacles, moving hazards ----------
 let SURF = [], OBST = [], MOVERS = [];
 const SURF_KIND = { snow: { mul: 0.6, name: 'שלג עמוק', col: '#ffffff' }, puddle: { mul: 0.62, name: 'שלולית', col: '#4aa8e8' }, sand: { mul: 0.58, name: 'חול', col: '#e8c27a' }, mud: { mul: 0.5, name: 'בוץ', col: '#6b4a2b' }, ice: { mul: 0.95, grip: 0.35, name: 'קרח', col: '#cdeeff' } };
+I18N.patch(SURF_KIND, 'surf');
 const surfTex = {};
 function surfTexOf(kind) {
   return surfTex[kind] || (surfTex[kind] = canvasTex(128, 128, (g, w) => {
@@ -2123,6 +2191,7 @@ CHARS.push({ id: 'tali', name: 'טלי', tag: 'גולשת מחוף הילטון.
 CHARS.push({ id: 'beni', name: 'בני', tag: 'בעל המכולת מהשכונה. כיפה, זקן וחיוך – כבד ומהיר בישורות.', shop: 'char_beni',
   stats: { speed: 44.2, accel: 31, turn: 2.38 }, bars: [5, 3, 2],
   main: 0x1e3a8a, sec: 0xffffff, hub: 0xffd23f, shirt: 0xffffff, stripe: 0x1e3a8a, skin: 0xe0ac7e, hair: 'kippa', hairCol: 0x3b2a1a, kippaCol: 0x1d4ed8, beard: true, smile: true, dot: '#60a5fa', aiBase: 41.3 });
+I18N.patch(KARTS, 'karts'); I18N.patch(CHARS, 'chars');
 // special paints: metallic / chrome / animated (animated ones are updated every frame in animPaints)
 const ANIM_PAINT = [];
 function paintMat(p, mats) {
@@ -2732,15 +2801,15 @@ function validName(raw) {
   if (n.length < 2) return [null, tr('השם קצר מדי (לפחות 2 תווים)', 'Too short (at least 2 characters)')];
   if (n.length > 14) return [null, tr('השם ארוך מדי (עד 14 תווים)', 'Too long (14 characters max)')];
   if (!/^[\u0590-\u05FFa-zA-Z0-9 _\-'"]+$/.test(n)) return [null, tr('רק אותיות בעברית/אנגלית, ספרות ורווח', 'Letters (Hebrew/English), digits and spaces only')];
-  if (CHARS.some(c => c.name === n) || n === 'מחשב') return [null, tr('השם הזה שמור לנהגי המשחק – בחר/י שם אחר', 'That name belongs to one of our drivers – pick another')];
+  if (CHARS.some(c => c.name === n || c.heName === n) || n === 'מחשב' || /^computer$/i.test(n)) return [null, tr('השם הזה שמור לנהגי המשחק – בחר/י שם אחר', 'That name belongs to one of our drivers – pick another')];
   return [n, ''];
 }
 // XP for one finished race
 function raceXP(k, place, mp) {
-  const parts = [[['🥇 מקום ראשון', '🥈 מקום שני', '🥉 מקום שלישי', '🏁 מקום רביעי'][place - 1], [100, 70, 50, 35][place - 1]], ['🔁 הקפות', 10 * LAPS]];
-  if (k.itemsUsed) parts.push(['🎁 פריטים', Math.min(40, k.itemsUsed * 4)]);
-  if (k.padBoosts) parts.push(['⚡ בוסטים', Math.min(30, k.padBoosts * 2)]);
-  if (mp) parts.push(['🌐 מרובה משתתפים', 25]);
+  const parts = [[tr(['🥇 מקום ראשון', '🥈 מקום שני', '🥉 מקום שלישי', '🏁 מקום רביעי'], ['🥇 1st place', '🥈 2nd place', '🥉 3rd place', '🏁 4th place'])[place - 1], [100, 70, 50, 35][place - 1]], [tr('🔁 הקפות', '🔁 Laps'), 10 * LAPS]];
+  if (k.itemsUsed) parts.push([tr('🎁 פריטים', '🎁 Items'), Math.min(40, k.itemsUsed * 4)]);
+  if (k.padBoosts) parts.push([tr('⚡ בוסטים', '⚡ Boosts'), Math.min(30, k.padBoosts * 2)]);
+  if (mp) parts.push([tr('🌐 מרובה משתתפים', '🌐 Multiplayer'), 25]);
   return parts;
 }
 let xpAnim = null;
@@ -2751,17 +2820,17 @@ function awardXP(k, place, mp) {
   return { parts, gain, before, after: PROFILE.xp, Lb, La, unlocked };
 }
 function showXP(res) {
-  $('xpCoins').textContent = res.coins ? `+${res.coins} ₪` : ''; $('xpCh').textContent = res.chNew ? `🎯 השלמת ${res.chNew > 1 ? res.chNew + ' אתגרים' : 'אתגר'}! אסוף בתפריט` : '';
+  $('xpCoins').textContent = res.coins ? `+${res.coins} ₪` : ''; $('xpCh').textContent = res.chNew ? tr(`🎯 השלמת ${res.chNew > 1 ? res.chNew + ' אתגרים' : 'אתגר'}! אסוף בתפריט`, `🎯 ${res.chNew > 1 ? res.chNew + ' challenges' : 'Challenge'} complete! Collect in the menu`) : '';
   $('xpDetail').innerHTML = res.parts.map(([l, v]) => `<span>${l} <b>+${v}</b></span>`).join('');
   $('lvlUp').innerHTML = ''; $('lvlUp').classList.remove('show');
   const t0 = performance.now(), dur = 1600; cancelAnimationFrame(xpAnim);
   const step = now => {
     const f = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - f, 3), xp = res.before + (res.after - res.before) * e, lp = levelProgress(xp);
-    $('xpGain').textContent = `+${Math.round(res.gain * e)} XP`; $('xpLvl').textContent = `רמה ${lp.L} · ${Math.round(lp.cur)}/${lp.need}`;
+    $('xpGain').textContent = `+${Math.round(res.gain * e)} XP`; $('xpLvl').textContent = tr(`רמה ${lp.L} · ${Math.round(lp.cur)}/${lp.need}`, `Level ${lp.L} · ${Math.round(lp.cur)}/${lp.need}`);
     $('xpBar').style.width = (lp.frac * 100).toFixed(1) + '%';
     if (f < 1) xpAnim = requestAnimationFrame(step);
     else if (res.La > res.Lb) {
-      $('lvlUp').innerHTML = `🎉 עלית לרמה ${res.La}!` + (res.unlocked.length ? `<small>נפתח: ${res.unlocked.map(u => '🔓 ' + unlockName(u)).join(', ')}</small>` : '');
+      $('lvlUp').innerHTML = tr(`🎉 עלית לרמה ${res.La}!`, `🎉 Level up! You\'re level ${res.La}!`) + (res.unlocked.length ? `<small>${tr('נפתח', 'Unlocked')}: ${res.unlocked.map(u => '🔓 ' + unlockName(u)).join(', ')}</small>` : '');
       $('lvlUp').classList.add('show'); SND.fanfare(1); confettiBurst();
     }
   };
@@ -2874,14 +2943,15 @@ const SHOP = [
   { id: 'char_tali', cat: 'char', name: 'טלי', price: 900, char: 'tali', icon: '🏄‍♀️', lv: 3 },
   { id: 'char_beni', cat: 'char', name: 'בני', price: 1200, char: 'beni', icon: '🧔', lv: 7 },
 ];
-const SHOP_CATS = [['paint', '🎨 צבעים'], ['decal', '🔥 מדבקות'], ['hat', '🎩 כובעים'], ['glasses', '😎 משקפיים'], ['horn', '📯 צופרים'], ['trail', '🚀 להבות בוסט'], ['win', '🎉 חגיגות'], ['kart', '🚙 רכבים'], ['char', '🧑 דמויות']];
+I18N.patch(SHOP, 'shop');
+const SHOP_CATS = [['paint', tr('🎨 צבעים', '🎨 Paint')], ['decal', tr('🔥 מדבקות', '🔥 Decals')], ['hat', tr('🎩 כובעים', '🎩 Hats')], ['glasses', tr('😎 משקפיים', '😎 Glasses')], ['horn', tr('📯 צופרים', '📯 Horns')], ['trail', tr('🚀 להבות בוסט', '🚀 Boost Flames')], ['win', tr('🎉 חגיגות', '🎉 Celebrations')], ['kart', tr('🚙 רכבים', '🚙 Karts')], ['char', tr('🧑 דמויות', '🧑 Drivers')]];
 const owns = id => PROFILE.owned.includes(id);
 function myCos() { const e = PROFILE.eq, v = id => { const it = SHOP.find(s => s.id === id); return it && owns(id) ? it.val : undefined; }; return { paint: v(e.paint), accHat: v(e.hat), accGlass: v(e.glasses), decal: v(e.decal), horn: v(e.horn) || 'tit', trail: v(e.trail), win: v(e.win) }; }
 const lvLocked = s => s && (s.lv || 1) > levelOf(PROFILE.xp);
 function shopLockOf(type, i) {   // purchasable karts/characters + the golden kart reward
   const d = type === 'kart' ? KARTS[i] : type === 'char' ? CHARS[i] : null; if (!d) return null;
-  if (d.shop && !owns(d.shop)) { const s = SHOP.find(s => s.id === d.shop); return lvLocked(s) ? `🔒 נפתח ברמה ${s.lv} · 🛒 בחנות` : `🛒 ${s.price} ₪ בחנות`; }
-  if (d.gold && !PROFILE.goldKart) return '🏆 זהב באליפות קשה';
+  if (d.shop && !owns(d.shop)) { const s = SHOP.find(s => s.id === d.shop); return lvLocked(s) ? tr(`🔒 נפתח ברמה ${s.lv} · 🛒 בחנות`, `🔒 Unlocks at level ${s.lv} · 🛒 in the shop`) : tr(`🛒 ${s.price} ₪ בחנות`, `🛒 ${s.price} ₪ in the shop`); }
+  if (d.gold && !PROFILE.goldKart) return tr('🏆 זהב באליפות קשה', '🏆 Win gold on Hard');
   return null;
 }
 
@@ -2899,63 +2969,63 @@ function claimStreak() {
 }
 function renderStreak() {
   const st = streakState(), done = st.claimedToday ? (st.run - 1) % 7 + 1 : st.run % 7;
-  $('streakDays').innerHTML = STREAK_R.map(([c, x], i) => `<div class="sday ${i < done ? 'got' : ''} ${!st.claimedToday && i === done ? 'now' : ''}"><b>יום ${i + 1}</b><span>${i === 6 ? '🎁' : '🪙'}</span><small>${c} ₪</small><small>${x} XP</small>${i < done ? '<i>✓</i>' : ''}</div>`).join('');
-  $('streakInfo').textContent = st.claimedToday ? `🔥 רצף של ${st.run} ימים! חזרו מחר ליום ${done % 7 + 1}` : st.run ? `🔥 רצף של ${st.run} ימים – אל תשברו אותו!` : 'כל יום שנכנסים – פרס גדול יותר. דילגתם על יום? הרצף מתאפס.';
-  $('streakClaim').disabled = st.claimedToday; $('streakClaim').textContent = st.claimedToday ? '✓ נאסף היום' : `🎁 אסוף פרס יום ${done + 1}`;
+  $('streakDays').innerHTML = STREAK_R.map(([c, x], i) => `<div class="sday ${i < done ? 'got' : ''} ${!st.claimedToday && i === done ? 'now' : ''}"><b>${tr('יום', 'Day')} ${i + 1}</b><span>${i === 6 ? '🎁' : '🪙'}</span><small>${c} ₪</small><small>${x} XP</small>${i < done ? '<i>✓</i>' : ''}</div>`).join('');
+  $('streakInfo').textContent = st.claimedToday ? tr(`🔥 רצף של ${st.run} ימים! חזרו מחר ליום ${done % 7 + 1}`, `🔥 ${st.run}-day streak! Come back tomorrow for day ${done % 7 + 1}`) : st.run ? tr(`🔥 רצף של ${st.run} ימים – אל תשברו אותו!`, `🔥 ${st.run}-day streak – don\'t break it!`) : tr('כל יום שנכנסים – פרס גדול יותר. דילגתם על יום? הרצף מתאפס.', 'Every day you play, the prize grows. Skip a day and the streak resets.');
+  $('streakClaim').disabled = st.claimedToday; $('streakClaim').textContent = st.claimedToday ? tr('✓ נאסף היום', '✓ Collected today') : tr(`🎁 אסוף פרס יום ${done + 1}`, `🎁 Collect day ${done + 1} prize`);
 }
 
 // ---------- challenges: 3 daily + 3 weekly, deterministic from the date (same for everyone) ----------
 const TRK = () => TRACKS.slice(0, 3);   // tracks everyone has
-const ITEM_NAMES = { mushroom: 'קפה שחור ☕', shield: 'כיפת ברזל 🛡️', banana: 'פיתה חומוס 🥙', shell: 'פלאפל 🧆', star: 'מגן דוד ✡️' };
+const ITEM_NAMES = { mushroom: tr('קפה שחור ☕', 'Black Coffee ☕'), shield: tr('כיפת ברזל 🛡️', 'Iron Dome 🛡️'), banana: tr('פיתה חומוס 🥙', 'Hummus Pita 🥙'), shell: tr('פלאפל 🧆', 'Falafel 🧆'), star: tr('מגן דוד ✡️', 'Star of David ✡️') };
 const CHN = () => CHARS.filter(c => !c.shop).map((c, i) => [c.id, c.name]);   // base characters everyone has
 const R3 = (r, a, b, s = 1) => a + Math.floor(r() * ((b - a) / s + 1)) * s;
 const NRACE = R => !R.noRace;
 const CH_T = {   // daily pool (3 picked per day). x = reward multiplier
-  win:    { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => `נצחו במסלול ${TRACKS[c.a].emoji} ${TRACKS[c.a].name}`, ev: (c, R) => R.place === 1 && R.track === c.a ? 1 : 0, x: 1.2 },
-  top2k:  { gen: r => ({ a: Math.floor(r() * 2), g: 1 }), txt: c => `סיימו במקום 1-2 עם ${KARTS[c.a].name}`, ev: (c, R) => R.place <= 2 && R.kart === c.a ? 1 : 0 },
-  items:  { gen: r => { const ks = Object.keys(ITEM_NAMES); return { a: ks[Math.floor(r() * ks.length)], g: R3(r, 3, 5) }; }, txt: c => `השתמשו ב-${c.g} × ${ITEM_NAMES[c.a]}`, ev: (c, R) => R.items[c.a] || 0 },
-  short:  { gen: r => ({ g: R3(r, 3, 5) }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
-  clean:  { gen: r => ({ g: R3(r, 1, 2) }), txt: c => `${c.g === 1 ? 'הקפה' : c.g + ' הקפות'} בלי לפגוע בקיר`, ev: (c, R) => R.clean },
-  pads:   { gen: r => ({ g: R3(r, 6, 10) }), txt: c => `עלו על ${c.g} משטחי בוסט ⚡`, ev: (c, R) => R.pads },
-  races:  { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים`, ev: (c, R) => NRACE(R) ? 1 : 0, x: 0.8 },
-  podium: { gen: r => ({ g: R3(r, 2, 3) }), txt: c => `עלו לפודיום (1-3) ${c.g} פעמים`, ev: (c, R) => NRACE(R) && R.place <= 3 ? 1 : 0 },
-  tricks: { gen: r => ({ g: R3(r, 4, 8) }), txt: c => `בצעו ${c.g} טריקים באוויר 🤸`, ev: (c, R) => R.tricks },
-  jumps:  { gen: r => ({ g: R3(r, 5, 9) }), txt: c => `קפצו ${c.g} קפיצות גדולות`, ev: (c, R) => R.jumps },
-  rams:   { gen: r => ({ g: R3(r, 2, 4) }), txt: c => `דחפו יריבים בדריפט ${c.g} פעמים 💥`, ev: (c, R) => R.rams, x: 1.2 },
-  blocks: { gen: r => ({ g: R3(r, 1, 2) }), txt: c => `יירטו ${c.g} ${c.g === 1 ? 'פגיעה' : 'פגיעות'} עם כיפת ברזל 🛡️`, ev: (c, R) => R.blocks, x: 1.2 },
-  hits:   { gen: r => ({ g: R3(r, 3, 5) }), txt: c => `פגעו ביריבים ${c.g} פעמים`, ev: (c, R) => R.hits },
-  noItem: { gen: () => ({ g: 1 }), txt: () => 'סיימו במקום 1-3 בלי להשתמש באף פריט', ev: (c, R) => NRACE(R) && R.place <= 3 && R.used === 0 ? 1 : 0, x: 1.3 },
-  noHit:  { gen: () => ({ g: 1 }), txt: () => 'סיימו מרוץ בלי שאף אחד יפגע בכם', ev: (c, R) => NRACE(R) && R.hit === 0 ? 1 : 0, x: 1.3 },
-  char:   { gen: r => { const L = CHN(); return { a: L[Math.floor(r() * L.length)][0], g: 2 }; }, txt: c => `סיימו ${c.g} מרוצים עם ${(CHARS.find(x => x.id === c.a) || {}).name}`, ev: (c, R) => NRACE(R) && R.char === c.a ? 1 : 0 },
-  charWin:{ gen: r => { const L = CHN(); return { a: L[Math.floor(r() * L.length)][0], g: 1 }; }, txt: c => `סיימו במקום 1-2 עם ${(CHARS.find(x => x.id === c.a) || {}).name}`, ev: (c, R) => NRACE(R) && R.place <= 2 && R.char === c.a ? 1 : 0, x: 1.2 },
-  kart:   { gen: r => ({ a: Math.floor(r() * 4), g: 2 }), txt: c => `סיימו ${c.g} מרוצים עם ${KARTS[c.a].name}`, ev: (c, R) => NRACE(R) && R.kart === c.a ? 1 : 0 },
-  coins:  { gen: r => ({ g: R3(r, 60, 100, 20) }), txt: c => `הרוויחו ${c.g} ₪ ממרוצים`, ev: (c, R) => R.coins },
-  track:  { gen: r => ({ a: Math.floor(r() * 3), g: 2 }), txt: c => `סיימו ${c.g} מרוצים ב${TRACKS[c.a].name}`, ev: (c, R) => NRACE(R) && R.track === c.a ? 1 : 0, x: 0.8 },
-  fast:   { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => `סיימו ב${TRACKS[c.a].name} במקום 1-2`, ev: (c, R) => NRACE(R) && R.place <= 2 && R.track === c.a ? 1 : 0 },
-  gpRace: { gen: () => ({ g: 2 }), txt: c => `סיימו ${c.g} מרוצים בתוך אליפות 🏆`, ev: (c, R) => NRACE(R) && R.gp ? 1 : 0 },
-  mpRace: { gen: () => ({ g: 1 }), txt: () => 'סיימו מרוץ מרובה משתתפים 🌐', ev: (c, R) => NRACE(R) && R.mp ? 1 : 0, x: 1.2 },
-  hardPod:{ gen: () => ({ g: 1 }), txt: () => 'עלו לפודיום במרוץ אליפות ברמה קשה', ev: (c, R) => NRACE(R) && R.gp && R.diff === 2 && R.place <= 3 ? 1 : 0, x: 1.5 },
-  shellH: { gen: r => ({ g: R3(r, 2, 3) }), txt: c => `השתמשו ב-${c.g} × ${ITEM_NAMES.shell} או ${ITEM_NAMES.banana}`, ev: (c, R) => (R.items.shell || 0) + (R.items.banana || 0) },
-  combo:  { gen: r => ({ g: R3(r, 2, 3) }), txt: c => `טריק + קיצור דרך באותו מרוץ, ${c.g} פעמים`, ev: (c, R) => R.tricks > 0 && R.shortcuts > 0 ? 1 : 0, x: 1.2 },
+  win:    { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => tr(`נצחו במסלול ${TRACKS[c.a].emoji} ${TRACKS[c.a].name}`, `Win on ${TRACKS[c.a].emoji} ${TRACKS[c.a].name}`), ev: (c, R) => R.place === 1 && R.track === c.a ? 1 : 0, x: 1.2 },
+  top2k:  { gen: r => ({ a: Math.floor(r() * 2), g: 1 }), txt: c => tr(`סיימו במקום 1-2 עם ${KARTS[c.a].name}`, `Finish 1st-2nd with the ${KARTS[c.a].name}`), ev: (c, R) => R.place <= 2 && R.kart === c.a ? 1 : 0 },
+  items:  { gen: r => { const ks = Object.keys(ITEM_NAMES); return { a: ks[Math.floor(r() * ks.length)], g: R3(r, 3, 5) }; }, txt: c => tr(`השתמשו ב-${c.g} × ${ITEM_NAMES[c.a]}`, `Use ${c.g} × ${ITEM_NAMES[c.a]}`), ev: (c, R) => R.items[c.a] || 0 },
+  short:  { gen: r => ({ g: R3(r, 3, 5) }), txt: c => tr(`קחו קיצור דרך ${c.g} פעמים`, `Take a shortcut ${c.g} times`), ev: (c, R) => R.shortcuts },
+  clean:  { gen: r => ({ g: R3(r, 1, 2) }), txt: c => tr(`${c.g === 1 ? 'הקפה' : c.g + ' הקפות'} בלי לפגוע בקיר`, `${c.g === 1 ? 'A lap' : c.g + ' laps'} without hitting a wall`), ev: (c, R) => R.clean },
+  pads:   { gen: r => ({ g: R3(r, 6, 10) }), txt: c => tr(`עלו על ${c.g} משטחי בוסט ⚡`, `Hit ${c.g} boost pads ⚡`), ev: (c, R) => R.pads },
+  races:  { gen: () => ({ g: 3 }), txt: c => tr(`סיימו ${c.g} מרוצים`, `Finish ${c.g} races`), ev: (c, R) => NRACE(R) ? 1 : 0, x: 0.8 },
+  podium: { gen: r => ({ g: R3(r, 2, 3) }), txt: c => tr(`עלו לפודיום (1-3) ${c.g} פעמים`, `Make the podium (1-3) ${c.g} times`), ev: (c, R) => NRACE(R) && R.place <= 3 ? 1 : 0 },
+  tricks: { gen: r => ({ g: R3(r, 4, 8) }), txt: c => tr(`בצעו ${c.g} טריקים באוויר 🤸`, `Pull off ${c.g} air tricks 🤸`), ev: (c, R) => R.tricks },
+  jumps:  { gen: r => ({ g: R3(r, 5, 9) }), txt: c => tr(`קפצו ${c.g} קפיצות גדולות`, `Land ${c.g} big jumps`), ev: (c, R) => R.jumps },
+  rams:   { gen: r => ({ g: R3(r, 2, 4) }), txt: c => tr(`דחפו יריבים בדריפט ${c.g} פעמים 💥`, `Drift-bump rivals ${c.g} times 💥`), ev: (c, R) => R.rams, x: 1.2 },
+  blocks: { gen: r => ({ g: R3(r, 1, 2) }), txt: c => tr(`יירטו ${c.g} ${c.g === 1 ? 'פגיעה' : 'פגיעות'} עם כיפת ברזל 🛡️`, `Intercept ${c.g} ${c.g === 1 ? 'hit' : 'hits'} with the Iron Dome 🛡️`), ev: (c, R) => R.blocks, x: 1.2 },
+  hits:   { gen: r => ({ g: R3(r, 3, 5) }), txt: c => tr(`פגעו ביריבים ${c.g} פעמים`, `Hit rivals ${c.g} times`), ev: (c, R) => R.hits },
+  noItem: { gen: () => ({ g: 1 }), txt: () => tr('סיימו במקום 1-3 בלי להשתמש באף פריט', 'Finish 1st-3rd without using a single item'), ev: (c, R) => NRACE(R) && R.place <= 3 && R.used === 0 ? 1 : 0, x: 1.3 },
+  noHit:  { gen: () => ({ g: 1 }), txt: () => tr('סיימו מרוץ בלי שאף אחד יפגע בכם', 'Finish a race without anyone hitting you'), ev: (c, R) => NRACE(R) && R.hit === 0 ? 1 : 0, x: 1.3 },
+  char:   { gen: r => { const L = CHN(); return { a: L[Math.floor(r() * L.length)][0], g: 2 }; }, txt: c => tr(`סיימו ${c.g} מרוצים עם ${(CHARS.find(x => x.id === c.a) || {}).name}`, `Finish ${c.g} races as ${(CHARS.find(x => x.id === c.a) || {}).name}`), ev: (c, R) => NRACE(R) && R.char === c.a ? 1 : 0 },
+  charWin:{ gen: r => { const L = CHN(); return { a: L[Math.floor(r() * L.length)][0], g: 1 }; }, txt: c => tr(`סיימו במקום 1-2 עם ${(CHARS.find(x => x.id === c.a) || {}).name}`, `Finish 1st-2nd as ${(CHARS.find(x => x.id === c.a) || {}).name}`), ev: (c, R) => NRACE(R) && R.place <= 2 && R.char === c.a ? 1 : 0, x: 1.2 },
+  kart:   { gen: r => ({ a: Math.floor(r() * 4), g: 2 }), txt: c => tr(`סיימו ${c.g} מרוצים עם ${KARTS[c.a].name}`, `Finish ${c.g} races in the ${KARTS[c.a].name}`), ev: (c, R) => NRACE(R) && R.kart === c.a ? 1 : 0 },
+  coins:  { gen: r => ({ g: R3(r, 60, 100, 20) }), txt: c => tr(`הרוויחו ${c.g} ₪ ממרוצים`, `Earn ${c.g} ₪ from races`), ev: (c, R) => R.coins },
+  track:  { gen: r => ({ a: Math.floor(r() * 3), g: 2 }), txt: c => tr(`סיימו ${c.g} מרוצים ב${TRACKS[c.a].name}`, `Finish ${c.g} races at ${TRACKS[c.a].name}`), ev: (c, R) => NRACE(R) && R.track === c.a ? 1 : 0, x: 0.8 },
+  fast:   { gen: r => ({ a: Math.floor(r() * 3), g: 1 }), txt: c => tr(`סיימו ב${TRACKS[c.a].name} במקום 1-2`, `Finish 1st-2nd at ${TRACKS[c.a].name}`), ev: (c, R) => NRACE(R) && R.place <= 2 && R.track === c.a ? 1 : 0 },
+  gpRace: { gen: () => ({ g: 2 }), txt: c => tr(`סיימו ${c.g} מרוצים בתוך אליפות 🏆`, `Finish ${c.g} championship races 🏆`), ev: (c, R) => NRACE(R) && R.gp ? 1 : 0 },
+  mpRace: { gen: () => ({ g: 1 }), txt: () => tr('סיימו מרוץ מרובה משתתפים 🌐', 'Finish a multiplayer race 🌐'), ev: (c, R) => NRACE(R) && R.mp ? 1 : 0, x: 1.2 },
+  hardPod:{ gen: () => ({ g: 1 }), txt: () => tr('עלו לפודיום במרוץ אליפות ברמה קשה', 'Make the podium in a championship race on Hard'), ev: (c, R) => NRACE(R) && R.gp && R.diff === 2 && R.place <= 3 ? 1 : 0, x: 1.5 },
+  shellH: { gen: r => ({ g: R3(r, 2, 3) }), txt: c => tr(`השתמשו ב-${c.g} × ${ITEM_NAMES.shell} או ${ITEM_NAMES.banana}`, `Use ${c.g} × ${ITEM_NAMES.shell} or ${ITEM_NAMES.banana}`), ev: (c, R) => (R.items.shell || 0) + (R.items.banana || 0) },
+  combo:  { gen: r => ({ g: R3(r, 2, 3) }), txt: c => tr(`טריק + קיצור דרך באותו מרוץ, ${c.g} פעמים`, `Trick + shortcut in the same race, ${c.g} times`), ev: (c, R) => R.tricks > 0 && R.shortcuts > 0 ? 1 : 0, x: 1.2 },
 };
 const CH_W = {   // weekly pool (3 picked per week)
-  wins:   { gen: r => ({ g: R3(r, 4, 6) }), txt: c => `נצחו ב-${c.g} מרוצים`, ev: (c, R) => R.place === 1 ? 1 : 0 },
-  cup:    { gen: () => ({ g: 1 }), txt: () => 'השלימו אליפות שלמה 🏆', ev: (c, R) => R.cupDone ? 1 : 0 },
-  cupTop: { gen: () => ({ g: 1 }), txt: () => 'זכו בגביע (1-3) באליפות בינונית או קשה', ev: (c, R) => R.cupDone && R.cupPlace <= 3 && R.cupDiff >= 1 ? 1 : 0, x: 1.2 },
-  cupGold:{ gen: () => ({ g: 1 }), txt: () => 'זכו בגביע זהב באליפות קשה 🥇', ev: (c, R) => R.cupDone && R.cupPlace === 1 && R.cupDiff === 2 ? 1 : 0, x: 1.6 },
-  items:  { gen: r => ({ g: R3(r, 25, 35, 5) }), txt: c => `השתמשו ב-${c.g} פריטים`, ev: (c, R) => R.used || Object.values(R.items).reduce((a, b) => a + b, 0) },
-  short:  { gen: () => ({ g: 15 }), txt: c => `קחו קיצור דרך ${c.g} פעמים`, ev: (c, R) => R.shortcuts },
-  clean:  { gen: () => ({ g: 8 }), txt: c => `${c.g} הקפות נקיות בלי קיר`, ev: (c, R) => R.clean },
-  mp:     { gen: () => ({ g: 3 }), txt: c => `סיימו ${c.g} מרוצים מרובי משתתפים 🌐`, ev: (c, R) => NRACE(R) && R.mp ? 1 : 0 },
-  mpCup:  { gen: () => ({ g: 1 }), txt: () => 'השלימו אליפות מרובת משתתפים 🌐🏆', ev: (c, R) => R.cupDone && R.cupMp ? 1 : 0, x: 1.3 },
-  tracks: { gen: () => ({ g: 3 }), txt: () => 'סיימו בכל 3 המסלולים הבסיסיים', ev: (c, R) => NRACE(R) && R.track < 3 ? (1 << R.track) : 0, bits: true },
-  tricks: { gen: r => ({ g: R3(r, 30, 50, 10) }), txt: c => `בצעו ${c.g} טריקים באוויר`, ev: (c, R) => R.tricks },
-  rams:   { gen: r => ({ g: R3(r, 12, 20, 4) }), txt: c => `דחפו יריבים בדריפט ${c.g} פעמים`, ev: (c, R) => R.rams },
-  hits:   { gen: r => ({ g: R3(r, 20, 30, 5) }), txt: c => `פגעו ביריבים ${c.g} פעמים`, ev: (c, R) => R.hits },
-  coins:  { gen: r => ({ g: R3(r, 500, 700, 100) }), txt: c => `הרוויחו ${c.g} ₪ ממרוצים`, ev: (c, R) => R.coins },
-  podium: { gen: r => ({ g: R3(r, 10, 14, 2) }), txt: c => `עלו לפודיום ${c.g} פעמים`, ev: (c, R) => NRACE(R) && R.place <= 3 ? 1 : 0 },
-  allChar:{ gen: () => ({ g: 4 }), txt: () => 'סיימו מרוץ עם כל 4 הדמויות הבסיסיות', ev: (c, R) => { const i = CHN().findIndex(x => x[0] === R.char); return NRACE(R) && i >= 0 && i < 4 ? (1 << i) : 0; }, bits: 4 },
-  noItem: { gen: () => ({ g: 3 }), txt: c => `${c.g} מרוצים בפודיום בלי להשתמש בפריטים`, ev: (c, R) => NRACE(R) && R.place <= 3 && R.used === 0 ? 1 : 0, x: 1.3 },
+  wins:   { gen: r => ({ g: R3(r, 4, 6) }), txt: c => tr(`נצחו ב-${c.g} מרוצים`, `Win ${c.g} races`), ev: (c, R) => R.place === 1 ? 1 : 0 },
+  cup:    { gen: () => ({ g: 1 }), txt: () => tr('השלימו אליפות שלמה 🏆', 'Complete a full championship 🏆'), ev: (c, R) => R.cupDone ? 1 : 0 },
+  cupTop: { gen: () => ({ g: 1 }), txt: () => tr('זכו בגביע (1-3) באליפות בינונית או קשה', 'Win a trophy (1-3) on Medium or Hard'), ev: (c, R) => R.cupDone && R.cupPlace <= 3 && R.cupDiff >= 1 ? 1 : 0, x: 1.2 },
+  cupGold:{ gen: () => ({ g: 1 }), txt: () => tr('זכו בגביע זהב באליפות קשה 🥇', 'Win a gold trophy on Hard 🥇'), ev: (c, R) => R.cupDone && R.cupPlace === 1 && R.cupDiff === 2 ? 1 : 0, x: 1.6 },
+  items:  { gen: r => ({ g: R3(r, 25, 35, 5) }), txt: c => tr(`השתמשו ב-${c.g} פריטים`, `Use ${c.g} items`), ev: (c, R) => R.used || Object.values(R.items).reduce((a, b) => a + b, 0) },
+  short:  { gen: () => ({ g: 15 }), txt: c => tr(`קחו קיצור דרך ${c.g} פעמים`, `Take a shortcut ${c.g} times`), ev: (c, R) => R.shortcuts },
+  clean:  { gen: () => ({ g: 8 }), txt: c => tr(`${c.g} הקפות נקיות בלי קיר`, `${c.g} clean laps without a wall`), ev: (c, R) => R.clean },
+  mp:     { gen: () => ({ g: 3 }), txt: c => tr(`סיימו ${c.g} מרוצים מרובי משתתפים 🌐`, `Finish ${c.g} multiplayer races 🌐`), ev: (c, R) => NRACE(R) && R.mp ? 1 : 0 },
+  mpCup:  { gen: () => ({ g: 1 }), txt: () => tr('השלימו אליפות מרובת משתתפים 🌐🏆', 'Complete a multiplayer championship 🌐🏆'), ev: (c, R) => R.cupDone && R.cupMp ? 1 : 0, x: 1.3 },
+  tracks: { gen: () => ({ g: 3 }), txt: () => tr('סיימו בכל 3 המסלולים הבסיסיים', 'Finish on all 3 starter tracks'), ev: (c, R) => NRACE(R) && R.track < 3 ? (1 << R.track) : 0, bits: true },
+  tricks: { gen: r => ({ g: R3(r, 30, 50, 10) }), txt: c => tr(`בצעו ${c.g} טריקים באוויר`, `Pull off ${c.g} air tricks`), ev: (c, R) => R.tricks },
+  rams:   { gen: r => ({ g: R3(r, 12, 20, 4) }), txt: c => tr(`דחפו יריבים בדריפט ${c.g} פעמים`, `Drift-bump rivals ${c.g} times`), ev: (c, R) => R.rams },
+  hits:   { gen: r => ({ g: R3(r, 20, 30, 5) }), txt: c => tr(`פגעו ביריבים ${c.g} פעמים`, `Hit rivals ${c.g} times`), ev: (c, R) => R.hits },
+  coins:  { gen: r => ({ g: R3(r, 500, 700, 100) }), txt: c => tr(`הרוויחו ${c.g} ₪ ממרוצים`, `Earn ${c.g} ₪ from races`), ev: (c, R) => R.coins },
+  podium: { gen: r => ({ g: R3(r, 10, 14, 2) }), txt: c => tr(`עלו לפודיום ${c.g} פעמים`, `Make the podium ${c.g} times`), ev: (c, R) => NRACE(R) && R.place <= 3 ? 1 : 0 },
+  allChar:{ gen: () => ({ g: 4 }), txt: () => tr('סיימו מרוץ עם כל 4 הדמויות הבסיסיות', 'Finish a race with all 4 starter drivers'), ev: (c, R) => { const i = CHN().findIndex(x => x[0] === R.char); return NRACE(R) && i >= 0 && i < 4 ? (1 << i) : 0; }, bits: 4 },
+  noItem: { gen: () => ({ g: 3 }), txt: c => tr(`${c.g} מרוצים בפודיום בלי להשתמש בפריטים`, `${c.g} podium finishes without using items`), ev: (c, R) => NRACE(R) && R.place <= 3 && R.used === 0 ? 1 : 0, x: 1.3 },
 };
 const CH_REWARD = { d: [50, 60], w: [220, 250] };   // [₪, XP]
 function genSet(kind) {
@@ -2986,15 +3056,15 @@ function claimCh(kind, i) {
   c.claimed = true; const [m, x] = chRew(kind, c); saveProfile(); addCoins(m); grantXP(x); SND.gotItem(); coinToast(`+${m} ₪  +${x} XP`); renderChallenges();
 }
 function chClaimable() { const ch = chSets(); return ['d', 'w'].reduce((n, k) => n + ch[k].list.filter(c => !c.claimed && chDone(k, c)).length, 0); }
-function fmtLeft(ms) { const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60; return h >= 24 ? `${Math.floor(h / 24)} ימים ו-${h % 24} שעות` : `${h}:${String(m).padStart(2, '0')} שעות`; }
+function fmtLeft(ms) { const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60; return h >= 24 ? tr(`${Math.floor(h / 24)} ימים ו-${h % 24} שעות`, `${Math.floor(h / 24)}d ${h % 24}h`) : tr(`${h}:${String(m).padStart(2, '0')} שעות`, `${h}:${String(m).padStart(2, '0')} h`); }
 function renderChallenges() {
   const ch = chSets(), toMid = msToMidnightIL(), [y, m, d] = ilParts(), dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   const row = (kind, c, i) => { if (!chDef(kind, c)) return ''; const g = chGoal(kind, c), p = chProg(kind, c), done = p >= g, [mo, x] = chRew(kind, c);
-    return `<div class="chRow ${done ? 'done' : ''} ${c.claimed ? 'claimed' : ''}"><div class="chTxt">${chDef(kind, c).txt(c)}<div class="xpbar"><u style="width:${p / g * 100}%"></u></div><small>${p}/${g} · פרס: ${mo} ₪ + ${x} XP</small></div>
-      <button class="btn chBtn" data-k="${kind}" data-i="${i}" ${done && !c.claimed ? '' : 'disabled'}>${c.claimed ? '✓' : done ? 'אסוף!' : '🔒'}</button></div>`; };
+    return `<div class="chRow ${done ? 'done' : ''} ${c.claimed ? 'claimed' : ''}"><div class="chTxt">${chDef(kind, c).txt(c)}<div class="xpbar"><u style="width:${p / g * 100}%"></u></div><small>${p}/${g} · ${tr('פרס', 'Prize')}: ${mo} ₪ + ${x} XP</small></div>
+      <button class="btn chBtn" data-k="${kind}" data-i="${i}" ${done && !c.claimed ? '' : 'disabled'}>${c.claimed ? '✓' : done ? tr('אסוף!', 'Collect!') : '🔒'}</button></div>`; };
   $('chDaily').innerHTML = ch.d.list.map((c, i) => row('d', c, i)).join('');
   $('chWeekly').innerHTML = ch.w.list.map((c, i) => row('w', c, i)).join('');
-  $('chDayLeft').textContent = `מתחדש בעוד ${fmtLeft(toMid)}`; $('chWeekLeft').textContent = `מתחדש ביום ראשון · בעוד ${fmtLeft(toMid + (6 - dow) * 86400000)}`;
+  $('chDayLeft').textContent = tr(`מתחדש בעוד ${fmtLeft(toMid)}`, `Resets in ${fmtLeft(toMid)}`); $('chWeekLeft').textContent = tr(`מתחדש ביום ראשון · בעוד ${fmtLeft(toMid + (6 - dow) * 86400000)}`, `Resets on Sunday · in ${fmtLeft(toMid + (6 - dow) * 86400000)}`);
   document.querySelectorAll('.chBtn').forEach(b => b.onclick = e => { e.stopPropagation(); claimCh(b.dataset.k, +b.dataset.i); });
   renderMetaBadges();
 }
@@ -3009,10 +3079,10 @@ function renderShop() {
   const slot = SLOTS[shopCat];
   const items = SHOP.filter(s => s.cat === shopCat);
   const card = s => { const own = owns(s.id), eq = slot && PROFILE.eq[slot] === s.id, afford = PROFILE.coins >= s.price, lk = !own && lvLocked(s);
-    const label = lk ? `🔒 רמה ${s.lv}` : !own ? `${s.price} ₪` : slot ? (eq ? '✓ בשימוש' : 'השתמש') : '✓ שלך';
+    const label = lk ? tr(`🔒 רמה ${s.lv}`, `🔒 Level ${s.lv}`) : !own ? `${s.price} ₪` : slot ? (eq ? tr('✓ בשימוש', '✓ Equipped') : tr('השתמש', 'Use')) : tr('✓ שלך', '✓ Yours');
     return `<div class="shopItem ${own ? 'own' : ''} ${eq ? 'eq' : ''} ${lk ? 'lvlock' : ''} ${shopPrevId === s.id ? 'prev' : ''}" data-pid="${s.id}"><div class="si">${s.sw ? `<span class="sw" style="background:${s.sw}"></span>` : s.icon}</div><div class="sn">${s.name}</div>
       <button class="btn sb ${!own && (!afford || lk) ? 'poor' : ''}" data-id="${s.id}" ${own && !slot ? 'disabled' : ''}>${label}</button></div>`; };
-  const none = slot ? `<div class="shopItem ${!PROFILE.eq[slot] ? 'eq' : ''}"><div class="si">🚫</div><div class="sn">${slot === 'horn' ? 'טיט-טיט (רגיל)' : slot === 'paint' ? 'צבע מקורי' : 'בלי'}</div><button class="btn sb" data-id="" ${!PROFILE.eq[slot] ? 'disabled' : ''}>${!PROFILE.eq[slot] ? '✓ בשימוש' : 'השתמש'}</button></div>` : '';
+  const none = slot ? `<div class="shopItem ${!PROFILE.eq[slot] ? 'eq' : ''}"><div class="si">🚫</div><div class="sn">${slot === 'horn' ? tr('טיט-טיט (רגיל)', 'Beep-beep (default)') : slot === 'paint' ? tr('צבע מקורי', 'Original paint') : tr('בלי', 'None')}</div><button class="btn sb" data-id="" ${!PROFILE.eq[slot] ? 'disabled' : ''}>${!PROFILE.eq[slot] ? tr('✓ בשימוש', '✓ Equipped') : tr('השתמש', 'Use')}</button></div>` : '';
   $('shopGrid').innerHTML = none + items.map(card).join('');
   $('shopGrid').querySelectorAll('.sb').forEach(b => b.onclick = e => { e.stopPropagation(); const s = SHOP.find(x => x.id === b.dataset.id); if (s && !owns(s.id) && (PROFILE.coins < s.price || lvLocked(s))) { previewItem(s.id); return; } shopAct(b.dataset.id, slot); });
   $('shopGrid').querySelectorAll('.shopItem[data-pid]').forEach(d => d.onclick = () => previewItem(d.dataset.pid));
@@ -3022,9 +3092,9 @@ function shopAct(id, slot) {
   if (!id) { delete PROFILE.eq[slot]; saveProfile(); SND.tink(false); for (const q in kartUrlCache) delete kartUrlCache[q]; renderShop(); return; }
   const s = SHOP.find(x => x.id === id);
   if (!owns(id)) {
-    if (lvLocked(s)) { SND.wall(0.3); coinToast(`נפתח ברמה ${s.lv} 🔒`); return; }
-    if (PROFILE.coins < s.price) { SND.wall(0.3); coinToast(`חסרים ${s.price - PROFILE.coins} ₪ 😅`); return; }
-    PROFILE.coins -= s.price; PROFILE.owned.push(id); SND.gotItem(); coinToast(`נקנה: ${s.name}!`);
+    if (lvLocked(s)) { SND.wall(0.3); coinToast(tr(`נפתח ברמה ${s.lv} 🔒`, `Unlocks at level ${s.lv} 🔒`)); return; }
+    if (PROFILE.coins < s.price) { SND.wall(0.3); coinToast(tr(`חסרים ${s.price - PROFILE.coins} ₪ 😅`, `You need ${s.price - PROFILE.coins} more ₪ 😅`)); return; }
+    PROFILE.coins -= s.price; PROFILE.owned.push(id); SND.gotItem(); coinToast(tr(`נקנה: ${s.name}!`, `Bought: ${s.name}!`));
     if (s.cat === 'char' || s.cat === 'kart') { buildMenus(); }
   }
   if (slot) { PROFILE.eq[slot] = id; if (slot === 'horn') SND.horn(s.val); }
@@ -3035,7 +3105,7 @@ let shopPrevId = null;
 function previewItem(id) {
   shopPrevId = shopPrevId === id ? null : id; const s = SHOP.find(x => x.id === id);
   if (shopPrevId && s && s.cat === 'horn') SND.horn(s.val); else SND.tink(false);
-  if (shopPrevId && s && s.cat === 'win') coinToast(`${s.icon} ${s.name} – תופיע כשתסיימו מרוץ בפודיום`);
+  if (shopPrevId && s && s.cat === 'win') coinToast(tr(`${s.icon} ${s.name} – תופיע כשתסיימו מרוץ בפודיום`, `${s.icon} ${s.name} – shows up when you finish on the podium`));
   renderShop();
 }
 function shopPreview() {
@@ -3051,7 +3121,7 @@ function renderPrevInfo() {
   const box = $('shopPrevInfo'), s = SHOP.find(x => x.id === shopPrevId); $('shopPrevBadge').style.display = s ? '' : 'none';
   if (!s) { box.innerHTML = ''; return; }
   const own = owns(s.id), miss = Math.max(0, s.price - PROFILE.coins), lk = !own && lvLocked(s);
-  box.innerHTML = `<b>${s.name}</b>` + (own ? `<div class="pOwn">✓ שלך</div>` : `<div class="pPrice">${s.price} ₪</div>${lk ? `<div class="pMiss">🔒 נפתח ברמה ${s.lv}</div>` : miss ? `<div class="pMiss">חסרים ${miss} ₪</div>` : ''}<button class="btn sb" id="prevBuy" ${miss || lk ? 'disabled' : ''}>קנה</button>`);
+  box.innerHTML = `<b>${s.name}</b>` + (own ? tr(`<div class="pOwn">✓ שלך</div>`, `<div class="pOwn">✓ Yours</div>`) : `<div class="pPrice">${s.price} ₪</div>${lk ? tr(`<div class="pMiss">🔒 נפתח ברמה ${s.lv}</div>`, `<div class="pMiss">🔒 Unlocks at level ${s.lv}</div>`) : miss ? tr(`<div class="pMiss">חסרים ${miss} ₪</div>`, `<div class="pMiss">You need ${miss} more ₪</div>`) : ''}<button class="btn sb" id="prevBuy" ${miss || lk ? 'disabled' : ''}>${tr('קנה', 'Buy')}</button>`);
   const pb = $('prevBuy'); if (pb) pb.onclick = () => { const slot = SLOTS[s.cat]; shopPrevId = null; shopAct(s.id, slot); };
 }
 
@@ -3409,28 +3479,28 @@ function onPlayerFinish() {
   xpRes.coins = coinGain; xpRes.chNew = chNew;
   finTimers.push(setTimeout(() => SND.playSong(GP ? 'gp' : 'menu'), 3500));
   finTimers.push(setTimeout(() => {
-    const titles = ['🏆 ניצחת!', '🥈 מקום שני!', '🥉 מקום שלישי!', 'מקום רביעי...'];
+    const titles = tr(['🏆 ניצחת!', '🥈 מקום שני!', '🥉 מקום שלישי!', 'מקום רביעי...'], ['🏆 You won!', '🥈 2nd place!', '🥉 3rd place!', '4th place...']);
     $('endTitle').textContent = titles[place - 1];
     const nm = player.name;
-    $('endSub').textContent = (place === 1 ? `${nm} – מלך/ת העגלות!` : place === 4 ? `לא נורא, ${nm}. עוד סיבוב?` : `כל הכבוד, ${nm}!`) + `  ⏱ ${fmt(player.finishTime)}`;
-    if (GP) $('endSub').textContent += `  ·  🏆 מרוץ ${GP.i + 1}/4`;
+    $('endSub').textContent = (place === 1 ? tr(`${nm} – מלך/ת העגלות!`, `${nm} – king of the karts!`) : place === 4 ? tr(`לא נורא, ${nm}. עוד סיבוב?`, `No worries, ${nm}. Another round?`) : tr(`כל הכבוד, ${nm}!`, `Well done, ${nm}!`)) + `  ⏱ ${fmt(player.finishTime)}`;
+    if (GP) $('endSub').textContent += tr(`  ·  🏆 מרוץ ${GP.i + 1}/4`, `  ·  🏆 Race ${GP.i + 1}/4`);
     ffOn = !netOn(); lastResHTML = ''; renderResults(); renderStandings(); showScreen('endScreen'); showXP(xpRes);
   }, 1400));
-  flash('סיום! 🏁', 1.6);
+  flash(tr('סיום! 🏁', 'Finish! 🏁'), 1.6);
 }
 
 function renderResults() {
   const list = rankList(), winT = list[0].finished ? list[0].finishTime : 0;
   const html = list.map((k, i) => {
-    const medal = ['🥇', '🥈', '🥉', '4'][i], tag = k.isPlayer ? ' <small>(את/ה)</small>' : k.human ? ' <small>🎮</small>' : netOn() ? ' <small>🤖</small>' : '';
-    const tm = k.finished ? (k.est ? '~' : '') + fmt(k.finishTime) : `עוד במסלול · הקפה ${Math.min(k.lap, LAPS)}/${LAPS}`;
+    const medal = ['🥇', '🥈', '🥉', '4'][i], tag = k.isPlayer ? tr(' <small>(את/ה)</small>', ' <small>(you)</small>') : k.human ? ' <small>🎮</small>' : netOn() ? ' <small>🤖</small>' : '';
+    const tm = k.finished ? (k.est ? '~' : '') + fmt(k.finishTime) : tr(`עוד במסלול · הקפה ${Math.min(k.lap, LAPS)}/${LAPS}`, `Still racing · lap ${Math.min(k.lap, LAPS)}/${LAPS}`);
     const gap = k.finished && i > 0 && winT ? '+' + (k.finishTime - winT).toFixed(2) : '';
     return `<tr class="${k.isPlayer ? 'me' : ''} ${k.finished ? '' : 'racing'}"><td>${medal}</td><td class="nm"><span class="dot" style="background:${k.dot}"></span>${k.name}${k.cname && k.cname !== k.name ? ` <small>· ${k.cname}</small>` : ''}${tag}</td><td class="tm">${tm}${gap ? `<span class="gap">${gap}</span>` : ''}</td></tr>`;
   }).join('');
   if (html !== lastResHTML) { $('resTable').innerHTML = html; lastResHTML = html; }
   if (GP && !GP.scored) gpTryScore();
   const left = karts.filter(k => !k.finished).length;
-  $('resNote').textContent = left && netOn() ? `⏳ עוד ${left} נהגים במסלול – התוצאות מתעדכנות בזמן אמת` : left ? `⏩ מריץ קדימה – עוד ${left} נהגים בדרך לקו הסיום…` : (karts.some(k => k.est) ? '~ זמן משוער' : '');
+  $('resNote').textContent = left && netOn() ? tr(`⏳ עוד ${left} נהגים במסלול – התוצאות מתעדכנות בזמן אמת`, `⏳ ${left} drivers still on track – results update live`) : left ? tr(`⏩ מריץ קדימה – עוד ${left} נהגים בדרך לקו הסיום…`, `⏩ Fast-forwarding – ${left} drivers still heading for the line…`) : (karts.some(k => k.est) ? tr('~ זמן משוער', '~ estimated time') : '');
 }
 
 // ---------- pause ----------
@@ -3489,13 +3559,13 @@ function portraits(list = CHARS.map((c, i) => [c, AI_KART[i]])) {
   return urls;
 }
 let portraitUrls = [], kartUrlCache = {};
-const STAT_L = ['מהירות', 'תאוצה', 'היגוי', 'משקל'];
+const STAT_L = tr(['מהירות', 'תאוצה', 'היגוי', 'משקל'], ['Speed', 'Accel', 'Handling', 'Weight']);
 function buildKartPicks() {
   const ci = selChar, urls = kartUrlCache[ci] || [];
   if (!kartUrlCache[ci]) setTimeout(() => { kartUrlCache[ci] = portraits(KARTS.map((_, i) => [CHARS[ci], i])); if (selChar === ci) $('kartPicks').querySelectorAll('.pick').forEach((el, i) => { const u = kartUrlCache[ci][i]; const im = el.querySelector('img'); if (u && im) im.src = u; }); }, 60);
   $('kartPicks').innerHTML = KARTS.map((kt, i) => {
     const lock = !isUnlocked('kart', i), bars = comboBars(ci, i);
-    return `<div class="pick ${lock ? 'locked' : ''}" data-i="${i}" ${lock ? `data-lock="${shopLockOf('kart', i) || '🔒 נפתח ברמה ' + unlockLevel('kart', i)}"` : ''}><img src="${urls[i] || 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='}" alt="${kt.name}"><div class="nm">${kt.name}</div><div class="tg">${kt.tag}</div>
+    return `<div class="pick ${lock ? 'locked' : ''}" data-i="${i}" ${lock ? `data-lock="${shopLockOf('kart', i) || tr('🔒 נפתח ברמה ', '🔒 Unlocks at level ') + unlockLevel('kart', i)}"` : ''}><img src="${urls[i] || 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='}" alt="${kt.name}"><div class="nm">${kt.name}</div><div class="tg">${kt.tag}</div>
     ${STAT_L.map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${bars[j] * 20}%"></u></i></div>`).join('')}</div>`;
   }).join('');
   $('kartPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => {
@@ -3509,9 +3579,9 @@ function buildKartPicks() {
 function buildMenus() {
   const urls = portraits(); portraitUrls = urls;
   $('charPicks').innerHTML = CHARS.map((c, i) => `<div class="pick ${isUnlocked('char', i) ? '' : 'locked'}" data-i="${i}" ${isUnlocked('char', i) ? '' : `data-lock="${shopLockOf('char', i)}"`}>${urls[i] ? `<img src="${urls[i]}" alt="${c.name}">` : ''}<div class="nm">${c.name}</div><div class="tg">${c.tag}</div>
-    ${['מהירות', 'תאוצה', 'היגוי'].map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${c.bars[j] * 20}%"></u></i></div>`).join('')}</div>`).join('');
+    ${tr(['מהירות', 'תאוצה', 'היגוי'], ['Speed', 'Accel', 'Handling']).map((l, j) => `<div class="stat"><b>${l}</b><i><u style="width:${c.bars[j] * 20}%"></u></i></div>`).join('')}</div>`).join('');
   $('charPicks').querySelectorAll('.pick').forEach(el => el.addEventListener('click', () => { SND.init(); if (!isUnlocked('char', +el.dataset.i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; } SND.tink(true); selChar = +el.dataset.i; buildKartPicks(); showScreen('kartScreen'); }));
-  $('trackPicks').innerHTML = TRACKS.map((t, i) => `<div class="pick ${isUnlocked('track', i) ? '' : 'locked'}" data-i="${i}" ${isUnlocked('track', i) ? '' : `data-lock="🔒 נפתח ברמה ${unlockLevel('track', i)}"`}><canvas width="240" height="240"></canvas><div class="nm">${t.emoji} ${t.name}</div><div class="tg">${t.desc}</div></div>`).join('');
+  $('trackPicks').innerHTML = TRACKS.map((t, i) => `<div class="pick ${isUnlocked('track', i) ? '' : 'locked'}" data-i="${i}" ${isUnlocked('track', i) ? '' : `data-lock="${tr('🔒 נפתח ברמה', '🔒 Unlocks at level')} ${unlockLevel('track', i)}"`}><canvas width="240" height="240"></canvas><div class="nm">${t.emoji} ${t.name}</div><div class="tg">${t.desc}</div></div>`).join('');
   $('trackPicks').querySelectorAll('.pick').forEach(el => {
     const t = TRACKS[+el.dataset.i], cv = el.querySelector('canvas'), g = cv.getContext('2d');
     const gr = g.createLinearGradient(0, 0, 0, 240); gr.addColorStop(0, '#' + t.sky.toString(16).padStart(6, '0')); gr.addColorStop(1, t.ground[0]); g.fillStyle = gr; g.fillRect(0, 0, 240, 240);
@@ -3784,23 +3854,24 @@ const CUPS = [
   { id: 'aretz', name: 'גביע הארץ', emoji: '🇮🇱', tracks: [0, 1, 2, 3], level: 5, desc: 'כל הארץ – מהים עד החרמון' },
 ];
 const DIFFS = [{ name: 'קל', cc: '50cc', ai: 0.88, mul: 1 }, { name: 'בינוני', cc: '100cc', ai: 1.0, mul: 1.5 }, { name: 'קשה', cc: '150cc', ai: 1.09, mul: 2 }];
+I18N.patch(CUPS, 'cups'); I18N.patch(DIFFS, 'diffs');
 const GP_PTS = [10, 7, 5, 3];
 // GP globals are declared at the top of audio.js (used by earlier modules during init)
 const cupOpen = i => levelOf(PROFILE.xp) >= CUPS[i].level || /[?&]unlockall/.test(location.search);
 const trophyIcon = p => p ? ['🥇', '🥈', '🥉'][p - 1] : '▫️';
 
 function renderCups() {
-  $('cupList').innerHTML = CUPS.map((c, i) => `<div class="cupCard ${i === cupSel ? 'sel' : ''} ${cupOpen(i) ? '' : 'locked'}" data-i="${i}" ${cupOpen(i) ? '' : `data-lock="🔒 נפתח ברמה ${c.level}"`}>
+  $('cupList').innerHTML = CUPS.map((c, i) => `<div class="cupCard ${i === cupSel ? 'sel' : ''} ${cupOpen(i) ? '' : 'locked'}" data-i="${i}" ${cupOpen(i) ? '' : `data-lock="${tr('🔒 נפתח ברמה', '🔒 Unlocks at level')} ${c.level}"`}>
     <div class="ce">${c.emoji}</div><div class="cn">${c.name}</div><div class="ct">${c.tracks.map(t => TRACKS[t].emoji).join(' ')}</div><small>${c.desc}</small></div>`).join('');
   $('cupList').querySelectorAll('.cupCard').forEach(el => el.onclick = () => { const i = +el.dataset.i; if (!cupOpen(i)) { SND.wall(0.3); el.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 }); return; } SND.tink(false); cupSel = i; renderCups(); });
   $('diffRow').innerHTML = DIFFS.map((d, i) => `<button class="tab ${i === diffSel ? 'sel' : ''}" data-i="${i}">${d.name} <small>${d.cc}</small></button>`).join('');
   $('diffRow').querySelectorAll('.tab').forEach(b => b.onclick = () => { SND.tink(false); diffSel = +b.dataset.i; renderCups(); });
   $('shelf').innerHTML = `<tr><th></th>${DIFFS.map(d => `<th>${d.name}</th>`).join('')}</tr>` + CUPS.map((c, i) => `<tr><td>${c.emoji} ${c.name}</td>${DIFFS.map((_, d) => `<td class="tr">${trophyIcon(PROFILE.tro[c.id + '_' + d])}</td>`).join('')}</tr>`).join('');
-  $('cupReward').textContent = `פרס: עד ${Math.round(400 * DIFFS[diffSel].mul)} XP ו-${Math.round(300 * DIFFS[diffSel].mul)} ₪${diffSel === 2 ? ' · 🥇 בקשה פותח את עגלת הזהב!' : ''}`;
+  $('cupReward').textContent = tr(`פרס: עד ${Math.round(400 * DIFFS[diffSel].mul)} XP ו-${Math.round(300 * DIFFS[diffSel].mul)} ₪${diffSel === 2 ? ' · 🥇 בקשה פותח את עגלת הזהב!' : ''}`, `Prize: up to ${Math.round(400 * DIFFS[diffSel].mul)} XP and ${Math.round(300 * DIFFS[diffSel].mul)} ₪${diffSel === 2 ? ' · 🥇 gold on Hard unlocks the Golden Agala!' : ''}`);
 }
 function gpBegin(cup, diff, mp) { GP = { cup, diff, i: 0, pts: {}, last: {}, meta: {}, scored: false, mp: !!mp }; AI_MUL = DIFFS[diff].ai; }
 function gpTrack() { return CUPS[GP.cup].tracks[GP.i]; }
-function gpStartLocal() { startRace(selChar, gpTrack()); flash(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, 2.2, '#ffd23f'); }
+function gpStartLocal() { startRace(selChar, gpTrack()); flash(tr(`🏆 ${CUPS[GP.cup].name} · מרוץ ${GP.i + 1}/4`, `🏆 ${CUPS[GP.cup].name} · Race ${GP.i + 1}/4`), 2.2, '#ffd23f'); }
 function gpEndAbandon() { GP = null; AI_MUL = 1; gpPending = false; }
 
 // scoring (single player locally; in multiplayer only the host scores and broadcasts)
@@ -3818,13 +3889,13 @@ function renderStandings() {
   if (!GP) { $('gpBox').style.display = 'none'; return; }
   $('gpBox').style.display = '';
   const last = GP.i === 3;
-  if (!GP.scored) { $('gpTable').innerHTML = `<tr><td>⏳ מחכים שכולם יסיימו…</td></tr>`; $('gpNextBtn').disabled = true; }
+  if (!GP.scored) { $('gpTable').innerHTML = tr(`<tr><td>⏳ מחכים שכולם יסיימו…</td></tr>`, `<tr><td>⏳ Waiting for everyone to finish…</td></tr>`); $('gpNextBtn').disabled = true; }
   else {
     $('gpTable').innerHTML = standings().map((s, r) => { const m = GP.meta[s], me = karts[s] && karts[s].isPlayer; return `<tr class="${me ? 'me' : ''}"><td>${r + 1}</td><td class="nm">${esc(m.name)}</td><td><b>${GP.pts[s] || 0}</b> <small>(+${GP.last[s] || 0})</small></td></tr>`; }).join('');
     const canNext = !GP.mp || NET.host; $('gpNextBtn').disabled = !canNext;
-    $('gpNextBtn').textContent = !canNext ? '⏳ ממתינים למארח…' : last ? '🏆 לטקס הסיום' : `המרוץ הבא ▶ (${GP.i + 2}/4 · ${TRACKS[CUPS[GP.cup].tracks[GP.i + 1]].name})`;
+    $('gpNextBtn').textContent = !canNext ? tr('⏳ ממתינים למארח…', '⏳ Waiting for the host…') : last ? tr('🏆 לטקס הסיום', '🏆 To the trophy ceremony') : tr(`המרוץ הבא ▶ (${GP.i + 2}/4 · ${TRACKS[CUPS[GP.cup].tracks[GP.i + 1]].name})`, `Next race ▶ (${GP.i + 2}/4 · ${TRACKS[CUPS[GP.cup].tracks[GP.i + 1]].name})`);
   }
-  $('gpHead').textContent = `${CUPS[GP.cup].emoji} ${CUPS[GP.cup].name} · ${DIFFS[GP.diff].name} · אחרי מרוץ ${GP.i + 1}/4`;
+  $('gpHead').textContent = tr(`${CUPS[GP.cup].emoji} ${CUPS[GP.cup].name} · ${DIFFS[GP.diff].name} · אחרי מרוץ ${GP.i + 1}/4`, `${CUPS[GP.cup].emoji} ${CUPS[GP.cup].name} · ${DIFFS[GP.diff].name} · after race ${GP.i + 1}/4`);
 }
 function gpNext() {
   if (!GP || !GP.scored) return;
@@ -3857,14 +3928,14 @@ function showPodium() {
   // rewards & trophy shelf
   const xp = Math.round([400, 250, 150, 60][place - 1] * DIFFS[d].mul), coins = Math.round([300, 200, 100, 40][place - 1] * DIFFS[d].mul), key = cup.id + '_' + d;
   const best = PROFILE.tro[key]; let note = '';
-  if (place <= 3 && (!best || place < best)) { PROFILE.tro[key] = place; note = '🆕 שיא חדש על המדף!'; }
-  if (place === 1 && d === 2 && !PROFILE.goldKart) { PROFILE.goldKart = true; note += ' ✨ נפתחה עגלת הזהב!'; }
+  if (place <= 3 && (!best || place < best)) { PROFILE.tro[key] = place; note = tr('🆕 שיא חדש על המדף!', '🆕 New best on the shelf!'); }
+  if (place === 1 && d === 2 && !PROFILE.goldKart) { PROFILE.goldKart = true; note += tr(' ✨ נפתחה עגלת הזהב!', ' ✨ Golden Agala unlocked!'); }
   saveProfile(); const lv = grantXP(xp); addCoins(coins);
   chUpdate({ noRace: true, cupDone: true, cupPlace: place, cupDiff: d, cupMp: !!GP.mp, cupId: GP.cup, place: 99, track: -1, kart: -1, char: '', items: {}, used: 0, shortcuts: 0, clean: 0, pads: 0, mp: false, tricks: 0, jumps: 0, rams: 0, blocks: 0, hits: 0, hit: 0, coins: 0, diff: d, gp: true, time: 0 });
-  $('podTitle').textContent = place <= 3 ? `${trophyIcon(place)} ${['זכית בגביע הזהב!', 'גביע כסף!', 'גביע ארד!'][place - 1]}` : 'מקום רביעי באליפות';
+  $('podTitle').textContent = place <= 3 ? `${trophyIcon(place)} ${tr(['זכית בגביע הזהב!', 'גביע כסף!', 'גביע ארד!'], ['You won the gold cup!', 'Silver cup!', 'Bronze cup!'])[place - 1]}` : tr('מקום רביעי באליפות', '4th place in the championship');
   $('podSub').textContent = `${cup.emoji} ${cup.name} · ${DIFFS[d].name} (${DIFFS[d].cc})`;
-  $('podRewards').textContent = `+${xp} XP  ·  +${coins} ₪  ${note}` + (lv.La > lv.Lb ? `  ·  ⭐ עלית לרמה ${lv.La}!` : '');
-  $('podTable').innerHTML = order.map((s, r) => `<tr class="${karts[s] && karts[s].isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉', '4'][r]}</td><td class="nm">${esc(GP.meta[s].name)}</td><td><b>${GP.pts[s] || 0}</b> נק׳</td></tr>`).join('');
+  $('podRewards').textContent = `+${xp} XP  ·  +${coins} ₪  ${note}` + (lv.La > lv.Lb ? tr(`  ·  ⭐ עלית לרמה ${lv.La}!`, `  ·  ⭐ Level up: ${lv.La}!`) : '');
+  $('podTable').innerHTML = order.map((s, r) => `<tr class="${karts[s] && karts[s].isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉', '4'][r]}</td><td class="nm">${esc(GP.meta[s].name)}</td><td><b>${GP.pts[s] || 0}</b> ${tr('נק׳', 'pts')}</td></tr>`).join('');
   $('podLobbyBtn').style.display = GP.mp && NET.host ? '' : 'none'; $('podAgainBtn').style.display = GP.mp ? 'none' : ''; $('podWait').style.display = GP.mp && !NET.host ? '' : 'none';
   clearFinTimers(); clearHazards(); state = 'menu'; SND.stopSong(); SND.fanfare(Math.min(place, 3));
   showScreen('podiumScreen'); if (place <= 3) confettiBurst();
