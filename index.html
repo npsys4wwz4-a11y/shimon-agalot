@@ -546,7 +546,7 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016113624', busy = false;
+  var BUILD = '20261016123735', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -3875,7 +3875,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { get net() { return NET; }, get hz() { return { b: bananas.map(b => b.id), s: shells.length }; }, drop: () => dropBanana(player), shell: () => fireShell(player), gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
@@ -4218,6 +4218,8 @@ function hostPick(id, ci) {
   if (h.char !== ci) h.rdy = false; h.char = ci; broadcastLobby();
 }
 function broadcastLobby() { if (!NET.host) return; sendAll(lobbyState()); renderLobby(); }
+// closing/leaving the page tells the others right away instead of waiting for the timeout
+addEventListener('pagehide', () => { if (NET.on) try { netLeave(); } catch (_) {} });
 function hostDrop(c) {
   if (!NET.conns.has(c.peer)) return;
   NET.conns.delete(c.peer); try { c.close(); } catch (_) {}
@@ -4358,8 +4360,8 @@ function startNetTimer() {
     if (++ping >= 40) {   // every 2s: keep-alive + timeout detection
       ping = 0;
       const grace = now < (NET.grace || 0);   // just loaded a track: the other side may still be building
-      if (NET.host) { if (!NET.inRace) sendAll(lobbyState()); else sendAll({ t: 'ping' }); if (!grace) NET.conns.forEach(c => { if (NET.hold && NET.ready && !NET.ready.has(c.peer)) return; if (c.seen && now - c.seen > 12000) hostDrop(c); }); }
-      else { if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'ping' }); if (!grace && now - NET.hostSeen > (NET.hold ? 30000 : 12000)) onHostLost(); }
+      if (NET.host) { if (!NET.inRace) sendAll(lobbyState()); else sendAll({ t: 'ping' }); if (!grace) NET.conns.forEach(c => { if (NET.hold && NET.ready && !NET.ready.has(c.peer)) return; if (c.seen && now - c.seen > (NET.inRace && !NET.hold ? 5000 : 12000)) hostDrop(c); }); }
+      else { if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ t: 'ping' }); if (!grace && now - NET.hostSeen > (NET.hold ? 30000 : NET.inRace ? 5000 : 12000)) onHostLost(); }
     }
   }, 50);
 }
