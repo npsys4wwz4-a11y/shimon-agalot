@@ -499,7 +499,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261015180433', busy = false;
+  var BUILD = '20261016075151', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -3889,7 +3889,7 @@ function setMpBusy(b) { NET.connecting = b; $('createRoomBtn').disabled = b; $('
 
 // ---------- room setup ----------
 async function createRoom(tries = 0) {
-  setMpBusy(true); mpMsg('יוצר חדר… 🔌');
+  setMpBusy(true); mpMsg('יוצר חדר…');
   try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.', () => createRoom()); return; }
   const code = String(1000 + Math.floor(Math.random() * 9000));
   const peer = new Peer(PEER_PREFIX + code, await peerOpts());
@@ -3907,13 +3907,13 @@ async function createRoom(tries = 0) {
 async function joinRoom(code) {
   code = (code || '').replace(/\D/g, '');
   if (code.length !== 4) { mpMsg('קוד חדר הוא 4 ספרות'); return; }
-  setMpBusy(true); mpMsg('מתחבר לחדר ' + code + '… 🔌');
+  setMpBusy(true); mpMsg('מתחבר לחדר ' + code + '…');
   const retry = () => joinRoom(code);
   try { await loadPeerJS(); } catch (_) { setMpBusy(false); mpMsg('לא הצלחנו לטעון את רכיב הרשת. בדקו חיבור לאינטרנט.', retry); return; }
   const peer = new Peer(await peerOpts());
   let opened = false, brokerOk = false, iceState = '';
   const fail = t => { if (opened) return; clearTimeout(to); setMpBusy(false); mpMsg(t, retry); try { peer.destroy(); } catch (_) {} };
-  const iceFail = () => fail('החדר נמצא, אבל החיבור הישיר בין המכשירים נכשל 📵 – כנראה רשתות סלולריות/NAT קשוח. נסו לחבר את שני הטלפונים לאותה רשת Wi-Fi, או הריצו "בדיקת חיבור".');
+  const iceFail = () => fail('החדר נמצא, אבל החיבור הישיר בין המכשירים נכשל – כנראה רשתות סלולריות/NAT קשוח. נסו לחבר את שני הטלפונים לאותה רשת Wi-Fi, או הריצו "בדיקת חיבור".');
   const to = setTimeout(() => !brokerOk ? fail('אין תגובה משרת התיווך. בדקו חיבור לאינטרנט ונסו שוב.') : iceState ? iceFail() : fail('לא הצלחנו להתחבר לחדר ' + code + '. ודאו שהקוד נכון ושהמארח עדיין בלובי.'), 16000);
   peer.on('open', id => {
     brokerOk = true;
@@ -3928,11 +3928,11 @@ async function joinRoom(code) {
     c.on('close', () => onHostLost());
     c.on('error', () => onHostLost());
   });
-  peer.on('error', err => { if (err.type === 'peer-unavailable') fail('חדר ' + code + ' לא נמצא 🤔 בדקו את הקוד (או שהמארח סגר את החדר).'); else if (!opened) fail(errText(err)); });
+  peer.on('error', err => { if (err.type === 'peer-unavailable') fail('חדר ' + code + ' לא נמצא. בדקו את הקוד (או שהמארח סגר את החדר).'); else if (!opened) fail(errText(err)); });
 }
 function errText(err) {
   const t = err && err.type;
-  return t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed' ? 'אין חיבור לשרת התיווך 📡 בדקו את האינטרנט ונסו שוב.'
+  return t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed' ? 'אין חיבור לשרת התיווך. בדקו את האינטרנט ונסו שוב.'
     : t === 'browser-incompatible' ? 'הדפדפן לא תומך ב-WebRTC. נסו Safari/Chrome מעודכן.'
     : t === 'webrtc' ? 'החיבור הישיר נכשל (WebRTC). נסו אותה רשת Wi-Fi או "בדיקת חיבור".'
     : 'שגיאת רשת (' + t + ') – נסו שוב.';
@@ -4052,7 +4052,7 @@ function onHostLost() {
     for (const k of karts) if (k.remote) makeAI(k);
     flash('המארח התנתק – ממשיכים מול המחשב 🤖', 2.6, '#ffb84d');
     $('resNote').textContent = '';
-  } else { state = 'menu'; showScreen('mpScreen'); mpMsg('החיבור למארח נותק 😕'); }
+  } else { state = 'menu'; showScreen('mpScreen'); mpMsg('החיבור למארח נותק'); }
 }
 
 // ---------- race sync ----------
@@ -4178,7 +4178,7 @@ function renderLobby() {
   $('lobbyWait').textContent = NET.host ? (NET.humans.length < 2 ? 'שלחו את הקוד לחברים! מקומות פנויים יתמלאו במחשב' : '') : `ממתין שהמארח יתחיל… מסלול: ${TRACKS[NET.track].emoji} ${TRACKS[NET.track].name}`;
 }
 const roomLink = () => `${location.origin}${location.pathname}?room=${NET.code}`;
-function toast(t) { lobbyMsg(t); setTimeout(() => { if ($('lobbyMsg').textContent === t) lobbyMsg(''); }, 2200); }
+function toast(t) { lobbyMsg(t); $('lobbyMsg').dataset.t = t; setTimeout(() => { if ($('lobbyMsg').dataset.t === t) lobbyMsg(''); }, 2200); }
 async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (_) { const ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (_) {} ta.remove(); return ok; } }
 
 $('mpBtn').addEventListener('click', () => { SND.init(); SND.playSong('menu'); SND.beep(true); mpMsg(''); needName(() => showScreen('mpScreen')); });
@@ -4188,11 +4188,11 @@ $('createRoomBtn').addEventListener('click', () => { SND.init(); if (!NET.connec
 $('joinBtn').addEventListener('click', () => { SND.init(); if (!NET.connecting) joinRoom($('joinCode').value); });
 $('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') $('joinBtn').click(); });
 $('joinCode').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
-$('copyCodeBtn').addEventListener('click', async () => { toast(await copyText(NET.code) ? 'הקוד הועתק! 📋' : 'קוד החדר: ' + NET.code); });
+$('copyCodeBtn').addEventListener('click', async () => { toast(await copyText(NET.code) ? 'הקוד הועתק!' : 'קוד החדר: ' + NET.code); });
 $('shareBtn').addEventListener('click', async () => {
-  const url = roomLink(), text = `בואו למרוץ בשמעון עגלות! 🏁 קוד חדר: ${NET.code}`;
+  const url = roomLink(), text = `בואו למרוץ בשמעון עגלות! קוד חדר: ${NET.code}`;
   if (navigator.share) { try { await navigator.share({ title: 'שמעון עגלות', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
-  toast(await copyText(text + ' ' + url) ? 'הקישור הועתק! 🔗' : url);
+  toast(await copyText(text + ' ' + url) ? 'הקישור הועתק!' : url);
 });
 $('lobbyStart').addEventListener('click', () => { SND.init(); hostStart(); });
 $('lobbyLeave').addEventListener('click', () => { netLeave(); showScreen('mpScreen'); mpMsg(''); });
@@ -4214,7 +4214,7 @@ function hostChat(id, raw) {   // host: validate + rate-limit + stamp, then rela
   const txt = cleanChat(raw), h = NET.humans.find(h => h.id === id); if (!txt || !h) return;
   const now = performance.now(); h.chatT = (h.chatT || []).filter(t => now - t < 10000);
   const c = NET.conns.get(id);
-  if (h.chatT.length >= 5 || now - (h.chatT[h.chatT.length - 1] || -1e9) < 900) { if (c) c.send({ t: 'chatno', why: 'לאט לאט… 🙂' }); else { $('chatWarn').textContent = 'לאט לאט… 🙂'; setTimeout(() => $('chatWarn').textContent = '', 2000); } return; }
+  if (h.chatT.length >= 5 || now - (h.chatT[h.chatT.length - 1] || -1e9) < 900) { if (c) c.send({ t: 'chatno', why: 'לאט לאט…' }); else { $('chatWarn').textContent = 'לאט לאט…'; setTimeout(() => $('chatWarn').textContent = '', 2000); } return; }
   h.chatT.push(now);
   const m = { id, name: h.name, col: chatColor(id), txt, ts: Date.now() };
   sendAll({ t: 'chat', m }); gotChat(m);
