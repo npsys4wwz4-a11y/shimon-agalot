@@ -535,13 +535,18 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 @media (max-aspect-ratio:1/1){#msg,#msg.big{top:calc(env(safe-area-inset-top) + 102px)!important} #msg.pill{max-width:44vw;font-size:14px!important;padding:4px 10px;border-radius:14px} #msg.big{font-size:clamp(26px,8vw,40px)}}
 #msg.pill.long{font-size:13px!important}
 @media (max-aspect-ratio:1/1){#msg.pill{max-width:54vw}}
+/* Part B2: banners clear the HUD - portrait: below minimap (no squeeze between minimap and position); landscape: below item box */
+@media (max-aspect-ratio:1/1){#msg.pill{top:calc(env(safe-area-inset-top) + 262px)!important;max-width:84vw}}
+@media (min-aspect-ratio:1/1){#msg,#msg.big{top:calc(env(safe-area-inset-top) + 104px)!important}}
+@media (max-width:380px){#itemBox{width:72px!important;height:72px!important}#itemBox .ic{width:48px;height:48px}}
+@media (max-aspect-ratio:1/1){#msg.pill{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#msg.pill>*{white-space:nowrap}}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016110254', busy = false;
+  var BUILD = '20261016113624', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
