@@ -541,7 +541,7 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016102522', busy = false;
+  var BUILD = '20261016110254', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -1705,7 +1705,8 @@ function buildTerrainFx(G, def) {
   if (!BR) return;
   const at = (f, lat) => { const i = Math.floor(f * (BR.n - 1)); return [BR.P[i].x + BR.L[i].x * lat, BR.P[i].z + BR.L[i].z * lat]; };
   addSurf(G, ...at(0.2, 2.4), 3.6, kind); addSurf(G, ...at(0.55, -2.6), 3.6, kind);
-  for (const d of [-1.2, 1.2]) addBarrel(G, ...at(0.45 + d * 0.004, 2.6 + d)); addBarrel(G, ...at(0.452, -3.6));
+  // barrels hug the branch walls (touching each other / the wall) so karts can't wedge in a gap between them
+  for (const d of [-1, 1]) addBarrel(G, ...at(0.45 + d * 0.003, 3.8 + d * 0.8)); addBarrel(G, ...at(0.452, -4.6));
   for (let c = 0; c < 4; c++) addCone(G, ...at(0.83 + c * 0.012, -3.4 + c * 0.6));
   if (def.id === 'hills') { const i = Math.floor(BR.n * 0.55), span = BR_HW + CURB + 3; for (const sg of [-1, 1]) for (const d of [0, 1]) { const o = sg * (span + d * 9); OBST.push({ x: BR.P[i].x + BR.L[i].x * o, z: BR.P[i].z + BR.L[i].z * o, r: 1.9, hard: true }); } }
   const mi = Math.floor(0.62 * (BR.n - 1)), mesh = makeMover(def.mover || 'tractor'); G.add(mesh);
@@ -3869,7 +3870,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
