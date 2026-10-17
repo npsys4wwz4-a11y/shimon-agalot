@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017184027', busy = false;
+  var BUILD = '20261017191101', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -1705,7 +1705,7 @@ function buildTrack(ti) {
   buildTerrain(G, def, B, G.userData.gt); const c0 = G.children.length;
   seaMat = null; windBlades = null; spinners = []; animFns = [];
   if (def.id === 'beach') sceneryBeach(G, B); else if (def.id === 'hills') sceneryHills(G, B); else if (def.id === 'hermon') sceneryHermon(G, B); else sceneryDesert(G, B);
-  roadside(G, def);
+  roadside(G, def); crowds(G, def);
   buildPadsAndSigns(G, def); buildTerrainFx(G, def); buildChallenges(G, def);
   for (const o of G.children.slice(c0)) liftObj(o); buildJumpFx(G, def);
   setSky(def); requestAnimationFrame(() => prepTrackShadows(G));
@@ -1724,6 +1724,51 @@ function buildTrack(ti) {
 const gfxLevel = () => { try { return localStorage.getItem('kart-gfx') || 'auto'; } catch (_) { return 'auto'; } };
 const chevTex = [1, -1].map(dir => { const t = canvasTex(128, 64, (g, w, h) => { g.fillStyle = '#ffd23f'; g.fillRect(0, 0, w, h); g.fillStyle = '#111';
   for (let k = 0; k < 3; k++) { const x0 = 18 + k * 36; g.beginPath(); if (dir > 0) { g.moveTo(x0, 10); g.lineTo(x0 + 22, 32); g.lineTo(x0, 54); g.lineTo(x0 + 12, 54); g.lineTo(x0 + 34, 32); g.lineTo(x0 + 12, 10); } else { g.moveTo(x0 + 34, 10); g.lineTo(x0 + 12, 32); g.lineTo(x0 + 34, 54); g.lineTo(x0 + 22, 54); g.lineTo(x0, 32); g.lineTo(x0 + 22, 10); } g.fill(); } }); t.dispose = () => {}; return t; });
+// ---------- crowds: low-poly fans at the finish and the two sharpest corners; they jump and wave flags (instanced, cheap) ----------
+let CROWD = [];
+function crowds(G, def) {
+  CROWD = [];
+  const q = gfxLevel(), lite = q === 'low', per = lite ? 10 : q === 'high' ? 34 : 22;
+  const okAt = (x, z) => distToTrack(x, z) > WALL + 1.6 && !(BR && distToPts(x, z, BR.P, 1) < BR_HW + CURB + 3);
+  // spots: finish line (both sides) + outside of the two sharpest corners
+  const turns = [];
+  for (let i = 60; i < N - 40; i += 4) { if (GAP[i]) continue; const a = T[(i - 14 + N) % N], b = T[(i + 14) % N]; turns.push([Math.acos(clamp(a.x * b.x + a.z * b.z, -1, 1)), i, a.x * b.z - a.z * b.x > 0 ? 1 : -1]); }
+  turns.sort((u, v) => v[0] - u[0]); const spots = [[4, 1], [4, -1]];
+  for (const [, i, sd] of turns) { if (spots.length >= 4) break; if (spots.every(([j]) => Math.min(modD(i, j), modD(j, i)) > 80)) spots.push([i, sd]); }
+  const fans = [];
+  for (const [i0, sd] of spots) for (let n = 0; n < per; n++) { const fin = i0 === 4;
+    const i = (i0 + Math.round(((n % 11) - 5) * 2.4 / SEG) + N) % N, row = Math.floor(n / 11), o = (WALL + 2.6 + row * 1.6) * sd;
+    const x = P[i].x + L[i].x * o + (Math.random() - 0.5) * 0.5, z = P[i].z + L[i].z * o + (Math.random() - 0.5) * 0.5;
+    if (!okAt(x, z)) continue; fans.push({ x, z, y: objH(x, z) + row * 0.7 + (fin ? 2.0 : 0), r: Math.atan2(-L[i].x * sd, -L[i].z * sd), ph: Math.random() * 6.28, sp: 6 + Math.random() * 4, flag: Math.random() < 0.45 });
+  }
+  if (!fans.length) return;
+  const shirts = [0x1d4ed8, 0xffffff, 0xffd23f, 0xd61f1f, 0x2fa84f, 0xff8a00].map(c => new THREE.Color(c)), skins = [0xf2c9a0, 0xd9a273, 0x9a6a44, 0xffe0c2].map(c => new THREE.Color(c));
+  const body = new THREE.InstancedMesh(new THREE.BoxGeometry(1.1, 1.6, 0.7), lam(0xffffff), fans.length);
+  const head = new THREE.InstancedMesh(new THREE.BoxGeometry(0.72, 0.72, 0.72), lam(0xffffff), fans.length);
+  const nf = fans.filter(f => f.flag).length, pole = new THREE.InstancedMesh(new THREE.BoxGeometry(0.08, 2.2, 0.08), lam(0x444444), Math.max(1, nf));
+  const flag = new THREE.InstancedMesh(new THREE.BoxGeometry(0.04, 0.8, 1.3), new THREE.MeshLambertMaterial({ map: flagTex }), Math.max(1, nf));
+  fans.forEach((f, n) => { body.setColorAt(n, shirts[n % shirts.length]); head.setColorAt(n, skins[(n * 7) % skins.length]); });
+  // stands under the back rows at the finish
+  for (const sd of [1, -1]) { const i = 4, o = (WALL + 3.6) * sd, x = P[i].x + L[i].x * o, z = P[i].z + L[i].z * o; const st = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.0, 30), lam(0x8a8f96)); st.position.set(x, 1.0, z); st.rotation.y = Math.atan2(T[i].x, T[i].z); G.add(st); }
+  for (const m of [body, head, pole, flag]) { m.userData.noLift = true; m.frustumCulled = false; G.add(m); }
+  const quat = new THREE.Quaternion(), fq = new THREE.Quaternion(), up = V(0, 1, 0), ax = V(1, 0, 0), one = V(1, 1, 1), tmp = V(0, 0, 0);
+  let acc = 1;
+  const pose = t => {
+    const pl = typeof player !== 'undefined' && player ? player.pos : camera.position; let k = 0;
+    fans.forEach((f, n) => {
+      const near = Math.hypot(pl.x - f.x, pl.z - f.z) < 45, amp = near ? 0.5 : 0.12, hop = Math.max(0, Math.sin(t * f.sp + f.ph)) * amp, y = f.y + hop;
+      quat.setFromAxisAngle(up, f.r); m4.compose(tmp.set(f.x, y + 0.8, f.z), quat, one); body.setMatrixAt(n, m4);
+      m4.compose(tmp.set(f.x, y + 1.97, f.z), quat, one); head.setMatrixAt(n, m4);
+      if (f.flag) { const s = Math.sin(f.r), c = Math.cos(f.r), hx = f.x + c * 0.72, hz = f.z - s * 0.72;
+        m4.compose(tmp.set(hx, y + 2.4, hz), quat, one); pole.setMatrixAt(k, m4);
+        fq.setFromAxisAngle(ax, Math.sin(t * (near ? 7 : 3) + f.ph) * 0.5); fq.premultiply(quat); m4.compose(tmp.set(hx, y + 3.1, hz), fq, one); flag.setMatrixAt(k, m4); k++; }
+    });
+    for (const m of [body, head, pole, flag]) m.instanceMatrix.needsUpdate = true;
+  };
+  pose(0); [body, head].forEach(m => { m.instanceColor.needsUpdate = true; });
+  CROWD = fans;
+  animFns.push((dt, t) => { acc += dt; if (acc < (lite ? 0.1 : 0.033)) return; acc = 0; pose(t); });
+}
 function roadside(G, def) {
   const q = gfxLevel(), lite = q === 'low', dense = q === 'high';
   const okAt = (x, z, clear) => distToTrack(x, z) > clear && !(BR && distToPts(x, z, BR.P, 1) < BR_HW + CURB + 3);
@@ -4084,7 +4129,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { get scene() { return scene; }, get renderer() { return renderer; }, get net() { return NET; }, get hz() { return { b: bananas.map(b => b.id), s: shells.length }; }, drop: () => dropBanana(player), shell: () => fireShell(player), gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get blocks() { return BLOCKS.map(b => ({ i: b.i, sd: b.sd, gate: b.gate, h: gateH(b, raceTime) })); }, get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { get scene() { return scene; }, get renderer() { return renderer; }, get net() { return NET; }, get hz() { return { b: bananas.map(b => b.id), s: shells.length }; }, drop: () => dropBanana(player), shell: () => fireShell(player), gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get crowd() { return CROWD.length; }, get camera() { return camera; }, get crowdAt() { return CROWD.slice(0, 3).map(f => [f.x, f.y, f.z].map(v => +v.toFixed(1))).concat([[P[4].x, P[4].z]]); }, get blocks() { return BLOCKS.map(b => ({ i: b.i, sd: b.sd, gate: b.gate, h: gateH(b, raceTime) })); }, get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
