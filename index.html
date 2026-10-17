@@ -542,13 +542,20 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 @media (max-aspect-ratio:1/1){#msg.pill{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#msg.pill>*{white-space:nowrap}}
 .cloudStat{font-size:13px;opacity:.9}.cloudStat[data-st=offline]{color:#ffb84d}
 #cloudRec{font:900 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:2px;color:#132a74;background:#fff7d1;border:2px dashed #e0a800;border-radius:12px;padding:8px 14px;margin:6px auto;user-select:all;-webkit-user-select:all}.cloudCard .tab{margin-top:8px}#cloudErr{min-height:1.2em;color:#d12b2b;font-weight:700}.cloudCard input{direction:ltr}
+/* main-menu Settings button: navy premium chip with a gear icon + tiny cloud-status dot */
+.setBtn{position:relative;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(180deg,#4f7cff,#1e3a9e)!important;border-color:var(--navy)!important;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 5px 0 var(--navy)!important}
+.setBtn .ic{width:1.3em;height:1.3em;transition:transform .4s}
+.setBtn:active .ic{transform:rotate(60deg)}
+.setBtn .cdot{position:absolute;top:-4px;inset-inline-end:-4px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;background:#9aa4b5;display:none}
+.setBtn .cdot[data-st=ok]{display:block;background:#2ecc71}
+.setBtn .cdot[data-st=offline]{display:block;background:#ffb84d}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017142741', busy = false;
+  var BUILD = '20261017154615', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -661,7 +668,7 @@ I18N.add({
   "צ'אט": 'Chat', "💬 צ'אט החדר": '💬 Room chat', 'כתבו הודעה…': 'Write a message…', 'שלח': 'Send',
   'אישור': 'OK', 'ביטול': 'Cancel',
   '⏸ הפסקה': '⏸ Paused', 'הפסקה': 'Pause', '▶ המשך': '▶ Resume', '🔄 התחל מחדש': '🔄 Restart', '🏠 חזרה לתפריט הראשי': '🏠 Back to main menu', '⚙ שליטה': '⚙ Controls', '🔊 צליל: פועל': '🔊 Sound: on',
-  'שמירה בענן': 'Cloud save', 'מתחבר…': 'Connecting…',
+  'הגדרות': 'Settings', 'שמירה בענן': 'Cloud save', 'מתחבר…': 'Connecting…',
   'גז באגודל אחד': 'One-thumb gas', 'גז באגודל אחד:': 'One-thumb gas:',
   'מחזיקים גז, ומחליקים את האגודל שמאלה או למטה = דריפט (הגז נשאר לחוץ). מחליקים למעלה ומרימים = גז נעול; נגיעה בגז או בברקס משחררת.': 'hold gas and slide your thumb left or down = drift (gas stays on). Slide up and lift = gas locked on; tap gas or brake to release.',
   'צופר': 'Horn', 'דריפט': 'Drift', 'ברקס': 'Brake'
@@ -780,6 +787,7 @@ I18N.data = {
       <button class="metaBtn" id="chBtn">🎯 אתגרים<i class="dot" id="chDot"></i></button>
       <button class="metaBtn" id="streakBtn">📅 בונוס יומי<i class="dot" id="stDot"></i></button>
       <button class="metaBtn" id="shopBtn">🛒 חנות</button>
+      <button class="metaBtn setBtn" id="setBtn" aria-label="הגדרות"><svg class="ic"><use href="#i-gear"/></svg><span>הגדרות</span><i class="cdot" id="setDot"></i></button>
       <button class="helpBtn" id="helpBtn">❓ איך משחקים</button>
     </div>
   </div>
@@ -3913,6 +3921,7 @@ function renderCtrl() {
 function openCtrl(from) { ctrlFrom = from; $('ctrlMsg').textContent = ''; renderCtrl(); showScreen('ctrlScreen'); }
 $('pauseCtrlBtn').addEventListener('click', () => openCtrl('pauseScreen'));
 $('helpCtrlBtn').addEventListener('click', () => openCtrl('helpScreen'));
+$('setBtn').addEventListener('click', e => { e.stopPropagation(); SND.init(); SND.tink(false); openCtrl('startScreen'); });
 document.querySelectorAll('#ctrlSteer .tab').forEach(b => b.addEventListener('click', async () => {
   if (b.dataset.v === 'tilt') { const ok = await enableTilt(); if (!ok) { $('ctrlMsg').textContent = tr('אין גישה לחיישן ההטיה במכשיר הזה', "Can't access the tilt sensor on this device"); return; } }
   CTRL.steer = b.dataset.v; saveCtrl(); renderCtrl();
@@ -4599,6 +4608,7 @@ function renderCloud() {
   el.textContent = !C.on ? tr('כבויה', 'Off') : C.status === 'saving' ? tr('שומר…', 'Saving…') : C.status === 'offline' ? tr('אין חיבור – נשמר במכשיר, יעלה כשיחזור', 'Offline – saved on this device, will upload later')
     : C.savedAt ? tr(`נשמר בענן ${t}`, `Saved to cloud ${t}`) : tr('מתחבר…', 'Connecting…');
   el.dataset.st = C.status;
+  const d = $('setDot'); if (d) { d.dataset.st = !C.on ? 'off' : C.status === 'offline' ? 'offline' : C.savedAt ? 'ok' : 'idle'; d.title = el.textContent; }
 }
 CLOUD.listeners.push(() => renderCloud()); renderCloud();
 window.__cloud = CLOUD;
