@@ -540,13 +540,14 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 @media (min-aspect-ratio:1/1){#msg,#msg.big{top:calc(env(safe-area-inset-top) + 104px)!important}}
 @media (max-width:380px){#itemBox{width:72px!important;height:72px!important}#itemBox .ic{width:48px;height:48px}}
 @media (max-aspect-ratio:1/1){#msg.pill{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#msg.pill>*{white-space:nowrap}}
+.cloudStat{font-size:13px;opacity:.9}.cloudStat[data-st=offline]{color:#ffb84d}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261016124142', busy = false;
+  var BUILD = '20261017135832', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -659,6 +660,7 @@ I18N.add({
   "צ'אט": 'Chat', "💬 צ'אט החדר": '💬 Room chat', 'כתבו הודעה…': 'Write a message…', 'שלח': 'Send',
   'אישור': 'OK', 'ביטול': 'Cancel',
   '⏸ הפסקה': '⏸ Paused', 'הפסקה': 'Pause', '▶ המשך': '▶ Resume', '🔄 התחל מחדש': '🔄 Restart', '🏠 חזרה לתפריט הראשי': '🏠 Back to main menu', '⚙ שליטה': '⚙ Controls', '🔊 צליל: פועל': '🔊 Sound: on',
+  'שמירה בענן': 'Cloud save', 'מתחבר…': 'Connecting…',
   'גז באגודל אחד': 'One-thumb gas', 'גז באגודל אחד:': 'One-thumb gas:',
   'מחזיקים גז, ומחליקים את האגודל שמאלה או למטה = דריפט (הגז נשאר לחוץ). מחליקים למעלה ומרימים = גז נעול; נגיעה בגז או בברקס משחררת.': 'hold gas and slide your thumb left or down = drift (gas stays on). Slide up and lift = gas locked on; tap gas or brake to release.',
   'צופר': 'Horn', 'דריפט': 'Drift', 'ברקס': 'Brake'
@@ -955,6 +957,7 @@ I18N.data = {
     <div class="cRow"><b>גז באגודל אחד</b><div class="cOpts"><button class="tab" id="ctrlOne"></button></div></div>
     <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tab" id="ctrlDrift"></button></div></div>
     <div class="cRow"><b>שפה</b><div class="cOpts" id="ctrlLang"><button class="tab" data-l="he" lang="he">עברית</button><button class="tab" data-l="en" lang="en">English</button></div></div>
+    <div class="cRow"><b>שמירה בענן</b><div class="cOpts"><span id="cloudStat" class="cloudStat">מתחבר…</span></div></div>
     <div class="cRow"><b>מוזיקה</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
     <div class="cRow"><b>אפקטים</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volSfx" min="0" max="100" step="5"></div></div>
     <p class="note" id="ctrlHelp"></p>
@@ -4505,6 +4508,83 @@ function askConfirm(text, okLabel, onOk) {
   $('confirmOk').onclick = () => { $('confirmBox').style.display = 'none'; onOk(); };
   $('confirmNo').onclick = () => { $('confirmBox').style.display = 'none'; };
 }
+// ================= CLOUD SAVE (Supabase, publishable key only; the server validates every save) =================
+const CLOUD = (() => {
+  const URL0 = 'https://oboktedmsmqixeqbfoym.supabase.co', KEY = 'sb_publishable_5A-akLv-Us_CAhgBJQxL_w_xaKFKGzH', SK = 'shimon-agalot-cloud-v1';
+  const q = new URLSearchParams(location.search);
+  // off on local test servers unless ?cloud=1 (tests must not create real accounts); ?cloud=0 turns it off anywhere
+  const on = q.get('cloud') === '1' || (q.get('cloud') !== '0' && !/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname) && location.protocol === 'https:');
+  const C = { on, status: on ? 'idle' : 'off', name: null, named: false, savedAt: 0, err: '', busy: false, dirty: false, timer: 0, fails: 0, listeners: [] };
+  let sess = null; try { sess = JSON.parse(localStorage.getItem(SK) || 'null'); } catch (_) {}
+  const keep = () => { try { localStorage.setItem(SK, JSON.stringify(sess)); } catch (_) {} };
+  const emit = () => C.listeners.forEach(f => { try { f(C); } catch (_) {} });
+  async function http(path, body, auth, keepalive) {
+    const h = { apikey: KEY, 'Content-Type': 'application/json' }; if (auth) h.Authorization = 'Bearer ' + auth;
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), 10000);
+    try { const r = await fetch(URL0 + path, { method: 'POST', headers: h, body: JSON.stringify(body || {}), signal: ac.signal, keepalive: !!keepalive });
+      let j = null; try { j = await r.json(); } catch (_) {} return { s: r.status, j };
+    } finally { clearTimeout(t); }
+  }
+  const setSess = j => { sess = { at: j.access_token, rt: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000 - 60000, uid: j.user && j.user.id }; keep(); };
+  async function token() {
+    if (sess && sess.at && Date.now() < sess.exp) return sess.at;
+    if (sess && sess.rt) { const r = await http('/auth/v1/token?grant_type=refresh_token', { refresh_token: sess.rt }); if (r.s === 200 && r.j && r.j.access_token) { setSess(r.j); return sess.at; } if (r.s >= 500 || !r.s) throw new Error('net'); }
+    const r = await http('/auth/v1/signup', {}); if (r.s === 200 && r.j && r.j.access_token) { setSess(r.j); return sess.at; }
+    throw new Error('signup ' + r.s);
+  }
+  async function rpc(fn, args, keepalive) {
+    let t = await token(), r = await http('/rest/v1/rpc/' + fn, args, t, keepalive);
+    if (r.s === 401) { sess = sess && { rt: sess.rt }; t = await token(); r = await http('/rest/v1/rpc/' + fn, args, t, keepalive); }
+    if (r.s !== 200) { const m = (r.j && (r.j.message || r.j.error)) || ('http ' + r.s); const e = new Error(m); e.code = m; throw e; }
+    return r.j;
+  }
+  // fields the server owns (validated); everything else in PROFILE stays local
+  const FIELDS = ['xp', 'coins', 'races', 'wins', 'cv', 'goldKart', 'owned', 'tro', 'eq', 'st', 'ch'];
+  const snapshot = () => { const o = {}; for (const k of FIELDS) if (PROFILE[k] !== undefined) o[k] = PROFILE[k]; o.name = PROFILE.name || ''; o.uid = PROFILE.uid || ''; return o; };
+  function adopt(res) {
+    if (!res || !res.ok) return;
+    C.name = res.name || null; C.named = !!res.named;
+    const p = res.profile || {}; let changed = false;
+    for (const k of FIELDS) if (p[k] !== undefined && JSON.stringify(PROFILE[k]) !== JSON.stringify(p[k])) { PROFILE[k] = p[k]; changed = true; }
+    if (res.named && res.name && PROFILE.name !== res.name) { PROFILE.name = res.name; changed = true; }
+    if (changed) { rawSave(); try { renderBadge(); renderMetaBadges(); } catch (_) {} }
+  }
+  let rawSave = () => {};
+  async function sync(keepalive) {
+    if (!C.on) return; if (C.busy) { C.dirty = true; return; }
+    C.busy = true; C.dirty = false; C.status = 'saving'; emit();
+    try {
+      const res = await rpc('kart_save', { p_profile: snapshot() }, keepalive);
+      if (res && res.throttled) { C.dirty = true; } else { adopt(res); C.savedAt = Date.now(); }
+      C.status = 'ok'; C.err = ''; C.fails = 0;
+    } catch (e) { C.status = 'offline'; C.err = String(e.code || e.message || e); C.fails++; C.dirty = true; }
+    C.busy = false; emit();
+    if (C.dirty) schedule(Math.min(60000, 4000 * Math.pow(2, Math.min(C.fails, 4))));
+  }
+  function schedule(ms) { if (!C.on) return; clearTimeout(C.timer); C.timer = setTimeout(() => sync(), ms == null ? 4000 : ms); }
+  C.init = (save) => {
+    rawSave = save; if (!C.on) { emit(); return; }
+    setTimeout(() => sync(), 1500);   // first contact: uploads local progress / pulls the validated profile
+    document.addEventListener('visibilitychange', () => { if (document.hidden && C.dirty) { clearTimeout(C.timer); sync(true); } });
+    addEventListener('online', () => { if (C.dirty || C.status === 'offline') schedule(500); });
+  };
+  C.changed = () => { if (!C.on) return; C.dirty = true; schedule(); };
+  C.rpc = rpc; C.adopt = adopt; C.snapshot = snapshot; C.sync = sync;
+  C.reset = () => { sess = null; keep(); };
+  return C;
+})();
+// hook: every local save also schedules a (debounced) cloud save
+{ const local = saveProfile; saveProfile = function () { local(); CLOUD.changed(); }; CLOUD.init(local); }
+// settings row status
+function renderCloud() {
+  const el = $('cloudStat'); if (!el) return; const C = CLOUD;
+  const t = C.savedAt ? new Date(C.savedAt).toLocaleTimeString(EN ? 'en-GB' : 'he-IL', { hour: '2-digit', minute: '2-digit' }) : '';
+  el.textContent = !C.on ? tr('כבויה', 'Off') : C.status === 'saving' ? tr('שומר…', 'Saving…') : C.status === 'offline' ? tr('אין חיבור – נשמר במכשיר, יעלה כשיחזור', 'Offline – saved on this device, will upload later')
+    : C.savedAt ? tr(`נשמר בענן ${t}`, `Saved to cloud ${t}`) : tr('מתחבר…', 'Connecting…');
+  el.dataset.st = C.status;
+}
+CLOUD.listeners.push(renderCloud); renderCloud();
+window.__cloud = CLOUD;
 </script>
 </body>
 </html>
