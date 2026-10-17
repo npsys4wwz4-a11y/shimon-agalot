@@ -541,13 +541,14 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 @media (max-width:380px){#itemBox{width:72px!important;height:72px!important}#itemBox .ic{width:48px;height:48px}}
 @media (max-aspect-ratio:1/1){#msg.pill{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#msg.pill>*{white-space:nowrap}}
 .cloudStat{font-size:13px;opacity:.9}.cloudStat[data-st=offline]{color:#ffb84d}
+#cloudRec{font:900 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:2px;color:#132a74;background:#fff7d1;border:2px dashed #e0a800;border-radius:12px;padding:8px 14px;margin:6px auto;user-select:all;-webkit-user-select:all}.cloudCard .tab{margin-top:8px}#cloudErr{min-height:1.2em;color:#d12b2b;font-weight:700}.cloudCard input{direction:ltr}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017135832', busy = false;
+  var BUILD = '20261017142741', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -948,6 +949,21 @@ I18N.data = {
     </div>
   </div>
 </div>
+<div id="cloudScreen" class="screen" style="display:none">
+  <div class="card nameCard cloudCard">
+<button class="backBtn" id="cloudBack" data-back><svg class="ic"><use href="#i-back"/></svg> חזרה</button>
+    <h2 id="cloudTitle"></h2>
+    <p id="cloudInfo"></p>
+    <input id="cloudName" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false" dir="auto">
+    <input id="cloudCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" dir="ltr">
+    <input id="cloudPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" type="password" autocomplete="off" dir="ltr">
+    <div id="cloudRec" dir="ltr"></div>
+    <div id="cloudErr"></div>
+    <button class="btn" id="cloudOk"></button>
+    <button class="tab" id="cloudAlt"></button>
+    <button class="tab" id="cloudAlt2"></button>
+  </div>
+</div>
 <div id="ctrlScreen" class="screen" style="display:none">
   <div class="card ctrlCard">
 <button class="backBtn" id="ctrlBack" data-back><svg class="ic"><use href="#i-back"/></svg> חזרה</button>
@@ -957,7 +973,7 @@ I18N.data = {
     <div class="cRow"><b>גז באגודל אחד</b><div class="cOpts"><button class="tab" id="ctrlOne"></button></div></div>
     <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tab" id="ctrlDrift"></button></div></div>
     <div class="cRow"><b>שפה</b><div class="cOpts" id="ctrlLang"><button class="tab" data-l="he" lang="he">עברית</button><button class="tab" data-l="en" lang="en">English</button></div></div>
-    <div class="cRow"><b>שמירה בענן</b><div class="cOpts"><span id="cloudStat" class="cloudStat">מתחבר…</span></div></div>
+    <div class="cRow"><b>שמירה בענן</b><div class="cOpts"><span id="cloudStat" class="cloudStat">מתחבר…</span><button class="tab" id="cloudBtn" style="display:none"></button></div></div>
     <div class="cRow"><b>מוזיקה</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
     <div class="cRow"><b>אפקטים</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volSfx" min="0" max="100" step="5"></div></div>
     <p class="note" id="ctrlHelp"></p>
@@ -3273,12 +3289,13 @@ function goBack() {
     case 'endScreen': goMainMenu(); break;
     case 'pauseScreen': resumeGame(); break;
     case 'ctrlScreen': showScreen(ctrlFrom || 'startScreen'); break;
+    case 'cloudScreen': cloudBack(); break;
     case null: if (state === 'race' || state === 'countdown') pauseGame(); break;
   }
 }
 addEventListener('popstate', () => { if (ignorePop) { ignorePop = false; return; } histTrap = false; goBack(); syncHistory(); });
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SND.init(); goBack(); }));
-function hideScreens0() { ['startScreen', 'helpScreen', 'charScreen', 'kartScreen', 'nameScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen', 'modeScreen', 'cupScreen', 'podiumScreen', 'ctrlScreen'].forEach(id => $(id).style.display = 'none'); }
+function hideScreens0() { ['startScreen', 'helpScreen', 'charScreen', 'kartScreen', 'nameScreen', 'trackScreen', 'endScreen', 'pauseScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen', 'modeScreen', 'cupScreen', 'podiumScreen', 'ctrlScreen', 'cloudScreen'].forEach(id => $(id).style.display = 'none'); }
 let curScreen = 'startScreen';
 function showScreen(id) { hideScreens0(); $('tutOverlay').style.display = 'none'; curScreen = id; $(id).style.display = 'flex'; document.body.classList.add('inmenu'); releaseAllTouch(); titleMode = ['startScreen', 'helpScreen', 'mpScreen', 'lobbyScreen', 'chScreen', 'streakScreen', 'shopScreen', 'modeScreen', 'cupScreen', 'podiumScreen'].includes(id); document.body.classList.toggle('ingp', !!GP); document.body.classList.toggle('titlemode', id === 'startScreen'); if (id === 'startScreen') renderMetaBadges(); document.body.classList.toggle('inlobby', id === 'lobbyScreen'); syncHistory(); }
 let finTimers = [];
@@ -4583,8 +4600,88 @@ function renderCloud() {
     : C.savedAt ? tr(`נשמר בענן ${t}`, `Saved to cloud ${t}`) : tr('מתחבר…', 'Connecting…');
   el.dataset.st = C.status;
 }
-CLOUD.listeners.push(renderCloud); renderCloud();
+CLOUD.listeners.push(() => renderCloud()); renderCloud();
 window.__cloud = CLOUD;
+
+// ---------- account screen: save with a name + 6-digit PIN, log in on another device, recover with the code ----------
+let cloudMode = 'claim', cloudRecShown = '';
+const cloudErrText = (e, j) => {
+  const c = String((j && j.error) || (e && (e.code || e.message)) || e || '');
+  if (/bad_name/.test(c)) return tr('השם צריך 2–16 תווים: אותיות, ספרות, רווח, נקודה או מקף', 'Name must be 2–16 characters: letters, digits, space, dot or dash');
+  if (/weak_pin/.test(c)) return tr('הקוד הסודי: 6 ספרות, לא 111111 או 123456', 'PIN: 6 digits, not 111111 or 123456');
+  if (/name_taken/.test(c)) return tr('השם הזה כבר תפוס – נסו שם אחר', 'That name is taken – try another');
+  if (/already_named/.test(c)) return tr('לפרופיל הזה כבר יש שם', 'This profile already has a name');
+  if (/bad_login/.test(c)) return tr('שם או קוד סודי שגויים', 'Wrong name or PIN') + (j && j.tries_left >= 0 && j.tries_left < 5 ? tr(` (נשארו ${j.tries_left} ניסיונות)`, ` (${j.tries_left} tries left)`) : '');
+  if (/locked/.test(c)) return tr(`יותר מדי ניסיונות – נסו שוב בעוד ${(j && j.minutes) || 15} דקות, או השתמשו בקוד השחזור`, `Too many tries – try again in ${(j && j.minutes) || 15} min, or use the recovery code`);
+  if (/rate_limited/.test(c)) return tr('יותר מדי ניסיונות מהמכשיר הזה – נסו שוב בעוד שעה', 'Too many tries from this device – try again in an hour');
+  if (/bad_code/.test(c)) return tr('קוד השחזור לא נכון', 'That recovery code is wrong');
+  if (/Could not find|PGRST202/.test(c)) return tr('האפשרות הזו עוד לא זמינה', 'Not available yet');
+  return tr('אין חיבור לענן – נסו שוב', 'Can’t reach the cloud – try again');
+};
+function cloudOpen(mode) {
+  cloudMode = mode || (CLOUD.named ? 'account' : 'claim'); $('cloudErr').textContent = '';
+  for (const id of ['cloudName', 'cloudPin', 'cloudCode']) $(id).value = '';
+  if (cloudMode === 'claim' && PROFILE.name) $('cloudName').value = PROFILE.name;
+  cloudRender(); showScreen('cloudScreen');
+}
+function cloudBack() { if (cloudMode === 'showrec') { cloudRecShown = ''; } openCtrl(ctrlFrom || 'startScreen'); }
+function cloudRender() {
+  const m = cloudMode, show = (id, v) => $(id).style.display = v ? '' : 'none';
+  $('cloudName').placeholder = tr('שם שחקן', 'Player name');
+  $('cloudPin').placeholder = m === 'recover' ? tr('קוד סודי חדש (6 ספרות)', 'New PIN (6 digits)') : tr('קוד סודי (6 ספרות)', 'PIN (6 digits)');
+  $('cloudCode').placeholder = tr('קוד שחזור, למשל Q7MZP-K4X2R', 'Recovery code, e.g. Q7MZP-K4X2R');
+  show('cloudName', m === 'claim' || m === 'login'); show('cloudPin', m === 'claim' || m === 'login' || m === 'recover'); show('cloudCode', m === 'recover');
+  show('cloudRec', m === 'showrec'); show('cloudAlt', m !== 'showrec'); show('cloudAlt2', m === 'login' || m === 'account');
+  const T = {
+    claim:   [tr('שמירת ההתקדמות', 'Save your progress'), tr('בחרו שם וקוד סודי. כך תוכלו להמשיך מכל מכשיר ולא תאבדו כלום אם המכשיר יתאפס.', 'Pick a name and a PIN so you can continue on any device and never lose your progress.'), tr('שמור', 'Save'), tr('יש לי כבר פרופיל', 'I already have a profile')],
+    login:   [tr('כניסה לפרופיל', 'Log in to your profile'), tr('ההתקדמות שבמכשיר הזה תתאחד עם הפרופיל – שום דבר לא הולך לאיבוד.', 'Progress on this device is merged into your profile – nothing is lost.'), tr('כניסה', 'Log in'), tr('פרופיל חדש', 'New profile'), tr('שכחתי את הקוד', 'Forgot my PIN')],
+    recover: [tr('שחזור עם קוד', 'Recover with your code'), tr('הקלידו את קוד השחזור שקיבלתם ובחרו קוד סודי חדש.', 'Type the recovery code you got and choose a new PIN.'), tr('שחזור', 'Recover'), tr('חזרה לכניסה', 'Back to log in')],
+    showrec: [tr('נשמר!', 'Saved!'), tr('זה קוד השחזור שלכם. צלמו מסך או כתבו אותו – בלעדיו אי אפשר לשחזר קוד סודי שנשכח. הוא מוצג רק עכשיו.', 'This is your recovery code. Take a screenshot or write it down – it is the only way to reset a forgotten PIN, and it is shown only now.'), tr('שמרתי', 'Got it')],
+    account: [tr('הפרופיל בענן', 'Cloud profile'), tr(`מחובר/ת בתור ${CLOUD.name || ''}. ההתקדמות נשמרת בענן – בכל מכשיר נכנסים עם השם והקוד הסודי.`, `Logged in as ${CLOUD.name || ''}. Progress is saved in the cloud – log in on any device with your name and PIN.`), tr('סגור', 'Close'), tr('התנתקות במכשיר הזה', 'Log out on this device'), tr('מחיקת הפרופיל מהענן', 'Delete my cloud profile')],
+  }[m];
+  $('cloudTitle').textContent = T[0]; $('cloudInfo').textContent = T[1]; $('cloudOk').textContent = T[2]; $('cloudAlt').textContent = T[3] || ''; $('cloudAlt2').textContent = T[4] || '';
+  $('cloudRec').textContent = cloudRecShown; $('cloudOk').disabled = false;
+}
+async function cloudDo(fn, args) {
+  $('cloudErr').textContent = ''; $('cloudOk').disabled = true;
+  try { const j = await CLOUD.rpc(fn, args); if (j && j.ok === false) { $('cloudErr').textContent = cloudErrText(null, j); return null; } return j; }
+  catch (e) { $('cloudErr').textContent = cloudErrText(e); return null; }
+  finally { $('cloudOk').disabled = false; }
+}
+$('cloudOk').addEventListener('click', async () => {
+  SND.init(); const nm = $('cloudName').value.trim(), pin = $('cloudPin').value.trim(), code = $('cloudCode').value.trim();
+  if (cloudMode === 'showrec' || cloudMode === 'account') { cloudRecShown = ''; openCtrl(ctrlFrom || 'startScreen'); return; }
+  if ((cloudMode === 'claim' || cloudMode === 'recover') && !/^[0-9]{6}$/.test(pin)) { $('cloudErr').textContent = cloudErrText('weak_pin'); return; }
+  let j = null;
+  if (cloudMode === 'claim') { await CLOUD.sync(); j = await cloudDo('kart_claim', { p_name: nm, p_pin: pin }); }
+  else if (cloudMode === 'login') j = await cloudDo('kart_login', { p_name: nm, p_pin: pin, p_local: CLOUD.snapshot() });
+  else if (cloudMode === 'recover') j = await cloudDo('kart_recover', { p_code: code, p_new_pin: pin, p_local: CLOUD.snapshot() });
+  if (!j) return;
+  CLOUD.adopt(j); CLOUD.savedAt = Date.now(); renderCloud(); SND.gotItem();
+  if (j.recovery) { cloudRecShown = j.recovery; cloudMode = 'showrec'; cloudRender(); }
+  else { cloudMode = 'account'; cloudRender(); coinToast(tr(`ברוך הבא, ${CLOUD.name}!`, `Welcome back, ${CLOUD.name}!`)); }
+});
+$('cloudAlt').addEventListener('click', async () => {
+  SND.init();
+  if (cloudMode === 'claim') { cloudMode = 'login'; }
+  else if (cloudMode === 'login') { cloudMode = 'claim'; }
+  else if (cloudMode === 'recover') { cloudMode = 'login'; }
+  else if (cloudMode === 'account') { const j = await cloudDo('kart_logout', {}); if (!j) return; CLOUD.name = null; CLOUD.named = false; renderCloud(); cloudMode = 'claim'; }
+  $('cloudErr').textContent = ''; cloudRender();
+});
+let cloudDelArm = 0;
+$('cloudAlt2').addEventListener('click', async () => {
+  SND.init();
+  if (cloudMode === 'login') { cloudMode = 'recover'; $('cloudErr').textContent = ''; cloudRender(); return; }
+  if (cloudMode === 'account') {
+    if (Date.now() - cloudDelArm > 4000) { cloudDelArm = Date.now(); $('cloudErr').textContent = tr('לחצו שוב כדי למחוק לצמיתות (ההתקדמות במכשיר נשארת)', 'Tap again to delete for good (progress on this device stays)'); return; }
+    const j = await cloudDo('kart_delete_me', {}); if (!j) return; CLOUD.name = null; CLOUD.named = false; CLOUD.reset(); renderCloud(); cloudMode = 'claim'; cloudRender();
+    $('cloudErr').textContent = tr('הפרופיל נמחק מהענן', 'Cloud profile deleted');
+  }
+});
+$('cloudBtn').addEventListener('click', () => { SND.init(); cloudOpen(); });
+{ const r0 = renderCloud; renderCloud = function () { r0(); const b = $('cloudBtn'); if (!b) return; b.style.display = CLOUD.on ? '' : 'none'; b.textContent = CLOUD.named ? (CLOUD.name || tr('חשבון', 'Account')) : tr('שמירה עם שם', 'Save with a name'); }; }
+renderCloud();
 </script>
 </body>
 </html>
