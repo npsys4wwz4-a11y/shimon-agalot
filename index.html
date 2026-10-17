@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017165210', busy = false;
+  var BUILD = '20261017171656', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -3577,22 +3577,38 @@ function ramKart(att, vic, nx, nz) {   // n = unit vector from attacker to victi
   att.rams = (att.rams || 0) + 1; react(vic, 'angry'); setTimeout(() => react(att, 'happy'), 300);
   return true;
 }
+// kart-kart contact: impulse along the contact normal from the real velocities (heading*speed + shove velocity), weighted by
+// kart weight, small restitution; soft positional correction with slop (no jitter); no speed drain while just rubbing side by side.
+// Remote karts are owned by their device: only the local kart of a pair is moved / changes speed, so every device resolves its own kart.
+function kVel(k) { const sp = k.remote ? ((k.nt && k.nt.sp) || k.speed || 0) : k.speed; return [Math.sin(k.heading) * sp + (k.bvx || 0), Math.cos(k.heading) * sp + (k.bvz || 0)]; }
 function collideKarts() {
+  const R = 2.4, R2 = R * R;
   for (let i = 0; i < karts.length; i++) for (let j = i + 1; j < karts.length; j++) {
     const a = karts[i], b = karts[j]; const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d2 = dx * dx + dz * dz;
-    if (d2 < 5.8 && d2 > 1e-4 && Math.abs((a.y || 0) - (b.y || 0)) < 2.5) {
-      if (a.remote && b.remote) continue;
-      const d = Math.sqrt(d2), nx = dx / d, nz = dz / d, wa = a.weight || 1, wb = b.weight || 1;
-      const cx = (a.pos.x + b.pos.x) / 2, cz = (a.pos.z + b.pos.z) / 2, cy = ((a.y || 0) + (b.y || 0)) / 2, near = a.isPlayer || b.isPlayer;
-      let pa = (2.4 - d) * wb / (wa + wb), pb = (2.4 - d) * wa / (wa + wb);
-      if (a.remote) { pa = 0; pb *= 2; } if (b.remote) { pb = 0; pa *= 2; }
-      a.pos.x -= nx * pa; a.pos.z -= nz * pa; b.pos.x += nx * pb; b.pos.z += nz * pb;
-      if (a.star > 0 || b.star > 0) {
-        if (a.star > 0 && b.star <= 0) { if (!b.remote) spinKart(b, 1, a.isPlayer); } else if (b.star > 0 && a.star <= 0) { if (!a.remote) spinKart(a, 1, b.isPlayer); }
-        continue;
+    if (d2 >= R2 || d2 < 1e-4 || Math.abs((a.y || 0) - (b.y || 0)) >= 2.5) continue;
+    if (a.remote && b.remote) continue;
+    const d = Math.sqrt(d2), nx = dx / d, nz = dz / d, wa = a.weight || 1, wb = b.weight || 1;
+    const cx = (a.pos.x + b.pos.x) / 2, cz = (a.pos.z + b.pos.z) / 2, cy = ((a.y || 0) + (b.y || 0)) / 2, near = a.isPlayer || b.isPlayer;
+    // positional: push apart 60% of the overlap beyond a small slop, split by weight (all of it onto the local kart vs a remote one)
+    const pen = Math.max(0, R - d - 0.05) * 0.6;
+    let fa = wb / (wa + wb), fb = wa / (wa + wb); if (a.remote) { fa = 0; fb = 1; } if (b.remote) { fb = 0; fa = 1; }
+    a.pos.x -= nx * pen * fa; a.pos.z -= nz * pen * fa; b.pos.x += nx * pen * fb; b.pos.z += nz * pen * fb;
+    if (a.star > 0 || b.star > 0) {
+      if (a.star > 0 && b.star <= 0) { if (!b.remote) spinKart(b, 1, a.isPlayer); } else if (b.star > 0 && a.star <= 0) { if (!a.remote) spinKart(a, 1, b.isPlayer); }
+      continue;
+    }
+    const [vax, vaz] = kVel(a), [vbx, vbz] = kVel(b), vn = (vbx - vax) * nx + (vbz - vaz) * nz;   // < 0 = closing
+    const ad = a.drifting && !b.drifting, bd = b.drifting && !a.drifting;
+    if (vn < -0.5) {
+      const e = 0.35, J = -(1 + e) * vn / (1 / wa + 1 / wb), hard = -vn;
+      for (const [k, sg, w] of [[a, -1, wa], [b, 1, wb]]) {
+        if (k.remote) continue;
+        const ix = sg * nx * J / w, iz = sg * nz * J / w, fx = Math.sin(k.heading), fz = Math.cos(k.heading);
+        const along = ix * fx + iz * fz;   // part of the impulse along the kart's own heading changes its speed (rear-end: front kart gains, rear kart loses)
+        k.speed = clamp(k.speed + along * 0.8, -8, Math.max(k.speed, (k.maxSpeed || 40) * 1.08));
+        k.bvx = (k.bvx || 0) + (ix - fx * along) * 0.9; k.bvz = (k.bvz || 0) + (iz - fz * along) * 0.9;   // sideways part = shove
       }
-      const ad = a.drifting && !b.drifting, bd = b.drifting && !a.drifting;
-      if (ad || bd) {
+      if (ad || bd) {   // drifting into someone is a deliberate ram: extra shove + slowdown on the victim
         const att = ad ? a : b, vic = ad ? b : a, s = ad ? 1 : -1;
         const hit = ramKart(att, vic, nx * s, nz * s);
         if (hit || (vic.remote && (att.bumpOut || 0) <= 0)) {
@@ -3600,10 +3616,7 @@ function collideKarts() {
           att.bumpOut = 0.7; bumpFx(cx, cy, cz, true);
           if (near) { SND.bump(true); if (vic.isPlayer) { shakeCam(0.25); flash(tr('בום! נדחפת', 'Boom! You got shoved'), 0.6, '#ff9a2f'); } }
         }
-      } else {
-        if (!a.remote) a.speed *= 0.985; if (!b.remote) b.speed *= 0.985;
-        if ((a.tapCD || 0) <= 0 && Math.abs(a.speed - b.speed) + Math.max(a.speed, b.speed) * 0.2 > 6) { a.tapCD = 0.5; bumpFx(cx, cy, cz, false); if (near) SND.bump(false); }
-      }
+      } else if ((a.tapCD || 0) <= 0 && hard > 4) { a.tapCD = 0.4; bumpFx(cx, cy, cz, hard > 10); if (near) { SND.bump(hard > 10); if (hard > 10) shakeCam(0.12); } }
     }
   }
 }
