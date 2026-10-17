@@ -495,7 +495,7 @@ input.vol::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:
 #confirmBox .confCard{max-width:420px;text-align:center;font-size:17px;color:#0b1e5a}
 /* language toggle (title screen) */
 #langBtn{position:fixed;z-index:25;top:calc(env(safe-area-inset-top) + 64px);left:calc(env(safe-area-inset-left) + 12px);display:none;-webkit-appearance:none;appearance:none;padding:6px 13px;border-radius:999px;border:3px solid #fff;background:linear-gradient(180deg,rgba(47,107,255,.95),rgba(19,42,116,.95));box-shadow:0 0 0 3px var(--navy),0 4px 0 var(--navy);color:#fff;font:900 14px/1 Rubik,Arial,sans-serif;text-shadow:var(--ol);cursor:pointer}
-body.inmenu.titlemode #langBtn{display:inline-block}
+/* language switch lives in Settings only (main-menu button removed) */
 @media (max-aspect-ratio:1/1){#langBtn{top:calc(env(safe-area-inset-top) + 12px);left:auto;right:calc(env(safe-area-inset-right) + 12px)}}
 #langBtn:active{transform:translateY(2px)}
 html[dir=ltr] #chatPanel .chForm input{direction:ltr}
@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017161025', busy = false;
+  var BUILD = '20261017165210', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
