@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017191101', busy = false;
+  var BUILD = '20261017193623', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -1244,6 +1244,9 @@ const SND = {
     this.drGain = c.createGain(); this.drGain.gain.value = 0;
     this.drFilt = c.createBiquadFilter(); this.drFilt.type = 'bandpass'; this.drFilt.frequency.value = 3000; this.drFilt.Q.value = 2;
     const dn = c.createBufferSource(); dn.buffer = nb; dn.loop = true; dn.connect(this.drFilt); this.drFilt.connect(this.drGain); this.drGain.connect(this.sfx); dn.start();
+    // crowd cheer bed (louder near the fans at the finish / corners)
+    this.crG = c.createGain(); this.crG.gain.value = 0; const crF = c.createBiquadFilter(); crF.type = 'bandpass'; crF.frequency.value = 1100; crF.Q.value = 0.6;
+    const crS = c.createBufferSource(); crS.buffer = nb; crS.loop = true; crS.playbackRate.value = 0.7; crS.connect(crF); crF.connect(this.crG); this.crG.connect(this.sfx); crS.start();
     setInterval(() => this.schedule(), 25);
     document.addEventListener('visibilitychange', () => { if (!this.ctx) return; document.hidden ? this.ctx.suspend().catch(() => {}) : (!this.paused && this.ctx.resume().catch(() => {})); });
   },
@@ -1290,7 +1293,8 @@ const SND = {
   },
   ambEvent(t) {
     const id = this.ambId, A = { gain: 1 };
-    if (id === 'beach') { const f = 1500 + Math.random() * 500; for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) this.tone(f, t + i * 0.22, 0.18, { type: 'sine', gain: 0.025, slideTo: f * 0.62 }); }   // seagulls
+    if (id === 'beach' && Math.random() < 0.35) { for (const [d, f] of [[0, 330], [0.28, 262]]) this.tone(f, t + d, 0.24, { type: 'square', gain: 0.008 }); this.noise(t, 2.4, { gain: 0.03, type: 'lowpass', freq: 260, freqTo: 600 }); }   // city: distant horn + passing car
+    else if (id === 'beach') { const f = 1500 + Math.random() * 500; for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) this.tone(f, t + i * 0.22, 0.18, { type: 'sine', gain: 0.025, slideTo: f * 0.62 }); }   // seagulls
     else if (id === 'desert') this.noise(t, 2.2, { gain: 0.05, type: 'bandpass', freq: 500, freqTo: 1400, q: 3 });   // wind gust whistle
     else if (id === 'hills') { if (Math.random() < 0.5) { for (let i = 0; i < 3; i++) { const f = 2600 + Math.random() * 1400; this.tone(f, t + i * 0.12, 0.08, { type: 'sine', gain: 0.02, slideTo: f * 1.3 }); } }   // birds
       else for (let i = 0; i < 3; i++) { this.tone(820, t + i * 0.32, 0.5, { type: 'triangle', gain: 0.018 }); this.tone(820 * 2.4, t + i * 0.32, 0.25, { type: 'sine', gain: 0.008 }); } }   // goat bells
@@ -1398,10 +1402,17 @@ const SND = {
   },
   update(player, racing) {
     if (!this.ctx) return; const t = this.ctx.currentTime;
-    const sp = Math.max(0, Math.abs(player.speed));
-    this.eng1.frequency.setTargetAtTime(48 + sp * 2.6 + (player.boost > 0 ? 25 : 0), t, 0.06);
-    this.eng2.frequency.setTargetAtTime((48 + sp * 2.6) / 2, t, 0.06);
-    this.engFilt.frequency.setTargetAtTime(400 + sp * 30, t, 0.1);
+    const sp = Math.max(0, Math.abs(player.speed)), top = Math.max(30, player.maxSpeed || 43);
+    // 4-gear model: rpm climbs within each gear and drops at the shift, so pitch follows speed like a real engine
+    const u = Math.min(1.15, sp / top) * 4, gear = Math.min(3, Math.floor(u)), rpm = u - gear;
+    const hz = 46 + gear * 9 + rpm * (62 - gear * 6) + (player.boost > 0 ? 22 : 0) + (player.air ? 10 : 0);
+    this.engHz = hz; this.eng1.frequency.setTargetAtTime(hz, t, 0.05); this.eng2.frequency.setTargetAtTime(hz / 2, t, 0.05);
+    this.engFilt.frequency.setTargetAtTime(380 + sp * 26 + rpm * 260, t, 0.08);
+    // crowd: distance to the nearest fan (checked a few times a second)
+    if (!(this.crT > 0)) { this.crT = 6; let d2 = 1e9; if (racing && typeof CROWD !== 'undefined') for (const f of CROWD) { const dx = f.x - player.pos.x, dz = f.z - player.pos.z; d2 = Math.min(d2, dx * dx + dz * dz); }
+      const d = Math.sqrt(d2); this.crowdLvl = d < 70 ? (1 - d / 70) ** 1.5 : 0; this.crG.gain.setTargetAtTime(0.16 * this.crowdLvl, t, 0.35);
+      if (this.crowdLvl > 0.35 && Math.random() < 0.25) { const f0 = 600 + Math.random() * 500; this.tone(f0, t + 0.02, 0.35, { type: 'triangle', gain: 0.02 * this.crowdLvl, slideTo: f0 * 1.5 }); } }   // a "whoo!"
+    this.crT--;
     this.engGain.gain.setTargetAtTime(racing ? 0.035 + 0.035 * Math.min(1, sp / 43) : 0, t, 0.1);
     const dr = racing && player.drifting && player.charge > 0.2;
     this.drGain.gain.setTargetAtTime(dr ? 0.07 : 0, t, 0.04);
