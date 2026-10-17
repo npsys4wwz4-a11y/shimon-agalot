@@ -549,13 +549,26 @@ body.ctrl-onethumb .tb[data-k=gas] .gh{z-index:2}
 .setBtn .cdot{position:absolute;top:-4px;inset-inline-end:-4px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;background:#9aa4b5;display:none}
 .setBtn .cdot[data-st=ok]{display:block;background:#2ecc71}
 .setBtn .cdot[data-st=offline]{display:block;background:#ffb84d}
+/* settings: section headers + iOS-style switches */
+.ctrlCard .cSec{margin:14px 0 4px;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:#4f6bbf;border-bottom:2px solid rgba(30,58,158,.15);padding-bottom:3px;text-align:start;width:100%}
+.ctrlCard .cSec:first-of-type{margin-top:6px}
+.tgl{position:relative;width:52px;height:30px;border-radius:999px;border:2px solid var(--navy);background:#c9d1e3;cursor:pointer;flex:none;padding:0;transition:background .2s;box-shadow:inset 0 2px 4px rgba(0,0,30,.2)}
+.tgl i{position:absolute;top:2px;inset-inline-start:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 3px rgba(0,0,30,.35);transition:inset-inline-start .2s}
+.tgl.on{background:linear-gradient(180deg,#4fd17f,#22a75a)}
+.tgl.on i{inset-inline-start:24px}
+.cOpts .tgl+input.vol{margin-inline-start:10px}
+input.vol:disabled{opacity:.4}
+.ctrlCard .cOpts{flex-wrap:nowrap;align-items:center}.ctrlCard #ctrlSteer,.ctrlCard #optGfx{flex-wrap:wrap}.ctrlCard input.vol{min-width:0;flex:1 1 120px;max-width:180px}
+.ctrlCard .cRow:has(.vol){flex-wrap:nowrap}.ctrlCard .cRow:has(.vol) b{flex:none}
+.ctrlCard .cRow:has(.vol) .cOpts{min-width:0;flex:1 1 auto;justify-content:flex-end}.ctrlCard input.vol{width:auto!important;flex:1 1 60px;min-width:60px}
+body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex"]) #muteBtn{display:none!important}
 
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017154615', busy = false;
+  var BUILD = '20261017161025', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -668,7 +681,7 @@ I18N.add({
   "צ'אט": 'Chat', "💬 צ'אט החדר": '💬 Room chat', 'כתבו הודעה…': 'Write a message…', 'שלח': 'Send',
   'אישור': 'OK', 'ביטול': 'Cancel',
   '⏸ הפסקה': '⏸ Paused', 'הפסקה': 'Pause', '▶ המשך': '▶ Resume', '🔄 התחל מחדש': '🔄 Restart', '🏠 חזרה לתפריט הראשי': '🏠 Back to main menu', '⚙ שליטה': '⚙ Controls', '🔊 צליל: פועל': '🔊 Sound: on',
-  'הגדרות': 'Settings', 'שמירה בענן': 'Cloud save', 'מתחבר…': 'Connecting…',
+  'הגדרות': 'Settings', 'כללי': 'General', 'צליל': 'Sound', 'רטט': 'Vibration', 'שליטה': 'Controls', 'גרפיקה': 'Graphics', 'איכות': 'Quality', 'אוטומטי': 'Auto', 'חסכוני': 'Battery saver', 'גבוהה': 'High', 'הדרכה': 'Tutorial', 'הדרכת פתיחה': 'First-race tutorial', 'הצג שוב': 'Show again', 'שמירה בענן': 'Cloud save', 'מתחבר…': 'Connecting…',
   'גז באגודל אחד': 'One-thumb gas', 'גז באגודל אחד:': 'One-thumb gas:',
   'מחזיקים גז, ומחליקים את האגודל שמאלה או למטה = דריפט (הגז נשאר לחוץ). מחליקים למעלה ומרימים = גז נעול; נגיעה בגז או בברקס משחררת.': 'hold gas and slide your thumb left or down = drift (gas stays on). Slide up and lift = gas locked on; tap gas or brake to release.',
   'צופר': 'Horn', 'דריפט': 'Drift', 'ברקס': 'Brake'
@@ -976,15 +989,23 @@ I18N.data = {
   <div class="card ctrlCard">
 <button class="backBtn" id="ctrlBack" data-back><svg class="ic"><use href="#i-back"/></svg> חזרה</button>
     <h2>⚙ הגדרות</h2>
-    <div class="cRow"><b>היגוי</b><div class="cOpts" id="ctrlSteer"><button class="tab" data-v="buttons">כפתורים</button><button class="tab" data-v="swipe">החלקה</button><button class="tab" data-v="tilt">הטיית מכשיר</button></div></div>
-    <div class="cRow"><b>גז אוטומטי</b><div class="cOpts"><button class="tab" id="ctrlGas"></button></div></div>
-    <div class="cRow"><b>גז באגודל אחד</b><div class="cOpts"><button class="tab" id="ctrlOne"></button></div></div>
-    <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tab" id="ctrlDrift"></button></div></div>
+    <h3 class="cSec">כללי</h3>
     <div class="cRow"><b>שפה</b><div class="cOpts" id="ctrlLang"><button class="tab" data-l="he" lang="he">עברית</button><button class="tab" data-l="en" lang="en">English</button></div></div>
     <div class="cRow"><b>שמירה בענן</b><div class="cOpts"><span id="cloudStat" class="cloudStat">מתחבר…</span><button class="tab" id="cloudBtn" style="display:none"></button></div></div>
-    <div class="cRow"><b>מוזיקה</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
-    <div class="cRow"><b>אפקטים</b><div class="cOpts"><input type="range" dir="ltr" class="vol" id="volSfx" min="0" max="100" step="5"></div></div>
+    <h3 class="cSec">צליל</h3>
+    <div class="cRow"><b>מוזיקה</b><div class="cOpts"><button class="tgl" id="sndMusic" role="switch"><i></i></button><input type="range" dir="ltr" class="vol" id="volMusic" min="0" max="100" step="5"></div></div>
+    <div class="cRow"><b>אפקטים</b><div class="cOpts"><button class="tgl" id="sndSfx" role="switch"><i></i></button><input type="range" dir="ltr" class="vol" id="volSfx" min="0" max="100" step="5"></div></div>
+    <div class="cRow" id="vibRow"><b>רטט</b><div class="cOpts"><button class="tgl" id="optVib" role="switch"><i></i></button></div></div>
+    <h3 class="cSec">שליטה</h3>
+    <div class="cRow"><b>היגוי</b><div class="cOpts" id="ctrlSteer"><button class="tab" data-v="buttons">כפתורים</button><button class="tab" data-v="swipe">החלקה</button><button class="tab" data-v="tilt">הטיית מכשיר</button></div></div>
+    <div class="cRow"><b>גז אוטומטי</b><div class="cOpts"><button class="tgl" id="ctrlGas" role="switch"><i></i></button></div></div>
+    <div class="cRow"><b>גז באגודל אחד</b><div class="cOpts"><button class="tgl" id="ctrlOne" role="switch"><i></i></button></div></div>
+    <div class="cRow"><b>כפתור דריפט נפרד</b><div class="cOpts"><button class="tgl" id="ctrlDrift" role="switch"><i></i></button></div></div>
     <p class="note" id="ctrlHelp"></p>
+    <h3 class="cSec">גרפיקה</h3>
+    <div class="cRow"><b>איכות</b><div class="cOpts" id="optGfx"><button class="tab" data-g="auto">אוטומטי</button><button class="tab" data-g="low">חסכוני</button><button class="tab" data-g="high">גבוהה</button></div></div>
+    <h3 class="cSec">הדרכה</h3>
+    <div class="cRow"><b>הדרכת פתיחה</b><div class="cOpts"><button class="tab" id="optTut">הצג שוב</button></div></div>
     <p class="note warn" id="ctrlMsg"></p>
   </div>
 </div>
@@ -1203,8 +1224,8 @@ const SND = {
     const c = this.ctx = new AC();
     const comp = c.createDynamicsCompressor(); comp.connect(c.destination);
     this.master = c.createGain(); this.master.gain.value = this.muted ? 0 : 0.8; this.master.connect(comp);
-    this.music = c.createGain(); this.music.gain.value = 0.2 * this.vol.m; this.music.connect(this.master);
-    this.sfx = c.createGain(); this.sfx.gain.value = 0.85 * this.vol.s; this.sfx.connect(this.master);
+    this.music = c.createGain(); this.music.gain.value = this.gM(); this.music.connect(this.master);
+    this.sfx = c.createGain(); this.sfx.gain.value = this.gS(); this.sfx.connect(this.master);
     // iOS unlock: play a silent buffer inside the user gesture
     const sb = c.createBuffer(1, 1, 22050), ss = c.createBufferSource(); ss.buffer = sb; ss.connect(c.destination); ss.start(0);
     c.resume();
@@ -1228,8 +1249,11 @@ const SND = {
   },
   pause(p) { this.paused = p; if (!this.ctx) return; p ? this.ctx.suspend().catch(() => {}) : this.ctx.resume().catch(() => {}); },
   vol: { m: 0.8, s: 1 },
+  on: { m: true, s: true },
+  gM() { return this.on.m ? 0.2 * this.vol.m : 0; }, gS() { return this.on.s ? 0.85 * this.vol.s : 0; },
+  setOn(k, v) { this.on[k] = !!v; try { localStorage.setItem('kart-snd', JSON.stringify(this.on)); } catch (_) {} this.setVol(this.vol.m, this.vol.s); },
   setVol(m, s) { this.vol = { m: Math.max(0, Math.min(1, m)), s: Math.max(0, Math.min(1, s)) }; try { localStorage.setItem('kart-vol', JSON.stringify(this.vol)); } catch (_) {}
-    if (this.ctx) { this.music.gain.setTargetAtTime(0.2 * this.vol.m, this.ctx.currentTime, 0.03); this.sfx.gain.setTargetAtTime(0.85 * this.vol.s, this.ctx.currentTime, 0.03); } },
+    if (this.ctx) { this.music.gain.setTargetAtTime(this.gM(), this.ctx.currentTime, 0.03); this.sfx.gain.setTargetAtTime(this.gS(), this.ctx.currentTime, 0.03); } },
   setMuted(m) { this.muted = m; if (this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.8, this.ctx.currentTime, 0.02); },
   mtof: m => 440 * Math.pow(2, (m - 69) / 12),
   tone(freq, t, dur, { type = 'square', gain = 0.2, dest, slideTo, attack = 0.005 } = {}) {
@@ -1426,6 +1450,8 @@ try { const v = JSON.parse(localStorage.getItem('kart-vol') || 'null'); if (v &&
 
 // iOS can leave the context 'interrupted' (call, Siri, lock screen): any later tap brings the sound back
 for (const ev of ['touchend', 'pointerdown', 'keydown']) addEventListener(ev, () => { const c = SND.ctx; if (c && c.state !== 'running' && !SND.paused && !document.hidden) c.resume().catch(() => {}); }, { capture: true, passive: true });
+
+try { const o = JSON.parse(localStorage.getItem('kart-snd') || 'null'); if (o) SND.on = { m: o.m !== false, s: o.s !== false }; } catch (_) {}
 // ---------- constants ----------
 const N = 1000, HW = 9, CURB = 1.6, WALL = HW + CURB, LIMIT = WALL - 1.3, LAPS = 3;
 const ITEMS = {
@@ -2558,8 +2584,11 @@ function fireShell(k, e) {
   const s = { g, pos: g.position, heading: k.heading, idx: k.idx, path: k.path, takeBr: k.takeBr, owner: k, target: targetAhead(k), age: 0 }; shells.push(s);
   if (netOn()) netEv({ k: 'shell', s: k.slot, x: +g.position.x.toFixed(2), z: +g.position.z.toFixed(2), h: +k.heading.toFixed(3), i: k.idx, p: k.path, tb: k.takeBr ? 1 : 0, tg: s.target ? s.target.slot : -1 });
 }
+const VIB = { ok: typeof navigator.vibrate === 'function', on: (() => { try { return localStorage.getItem('kart-vib') !== '0'; } catch (_) { return true; } })() };
+function buzz(ms) { if (VIB.ok && VIB.on) try { navigator.vibrate(ms); } catch (_) {} }
 function spinKart(k, dur, byPlayer) {
   if (k.star > 0 || k.spin > 0) return false;
+  if (k === player) buzz(k.shield > 0 ? 25 : 60);
   if (k.shield > 0) {   // Iron Dome absorbs exactly one hit
     k.shield = 0; k.shieldPop = 0.5; k.blocks = (k.blocks || 0) + 1; react(k, 'cheer');
     if (k.isPlayer) { flash(tr('כיפת ברזל יירטה! 🛡️', 'Iron Dome intercepted! 🛡️'), .9, '#7fd8ff'); SND.block(); } else if (k.pos.distanceTo(player.pos) < 35) SND.block();
@@ -3795,7 +3824,7 @@ function frame(now) {
   if (netOn()) netInterp(rdt * TS, now);
   render(rdt, now);
   perfN++; perfT += rdt;
-  if (perfT > 2.5) { const fps = perfN / perfT; perfN = 0; perfT = 0; if (fps < 36 && curPR > 1) { curPR = Math.max(1, curPR - 0.25); renderer.setPixelRatio(curPR); onResize(); } else if (fps < 28 && !titleMode && state !== 'menu') lowerQuality(); }
+  if (perfT > 2.5) { const fps = perfN / perfT; perfN = 0; perfT = 0; if (GFX !== 'auto') {} else if (fps < 36 && curPR > 1) { curPR = Math.max(1, curPR - 0.25); renderer.setPixelRatio(curPR); onResize(); } else if (fps < 28 && !titleMode && state !== 'menu') lowerQuality(); }
   requestAnimationFrame(frame);
 }
 function step(dt, now) {
@@ -3912,13 +3941,32 @@ window.__kart = { input: () => playerInput(), get state() { return state; }, get
 let ctrlFrom = 'startScreen';
 function renderCtrl() {
   document.querySelectorAll('#ctrlSteer .tab').forEach(b => b.classList.toggle('sel', b.dataset.v === CTRL.steer));
-  $('ctrlGas').textContent = CTRL.autoGas ? tr('פועל', 'On') : tr('כבוי', 'Off'); $('ctrlGas').classList.toggle('sel', !!CTRL.autoGas);
-  $('ctrlOne').textContent = CTRL.oneThumb ? tr('פועל', 'On') : tr('כבוי', 'Off'); $('ctrlOne').classList.toggle('sel', !!CTRL.oneThumb);
-  $('ctrlDrift').textContent = CTRL.driftBtn ? tr('מוצג', 'Shown') : tr('מוסתר', 'Hidden'); $('ctrlDrift').classList.toggle('sel', !!CTRL.driftBtn);
+  for (const [id, v] of [['ctrlGas', CTRL.autoGas], ['ctrlOne', CTRL.oneThumb], ['ctrlDrift', CTRL.driftBtn]]) { const b = $(id); b.classList.toggle('on', !!v); b.setAttribute('aria-checked', v ? 'true' : 'false'); }
   $('ctrlHelp').textContent = (EN ? { buttons: 'Arrows to steer. Hold brake while turning at speed = drift.', swipe: 'Drag your thumb on the left side of the screen to steer. Brake + steer = drift.', tilt: 'Tilt the phone like a steering wheel. Brake + steer = drift.' } : { buttons: 'חיצים להיגוי. החזיקו ברקס תוך כדי פנייה במהירות = דריפט.', swipe: 'גררו את האגודל בצד שמאל של המסך כדי לנווט. ברקס + היגוי = דריפט.', tilt: 'הטו את המכשיר כמו הגה. ברקס + היגוי = דריפט.' })[CTRL.steer] + tr(' באוויר: הקישו ברקס לטריק ובוסט בנחיתה.', ' In the air: tap brake for a trick and a landing boost.');
   document.querySelectorAll('#ctrlLang .tab').forEach(b => b.classList.toggle('sel', b.dataset.l === LANG));
 }
-function openCtrl(from) { ctrlFrom = from; $('ctrlMsg').textContent = ''; renderCtrl(); showScreen('ctrlScreen'); }
+// ---- graphics quality: auto (adaptive), low (battery saver: 1x pixels, no shadows), high (sharp + shadows, no auto-downgrade)
+let GFX = (() => { try { return localStorage.getItem('kart-gfx') || 'auto'; } catch (_) { return 'auto'; } })();
+function applyGfx() {
+  const dpr = window.devicePixelRatio || 1;
+  if (GFX === 'low') { curPR = 1; FX.q = 0; sun.castShadow = false; }
+  else { curPR = Math.min(dpr, GFX === 'high' ? 2 : 1.75); FX.q = isTouch ? 1 : 2; sun.castShadow = true; }
+  for (const k of karts) if (k.blob) k.blob.visible = FX.q === 0;
+  renderer.setPixelRatio(curPR); onResize();
+}
+function renderOpts() {
+  const tg = (id, v) => { const b = $(id); b.classList.toggle('on', !!v); b.setAttribute('aria-checked', v ? 'true' : 'false'); b.title = v ? tr('פועל', 'On') : tr('כבוי', 'Off'); };
+  tg('sndMusic', SND.on.m); tg('sndSfx', SND.on.s); tg('optVib', VIB.on); $('vibRow').style.display = VIB.ok ? '' : 'none';
+  $('volMusic').disabled = !SND.on.m; $('volSfx').disabled = !SND.on.s;
+  document.querySelectorAll('#optGfx .tab').forEach(b => b.classList.toggle('sel', b.dataset.g === GFX));
+}
+$('sndMusic').addEventListener('click', () => { SND.init(); SND.setOn('m', !SND.on.m); renderOpts(); });
+$('sndSfx').addEventListener('click', () => { SND.init(); SND.setOn('s', !SND.on.s); renderOpts(); SND.tink(true); });
+$('optVib').addEventListener('click', () => { VIB.on = !VIB.on; try { localStorage.setItem('kart-vib', VIB.on ? '1' : '0'); } catch (_) {} renderOpts(); buzz(40); });
+document.querySelectorAll('#optGfx .tab').forEach(b => b.addEventListener('click', () => { SND.tink(false); GFX = b.dataset.g; try { localStorage.setItem('kart-gfx', GFX); } catch (_) {} applyGfx(); renderOpts(); }));
+$('optTut').addEventListener('click', () => { SND.tink(false); try { localStorage.removeItem('kart-tut'); } catch (_) {} $('ctrlMsg').textContent = tr('ההדרכה תופיע שוב במרוץ הבא', 'The tutorial will show again in your next race'); });
+if (GFX !== 'auto') applyGfx();
+function openCtrl(from) { ctrlFrom = from; $('ctrlMsg').textContent = ''; renderCtrl(); renderOpts(); showScreen('ctrlScreen'); }
 $('pauseCtrlBtn').addEventListener('click', () => openCtrl('pauseScreen'));
 $('helpCtrlBtn').addEventListener('click', () => openCtrl('helpScreen'));
 $('setBtn').addEventListener('click', e => { e.stopPropagation(); SND.init(); SND.tink(false); openCtrl('startScreen'); });
