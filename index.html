@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017175509', busy = false;
+  var BUILD = '20261017184027', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -1706,7 +1706,7 @@ function buildTrack(ti) {
   seaMat = null; windBlades = null; spinners = []; animFns = [];
   if (def.id === 'beach') sceneryBeach(G, B); else if (def.id === 'hills') sceneryHills(G, B); else if (def.id === 'hermon') sceneryHermon(G, B); else sceneryDesert(G, B);
   roadside(G, def);
-  buildPadsAndSigns(G, def); buildTerrainFx(G, def);
+  buildPadsAndSigns(G, def); buildTerrainFx(G, def); buildChallenges(G, def);
   for (const o of G.children.slice(c0)) liftObj(o); buildJumpFx(G, def);
   setSky(def); requestAnimationFrame(() => prepTrackShadows(G));
   // item boxes (one extra row in the middle of the long "safe" route of the fork)
@@ -1846,7 +1846,51 @@ function buildTerrainFx(G, def) {
   const mi = Math.floor(0.62 * (BR.n - 1)), mesh = makeMover(def.mover || 'tractor'); G.add(mesh);
   MOVERS.push({ mesh, p: BR.P[mi], l: BR.L[mi], amp: BR_HW + CURB + Math.min(4, BR.off[mi]), period: 5.5, r: 1.8, x: 0, z: 0 });
 }
+// ---------- advanced-track challenges (hills + Hermon only): a timed rising barrier and a barrel chicane ----------
+// BLOCKS: rectangles across part of the main road (centre index i, blocked side sd: lat*sd > inner, depth along the road).
+// Gates alternate their two halves on raceTime, so one lane is always open and every device sees the same phase.
+let BLOCKS = [];
+const ADV_TRACKS = ['hills', 'hermon'];
+function gateH(b, t) { if (!b.gate) return 1; const ph = ((t + b.off) % b.period) / b.period; return ph < 0.42 ? 1 : ph < 0.5 ? 1 - (ph - 0.42) / 0.08 : ph < 0.92 ? 0 : (ph - 0.92) / 0.08; }   // 1 = fully up
+function buildChallenges(G, def) {
+  BLOCKS = [];
+  if (!ADV_TRACKS.includes(def.id)) return;
+  const clearAt = i => {
+    if (i < 70 || i > N - 50) return false;
+    for (let d = -30; d <= 30; d++) if (GAP[(i + d + N) % N]) return false;
+    if (BR && (modD(i, BR.a) < 45 || modD(BR.a, i) < 45 || modD(i, BR.b) < 45 || modD(BR.b, i) < 45)) return false;
+    const p = P[i], far = (x, z, r) => Math.hypot(p.x - x, p.z - z) > r;
+    return SURF.every(o => far(o.x, o.z, 22)) && OBST.every(o => far(o.x, o.z, 22)) && BOOST.every(o => far(o.x, o.z, 22));
+  };
+  const pick = f0 => { for (let k = 0; k < 200; k++) for (const sg of [1, -1]) { const i = (Math.floor(f0 * N) + sg * k + N) % N; if (clearAt(i)) return i; } return -1; };
+  const wallMat = new THREE.MeshLambertMaterial({ map: stripeTex }), postMat = lam(0x333333);
+  // 1) rising barrier: two halves take turns (period 5 s); a boost pad waits behind the + side for karts that time it
+  const gi = pick(def.id === 'hills' ? 0.36 : 0.52);
+  if (gi >= 0) {
+    for (const sd of [1, -1]) {
+      const b = { i: gi, sd, inner: 0.2, depth: 1.6, gate: true, period: 6, off: sd > 0 ? 0 : 3, mesh: null };
+      const len = WALL - b.inner, m = new THREE.Mesh(new THREE.BoxGeometry(len, 1.3, 0.8), wallMat), c = b.inner + len / 2;
+      m.position.set(P[gi].x + L[gi].x * c * sd, 0, P[gi].z + L[gi].z * c * sd); m.rotation.y = Math.atan2(T[gi].x, T[gi].z); m.userData.noLift = true; b.mesh = m; G.add(m);
+      BLOCKS.push(b);
+    }
+    for (const sd of [1, -1]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.6, 0.5), postMat); post.position.set(P[gi].x + L[gi].x * (WALL + 0.3) * sd, 1.3, P[gi].z + L[gi].z * (WALL + 0.3) * sd); G.add(post); }
+    const j = (gi + Math.round(9 / SEG)) % N, o = HW * 0.5, pm = new THREE.Mesh(new THREE.PlaneGeometry(HW * 0.8, 6), new THREE.MeshBasicMaterial({ map: padTex }));
+    const px = P[j].x + L[j].x * o, pz = P[j].z + L[j].z * o; pm.userData.flat = true; pm.renderOrder = 2; pm.rotation.x = -Math.PI / 2; pm.rotation.z = Math.atan2(T[j].x, T[j].z) + Math.PI; pm.position.set(px, 0.09, pz); G.add(pm);
+    BOOST.push({ x: px, z: pz, tx: T[j].x, tz: T[j].z, lx: L[j].x, lz: L[j].z, w: HW * 0.8, mesh: pm });
+  }
+  // 2) narrowing: barrel rows from both walls squeeze the road to a single-kart-wide lane (about a third of the width) for ~20 m
+  const ci = pick(def.id === 'hills' ? 0.8 : 0.84);
+  if (ci >= 0) {
+    const pos = [], step = Math.max(1, Math.round(5 / SEG));
+    for (let r = 0; r < 4; r++) { const i = (ci + r * step) % N, inner = 3.4 + (r === 0 ? 1.2 : 0);   // first row a little wider: a funnel
+      for (const sd of [1, -1]) { BLOCKS.push({ i, sd, inner, depth: 1.8, gate: false }); for (let la = inner + 0.9; la <= WALL; la += 1.8) pos.push([P[i].x + L[i].x * la * sd, P[i].z + L[i].z * la * sd]); } }
+    const im = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.9, 0.9, 1.8, 12), wallMat, pos.length);
+    pos.forEach(([x, z], n) => { m4.compose(V(x, 0.9, z), qI, V(1, 1, 1)); im.setMatrixAt(n, m4); }); G.add(im);
+  }
+}
+function updateBlocks(t) { for (const b of BLOCKS) if (b.mesh) { const h = gateH(b, t), x = b.mesh.position.x, z = b.mesh.position.z; b.mesh.position.y = objH(x, z) - 0.7 + h * 1.35; } }
 function updateMovers(t) {
+  updateBlocks(t);
   for (const m of MOVERS) {
     const s = Math.sin(t * Math.PI * 2 / m.period), o = s * m.amp, v = Math.cos(t * Math.PI * 2 / m.period);
     m.x = m.p.x + m.l.x * o; m.z = m.p.z + m.l.z * o; m.mesh.position.set(m.x, objH(m.x, m.z), m.z);
@@ -3468,6 +3512,18 @@ function rubberRef() { const h = karts.filter(k => k.human); return h.length ? h
 // ---------- physics ----------
 const NOINPUT = { throttle: 0, steer: 0, drift: false };
 function nearest(pos, hint) { let best = hint, bd = 1e9; for (let o = -30; o <= 30; o++) { const i = (hint + o + N) % N; const dx = pos.x - P[i].x, dz = pos.z - P[i].z, d = dx * dx + dz * dz; if (d < bd) { bd = d; best = i; } } return best; }
+function hitBlock(k, b) {   // barrier / chicane row across part of the road: push back along the road, like a wall hit
+  if (gateH(b, raceTime) < 0.5) return;
+  const p = P[b.i], t = T[b.i], l = L[b.i], dx = k.pos.x - p.x, dz = k.pos.z - p.z, al = dx * t.x + dz * t.z, la = (dx * l.x + dz * l.z) * b.sd, kr = 1.0 * k.scale;
+  if (Math.abs(al) >= b.depth / 2 + kr || la <= b.inner - kr || la > WALL + 2) return;
+  const goSide = la - (b.inner - kr), goBack = b.depth / 2 + kr - Math.abs(al);
+  if (goSide < goBack * 0.6) { const m = goSide * b.sd; k.pos.x -= l.x * m; k.pos.z -= l.z * m; k.speed *= 0.85; return; }   // just clipped the end: slide past
+  const s = al >= 0 ? 1 : -1; k.pos.x += t.x * s * goBack; k.pos.z += t.z * s * goBack;
+  if (k.star > 0) return;
+  k.blockHits = (k.blockHits || 0) + 1; (window.__bh = window.__bh || {})[b.i + "/" + b.sd] = (window.__bh[b.i + "/" + b.sd] || 0) + 1;
+  if (Math.abs(k.speed) > 6) { k.wallHit = 1; k.lapDirty = true; if (k.isPlayer) { SND.wall(0.7); shakeCam(0.3); } }
+  k.speed = Math.min(k.speed * 0.35, 6);
+}
 function hitObstacle(k, x, z, r, slow, mover) {
   const dx = k.pos.x - x, dz = k.pos.z - z, R = r + 1.1 * k.scale, d2 = dx * dx + dz * dz;
   if (d2 >= R * R || d2 < 1e-6) return;
@@ -3587,6 +3643,7 @@ function updateKart(k, dt, inp) {
     k.surfMul = sm; k.grip = grip; k.surf = sk;
     for (const o of OBST) hitObstacle(k, o.x, o.z, o.r, o.hard ? 0.45 : 0.75, false);
     for (const m of MOVERS) hitObstacle(k, m.x, m.z, m.r, 0.6, true);
+    if (k.path === 0) for (const b of BLOCKS) hitBlock(k, b);
   }
   // boost pads
   let on = false;
@@ -3618,8 +3675,14 @@ function aiInput(k, dt) {
     const avoid = (x, z, r) => { const dx = x - k.pos.x, dz = z - k.pos.z, ah = dx * fx + dz * fz; if (ah < 1 || ah > 24) return; const bl = dx * kl.x + dz * kl.z; if (Math.abs(bl - lane) < r + 2) dodge = bl > lane ? -(r + 2.4) : (r + 2.4); };
     for (const o of OBST) avoid(o.x, o.z, o.r); for (const m of MOVERS) avoid(m.x, m.z, m.r + 1); for (const s of SURF) if (s.kind !== 'ice') avoid(s.x, s.z, s.r * 0.8);
   }
+  let bAim = null;
+  if (k.path === 0) {   // barrier / narrowing ahead: drive straight at the lane that will be open when we get there
+    let best = null, bd = 1e9;
+    for (const b of BLOCKS) { const d = modD(k.idx, b.i); if (d * SEG < 30 && d < bd) { const eta = d * SEG / Math.max(8, k.speed); if (gateH(b, raceTime + eta) > 0.2 || gateH(b, raceTime + eta * 0.5) > 0.2) { bd = d; best = b; } } }
+    if (best) { const tgt = best.gate ? -best.sd * HW * 0.5 : 0, j = (best.i + 3) % N; bAim = [P[j].x + L[j].x * tgt, P[j].z + L[j].z * tgt]; }
+  }
   const ln = (k.path === 1 || (k.takeBr && BR && modD(k.idx, BR.a) < look)) ? clamp(lane + dodge, -4, 4) : lane + dodge; const tx = ra.p.x + ra.l.x * ln, tz = ra.p.z + ra.l.z * ln;
-  const dAng = angDiff(Math.atan2(tx - k.pos.x, tz - k.pos.z), k.heading);
+  const dAng = bAim ? angDiff(Math.atan2(bAim[0] - k.pos.x, bAim[1] - k.pos.z), k.heading) : angDiff(Math.atan2(tx - k.pos.x, tz - k.pos.z), k.heading);
   const gap = rubberRef() - k.total;
   if (!k.isPlayer) k.maxSpeed = k.base * clamp(1 + gap / N * 0.35, 0.9, 1.12) * AI_MUL;
   if (k.item && k.rolling <= 0 && !k.isPlayer) {
@@ -4021,7 +4084,7 @@ if (!PROFILE.name) askName(() => showScreen('startScreen'));
 requestAnimationFrame(frame);
 window.__track = (k) => { const r = routeAhead(k, 12); return angDiff(Math.atan2(r.p.x - k.pos.x, r.p.z - k.pos.z), k.heading); };
 window.__kart = { input: () => playerInput(), get state() { return state; }, get karts() { return karts; }, get player() { return player; }, startRace, resetRace, rankOf, useItem, get raceTime() { return raceTime; }, SND, touch, keys, measureButtons, get titleMode() { return titleMode; }, pauseGame, resumeGame, set auto(v) { AUTO = v; }, get net() { return NET; }, get screen() { return curScreen; },
-  dbg: { get scene() { return scene; }, get renderer() { return renderer; }, get net() { return NET; }, get hz() { return { b: bananas.map(b => b.id), s: shells.length }; }, drop: () => dropBanana(player), shell: () => fireShell(player), gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
+  dbg: { get scene() { return scene; }, get renderer() { return renderer; }, get net() { return NET; }, get hz() { return { b: bananas.map(b => b.id), s: shells.length }; }, drop: () => dropBanana(player), shell: () => fireShell(player), gp: { gpBegin, gpStartLocal, showPodium, renderStandings, get GP() { return GP; } }, flash: (t, d) => flash(t, d), ch: { genSet, CH_T, CH_W, chSets, chUpdate, chRew }, react: (k, m) => react(k, m, true), spin: (k, d, bp) => spinKart(k, d, bp), setDiff: d => { dbgDiff = d; }, collide: () => collideKarts(), get blocks() { return BLOCKS.map(b => ({ i: b.i, sd: b.sd, gate: b.gate, h: gateH(b, raceTime) })); }, get jumps() { return JUMPS.map(j => ({ iL: j.iL, nr: j.nr, ng: j.ng, kind: j.kind })); }, tp: i => { const k = player; i = (i + N) % N; k.path = 0; k.idx = i; k.pos.set(P[i].x, 0, P[i].z); k.heading = Math.atan2(T[i].x, T[i].z); k.y = undefined; k.air = 0; k.total = Math.floor(k.total / N) * N + i; k.progT = undefined; }, Y: i => Y[i], gh: i => ghAt(P[i].x, P[i].z), carves: () => CARVES, get obst() { return OBST; }, get surf() { return SURF; }, get movers() { return MOVERS; }, get br() { return BR; }, snap: () => snapCamera(), get boosts() { return BOOST.map(b => ({ x: b.x, z: b.z, vis: b.mesh.visible, par: !!b.mesh.parent, inScene: (() => { let o = b.mesh; while (o.parent) o = o.parent; return o === scene; })(), y: b.mesh.position.y, op: b.mesh.material.opacity, sx: b.mesh.scale.x, geo: b.mesh.geometry.parameters })); }, pickItem, dropBanana, fireShell, get bananas() { return bananas.map(b => [b.g.position.x, b.g.position.y, b.g.position.z, b.g.children.length]); }, tp(i, lat = 0) { i = (i + N) % N; player.idx = i; player.path = 0; player.pos.set(P[i].x + L[i].x * lat, 0, P[i].z + L[i].z * lat); player.heading = Math.atan2(T[i].x, T[i].z); player.speed = 0; snapCamera(); }, N } };
 
 // ---- controls settings screen + first-race tutorial ----
 let ctrlFrom = 'startScreen';
