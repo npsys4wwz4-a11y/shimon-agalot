@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261018150741', busy = false;
+  var BUILD = '20261018204621', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -3483,7 +3483,7 @@ function placeKarts() {
   karts.forEach((k, i) => {
     const [gi, lat] = grid[i];
     k.idx = gi; k.progT = undefined; k.recovers = 0; k.itemsBy = {}; k.shortcuts = 0; k.cleanLaps = 0; k.lapDirty = false; k.brCounted = false; k.itemsUsed = 0; k.padBoosts = 0; k.tricks = 0; k.jumps = 0; k.rams = 0; k.blocks = 0; k.hitsLanded = 0; k.timesHit = 0; k.path = 0; k.takeBr = false; k.forkLap = -1; k.onPad = false; k.pos.set(P[gi].x + L[gi].x * lat, 0, P[gi].z + L[gi].z * lat); k.y = Y[gi]; k.vy = 0; k.air = 0; k.pitch = 0; k.trick = 0; k.squash = 0;
-    k.heading = Math.atan2(T[gi].x, T[gi].z); k.speed = 0; k.total = gi - N; k.lap = 1;
+    k.heading = Math.atan2(T[gi].x, T[gi].z); k.speed = 0; k.total = gi - N; k.lap = 1; k.lapLine = 0; k.lineS = undefined; k.crossed = false;
     Object.assign(k, { est: false, drifting: false, charge: 0, boost: 0, spin: 0, item: null, itemCount: 0, rolling: 0, finished: false, finishTime: 0, useTimer: 0, visYaw: 0, star: 0, shrink: 0, scale: 1 });
     k.root.position.copy(k.pos); k.root.rotation.y = k.heading; k.root.scale.setScalar(1);
   });
@@ -3612,7 +3612,8 @@ function respawnKart(k, fwd) {
 }
 function updateVertical(k, dt, inp) {
   if (k.isPlayer && inp && inp.trick && k.air > 0.03 && !k.trickDone) { k.trickDone = true; k.trick = 0.45; k.trickOk = true; react(k, 'yelp'); SND.trick && SND.trick(); flash(tr('טריק!', 'Trick!'), .4, '#4fc3ff'); }
-  trackProject(k); let gy = roadHAt(k); const gap = gy === null; if (gap) gy = ghAt(k.pos.x, k.pos.z);
+  { const s0 = progS(k); trackProject(k); let d = progS(k) - s0; if (d < -N / 2) d += N; if (d > N / 2) d -= N; k.total += d; }   // re-projection may switch road at the fork: keep progress in step
+  let gy = roadHAt(k); const gap = gy === null; if (gap) gy = ghAt(k.pos.x, k.pos.z);
   if (k.y === undefined || !isFinite(k.y)) { k.y = gy; k.vy = 0; k.air = 0; }
   if (!k.air) {
     const pred = k.y + k.vy * dt - GRAV * dt * dt;
@@ -3691,6 +3692,14 @@ function updateKart(k, dt, inp) {
     }
   }
   let d = progS(k) - oldS; if (d < -N / 2) d += N; if (d > N / 2) d -= N; k.total += d;
+  // the visible start/finish line (arch at P[0]) is the only place a lap completes: progress along the fork/branch is mapped
+  // approximately and can drift a few metres per lap, so on each forward crossing re-anchor total to an exact lap multiple
+  { const ds = (k.pos.x - P[0].x) * T[0].x + (k.pos.z - P[0].z) * T[0].z, dl = (k.pos.x - P[0].x) * L[0].x + (k.pos.z - P[0].z) * L[0].z;
+    k.crossed = false;
+    if (!k.remote && k.path === 0 && k.lineS !== undefined && k.lineS < 0 && ds >= 0 && ds < 15 && Math.abs(dl) < WALL + 3) {
+      const lapN = Math.round(k.total / N); (k.lineLog = k.lineLog || []).push(+(k.total - lapN * N).toFixed(1)); if (k.lineLog.length > 8) k.lineLog.shift(); k.total = lapN * N + ds / SEG; k.lapLine = lapN; k.crossed = true;
+    }
+    k.lineS = Math.abs(dl) < WALL + 3 && Math.abs(ds) < 40 ? ds : undefined; }
   if (!k.remote) updateVertical(k, dt, inp);
   // stuck detection & recovery (bots / autopilot): no forward progress for 3 s -> back onto the road centre
   if (state === 'race' && !k.finished && !k.remote) {
@@ -3723,7 +3732,8 @@ function updateKart(k, dt, inp) {
   if (newLap > k.lap) { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.lapDirty = false; k.brCounted = false; }
   if (k.isPlayer && newLap > k.lap && state === 'race') { const fin = newLap === LAPS; flash(fin ? tr('הקפה אחרונה!', 'Final lap!') : tr(`הקפה ${newLap}`, `Lap ${newLap}`), 1.3, undefined, true); SND.lap(fin); if (fin) SND.tempoMul = 1.12; }
   k.lap = Math.max(k.lap, newLap);
-  if (!k.finished && k.total >= LAPS * N && state !== 'countdown') { if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.finished = true; k.finishTime = raceTime; finishCount++; k.place = finishCount; if (k.isPlayer) onPlayerFinish(); }
+  if (!k.finished && state !== 'countdown' && ((k.crossed && k.lapLine >= LAPS) || (k.total >= LAPS * N && !(k.lineS !== undefined && k.lineS < 0 && k.total < LAPS * N + 40)))) {   // finish on crossing the visible line; if progress says done while still short of the line, wait for the line
+     if (!k.lapDirty) k.cleanLaps = (k.cleanLaps || 0) + 1; k.finished = true; k.finishTime = raceTime; k.finishAt = +((k.pos.x - P[0].x) * T[0].x + (k.pos.z - P[0].z) * T[0].z).toFixed(2); finishCount++; k.place = finishCount; if (k.isPlayer) onPlayerFinish(); }
   if (k.rolling > 0) {
     k.rolling -= dt;
     if (k.isPlayer) { k.rollTick -= dt; if (k.rollTick <= 0) { k.rollTick = 0.07; SND.roll(); } }
