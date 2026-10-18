@@ -568,7 +568,7 @@ body:has(#ctrlScreen[style*="flex"]) #muteBtn,body:has(#cloudScreen[style*="flex
 <script>
 // ===== auto-update (iOS home-screen apps cache aggressively) =====
 (function () {
-  var BUILD = '20261017193623', busy = false;
+  var BUILD = '20261018150741', busy = false;
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
   if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }).catch(function () {});
   var pending = null;
@@ -2784,16 +2784,28 @@ function updateHazards(dt) {
     }
   }
   for (let i = shells.length - 1; i >= 0; i--) {
-    const s = shells[i]; s.age += dt; let dead = s.age > 6;
-    let tx, tz;
-    if (s.target && !s.target.finished) { const d = s.pos.distanceTo(s.target.pos); if (d < 65) { tx = s.target.pos.x; tz = s.target.pos.z; } }
-    if (tx === undefined) { const r = routeAhead(s, 10); tx = r.p.x; tz = r.p.z; }
-    s.heading += clamp(angDiff(Math.atan2(tx - s.pos.x, tz - s.pos.z), s.heading), -6.5 * dt, 6.5 * dt);
-    s.pos.x += Math.sin(s.heading) * 84 * dt; s.pos.z += Math.cos(s.heading) * 84 * dt; s.pos.y = objH(s.pos.x, s.pos.z) + 0.6;
-    const { lat, lim, l } = trackProject(s);
-    if (Math.abs(lat) > lim + 0.5) { const o = lat - Math.sign(lat) * (lim + 0.5); s.pos.x -= l.x * o; s.pos.z -= l.z * o; }
+    const s = shells[i]; s.age += dt; let dead = s.age > 10;
+    // homing falafel: rides the road toward its target (same fork choice as the target), then locks on and flies straight at it.
+    // Deterministic from the fire event, so every device flies it the same way; each device only applies hits to its own karts.
+    const tg = s.target && !s.target.finished ? s.target : null, sp = 84 * dt;
+    if (tg && s.path === 0) s.takeBr = tg.path === 1 || !!tg.takeBr;
+    const tY = tg ? (tg.y || 0) : 0, dTg = tg ? Math.hypot(tg.pos.x - s.pos.x, tg.pos.z - s.pos.z) : 1e9;
+    if (tg && (dTg < 16 || s.lock)) {   // lock-on: straight at the kart (no turn limit, so it can't orbit)
+      s.lock = true; const m = Math.min(sp, dTg); s.heading = Math.atan2(tg.pos.x - s.pos.x, tg.pos.z - s.pos.z);
+      s.pos.x += Math.sin(s.heading) * m; s.pos.z += Math.cos(s.heading) * m; s.pos.y += ((tY + 0.6) - s.pos.y) * Math.min(1, dt * 12);
+      if (dTg > 60) s.lock = false;   // target respawned far away: back to the road
+    } else {
+      const r = routeAhead(s, 5), lt = tg ? clamp((tg.pos.x - pP(tg).x) * pL(tg).x + (tg.pos.z - pP(tg).z) * pL(tg).z, -LIMIT, LIMIT) * clamp(1 - dTg / 80, 0, 1) : 0;
+      const ax = r.p.x + r.l.x * lt, az = r.p.z + r.l.z * lt; s.heading = Math.atan2(ax - s.pos.x, az - s.pos.z);
+      s.pos.x += Math.sin(s.heading) * sp; s.pos.z += Math.cos(s.heading) * sp;
+      const { lat, lim, l } = trackProject(s);
+      if (Math.abs(lat) > lim + 0.5) { const o = lat - Math.sign(lat) * (lim + 0.5); s.pos.x -= l.x * o; s.pos.z -= l.z * o; }
+      const gy = s.path === 0 && GAP[s.idx] ? Y[s.idx] : s.path === 0 ? Math.max(Y[s.idx], objH(s.pos.x, s.pos.z)) : objH(s.pos.x, s.pos.z);   // fly over jump gaps at road height
+      s.pos.y = gy + 0.6;
+    }
     s.g.rotation.y += dt * 12;
-    for (const k of karts) { if (k === s.owner && s.age < 0.5) continue; if (k.pos.distanceToSquared(s.pos) < 4.4) { if (!k.remote && spinKart(k, 1.25, s.owner.isPlayer) && k.isPlayer) flash(tr('פלאפל בפרצוף! 🧆', 'Falafel to the face! 🧆'), 1, '#ffb84d'); dead = true; break; } }
+    for (const k of karts) { if (k === s.owner && s.age < 0.5) continue; const hx = k.pos.x - s.pos.x, hz = k.pos.z - s.pos.z; if (hx * hx + hz * hz < 4.4 && Math.abs((k.y || 0) + 0.6 - s.pos.y) < 3) {   // ground distance (k.pos.y is 0; height is k.y)
+      s.hit = k; window.__shellHits = (window.__shellHits || []).concat([[s.owner.slot, k.slot, s.target ? s.target.slot : -1]]); if (!k.remote && spinKart(k, 1.25, s.owner.isPlayer) && k.isPlayer) flash(tr('פלאפל בפרצוף! 🧆', 'Falafel to the face! 🧆'), 1, '#ffb84d'); dead = true; break; } }
     for (let j = bananas.length - 1; j >= 0 && !dead; j--) { if (bananas[j].g.position.distanceToSquared(s.pos) < 2.6) { scene.remove(bananas[j].g); bananas.splice(j, 1); dead = true; } }
     if (dead) { scene.remove(s.g); shells.splice(i, 1); }
   }
